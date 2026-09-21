@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FashionForge | Design Studio</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/app.js" defer></script>
+</head>
+<body class="studio-page">
+  <header class="site-header studio-header">
+    <div class="container studio-header-content">
+      <a class="brand" href="index.html" aria-label="FashionForge home">FashionForge</a>
+      <nav class="studio-navigation" aria-label="Design Studio navigation">
+        <a href="index.html">Home</a>
+        <a class="current-page" href="design.html" aria-current="page">Design Studio</a>
+      </nav>
+      <div class="account-placeholder" aria-label="Account area placeholder">
+        <span class="status-dot" aria-hidden="true"></span>
+        Guest workspace
+      </div>
+    </div>
+  </header>
+
+  <main class="studio-main">
+    <div class="container">
+      <div class="studio-intro">
+        <div>
+          <p class="eyebrow">Phase 4 interface</p>
+          <h1>Design Studio</h1>
+        </div>
+        <p class="studio-intro-text">
+          Assemble the direction of your costume concept. Interactive previews and
+          design logic will be connected in later phases.
+        </p>
+      </div>
+
+      <div class="studio-layout">
+        <aside class="studio-panel control-panel" aria-labelledby="controls-title">
+          <div class="panel-heading">
+            <p class="eyebrow">Start here</p>
+            <h2 id="controls-title">Design controls</h2>
+          </div>
+
+          <form class="design-controls">
+            <fieldset class="control-group">
+              <legend>Garment components</legend>
+              <label for="top-select">Top</label>
+              <select id="top-select" name="top">
+                <option>Choose a top</option>
+                <option>Shirt</option>
+                <option>Kurti</option>
+                <option>Blouse</option>
+              </select>
+
+              <label for="bottom-select">Bottom</label>
+              <select id="bottom-select" name="bottom">
+                <option>Choose a bottom</option>
+                <option>Skirt</option>
+                <option>Pants</option>
+                <option>Palazzo</option>
+              </select>
+
+              <label for="sleeves-select">Sleeves</label>
+              <select id="sleeves-select" name="sleeves">
+                <option>Choose sleeves</option>
+                <option>Sleeveless</option>
+                <option>Short sleeve</option>
+                <option>Long sleeve</option>
+              </select>
+
+              <label for="neckline-select">Neckline / Collar</label>
+              <select id="neckline-select" name="neckline">
+                <option>Choose a neckline</option>
+                <option>Round neck</option>
+                <option>V-neck</option>
+                <option>Collar neck</option>
+              </select>
+            </fieldset>
+
+            <fieldset class="control-group">
+              <legend>Surface details</legend>
+              <label for="colour-select">Colour</label>
+              <select id="colour-select" name="colour">
+                <option>Choose a colour</option>
+                <option>Pastel blue</option>
+                <option>Rose pink</option>
+                <option>Deep plum</option>
+              </select>
+
+              <label for="fabric-select">Fabric</label>
+              <select id="fabric-select" name="fabric">
+                <option>Choose a fabric</option>
+                <option>Cotton</option>
+                <option>Silk</option>
+                <option>Linen</option>
+                <option>Denim</option>
+              </select>
+
+              <label for="pattern-select">Pattern</label>
+              <select id="pattern-select" name="pattern">
+                <option>Choose a pattern</option>
+                <option>Plain</option>
+                <option>Floral</option>
+                <option>Stripes</option>
+                <option>Checks</option>
+              </select>
+            </fieldset>
+          </form>
+        </aside>
+
+        <section class="preview-panel" aria-labelledby="preview-title">
+          <div class="preview-heading">
+            <div>
+              <p class="eyebrow">Visual workspace</p>
+              <h2 id="preview-title">Design preview</h2>
+            </div>
+            <span class="preview-state">Placeholder view</span>
+          </div>
+
+          <div class="view-controls" aria-label="Preview view controls">
+            <button class="view-button is-selected" type="button" aria-pressed="true" disabled>Front view</button>
+            <button class="view-button" type="button" aria-pressed="false" disabled>Back view</button>
+          </div>
+
+          <div class="mannequin-placeholder" role="img" aria-label="Placeholder for the future two-dimensional costume preview">
+            <div class="mannequin-head" aria-hidden="true"></div>
+            <div class="mannequin-body" aria-hidden="true">
+              <span class="mannequin-line mannequin-line-one"></span>
+              <span class="mannequin-line mannequin-line-two"></span>
+            </div>
+            <p>2D design preview</p>
+            <span class="placeholder-caption">Garment visualization will appear here</span>
+          </div>
+
+          <p class="preview-note">
+            Front view selected. The mannequin and view controls will become interactive
+            when the SVG system is added.
+          </p>
+        </section>
+
+        <aside class="studio-panel information-panel" aria-labelledby="information-title">
+          <div class="panel-heading">
+            <p class="eyebrow">Design notes</p>
+            <h2 id="information-title">Information</h2>
+          </div>
+
+          <section class="information-section" aria-labelledby="sketch-title">
+            <h3 id="sketch-title">Technical Sketch</h3>
+            <div class="info-placeholder">Technical outline placeholder</div>
+          </section>
+
+          <section class="information-section" aria-labelledby="specifications-title">
+            <h3 id="specifications-title">Garment Specifications</h3>
+            <dl class="specification-list">
+              <div><dt>Top</dt><dd>Not selected</dd></div>
+              <div><dt>Fabric</dt><dd>Not selected</dd></div>
+              <div><dt>Pattern</dt><dd>Not selected</dd></div>
+            </dl>
+          </section>
+
+          <section class="information-section" aria-labelledby="recommendation-title">
+            <h3 id="recommendation-title">Style Recommendation</h3>
+            <p class="info-copy">Recommendations will appear after the design rules are added.</p>
+          </section>
+
+          <section class="information-section price-section" aria-labelledby="price-title">
+            <h3 id="price-title">Estimated Price</h3>
+            <p class="price-placeholder">--</p>
+            <p class="info-copy">Price calculation is reserved for a later phase.</p>
+          </section>
+
+          <div class="studio-actions" aria-label="Future design actions">
+            <button class="secondary-button action-button" type="button" disabled>Save Design</button>
+            <button class="primary-button action-button" type="button" disabled>Add to Cart</button>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-content">
+      <p>&copy; 2026 FashionForge</p>
+      <p>Design Studio UI preview</p>
+    </div>
+  </footer>
+</body>
+</html>
