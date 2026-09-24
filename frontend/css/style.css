@@ -641,6 +641,43 @@ h3 {
   white-space: nowrap;
 }
 
+.costume-preview {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 20rem);
+  height: auto;
+  max-height: 29rem;
+  overflow: visible;
+  --garment-color: #b96b61;
+  --pattern-detail: #b96b61;
+}
+
+.pattern-mark {
+  fill: var(--pattern-detail);
+  stroke: var(--pattern-detail);
+}
+
+.fabric-silk .garment-layer {
+  opacity: 0.84;
+  filter: brightness(1.12);
+}
+
+.fabric-denim .garment-layer {
+  opacity: 0.94;
+  filter: saturate(0.75) brightness(0.9);
+}
+
+.fabric-linen .garment-layer {
+  opacity: 0.9;
+  filter: brightness(1.05) saturate(0.8);
+}
+
+.layer-error {
+  fill: var(--color-accent-dark);
+  font-family: var(--font-body);
+  font-size: 10px;
+}
+
 .view-controls {
   display: flex;
   gap: 0.35rem;
@@ -684,71 +721,6 @@ h3 {
   text-align: center;
 }
 
-.mannequin-placeholder::before,
-.mannequin-placeholder::after {
-  position: absolute;
-  border: 1px solid rgba(113, 56, 50, 0.12);
-  border-radius: 50%;
-  content: "";
-}
-
-.mannequin-placeholder::before {
-  width: 18rem;
-  height: 18rem;
-  top: 3rem;
-  background: rgba(229, 196, 189, 0.48);
-}
-
-.mannequin-placeholder::after {
-  width: 24rem;
-  height: 24rem;
-  top: 0;
-  border-style: dashed;
-}
-
-.mannequin-head,
-.mannequin-body,
-.mannequin-line {
-  position: absolute;
-  z-index: 1;
-}
-
-.mannequin-head {
-  top: 5rem;
-  width: 3.4rem;
-  height: 3.4rem;
-  border: 1px solid var(--color-accent-dark);
-  border-radius: 50%;
-  background: #f5ded5;
-}
-
-.mannequin-body {
-  top: 8.5rem;
-  width: 10rem;
-  height: 15rem;
-  border: 1px solid var(--color-accent-dark);
-  border-radius: 42% 42% 18% 18%;
-  background: rgba(255, 253, 249, 0.7);
-  clip-path: polygon(24% 0, 76% 0, 100% 28%, 82% 100%, 18% 100%, 0 28%);
-}
-
-.mannequin-line {
-  top: 6rem;
-  left: 50%;
-  width: 1px;
-  height: 8rem;
-  background: var(--color-accent-dark);
-  opacity: 0.45;
-  transform: translateX(-50%);
-}
-
-.mannequin-line-two {
-  top: 9rem;
-  width: 6rem;
-  height: 1px;
-  transform: translateX(-50%) rotate(90deg);
-}
-
 .mannequin-placeholder p,
 .placeholder-caption {
   position: relative;
@@ -770,6 +742,22 @@ h3 {
   margin: var(--space-md) 0 0;
   color: var(--color-text-muted);
   font-size: 0.8rem;
+}
+
+.preview-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin-top: var(--space-md);
+}
+
+.preview-status span {
+  padding: 0.35rem 0.55rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: 0.7rem;
 }
 
 .information-panel {

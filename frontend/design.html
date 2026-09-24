@@ -26,12 +26,12 @@
     <div class="container">
       <div class="studio-intro">
         <div>
-          <p class="eyebrow">Phase 4 interface</p>
+          <p class="eyebrow">Phase 5 interface</p>
           <h1>Design Studio</h1>
         </div>
         <p class="studio-intro-text">
-          Assemble the direction of your costume concept. Interactive previews and
-          design logic will be connected in later phases.
+          Assemble the direction of your costume concept. The layered preview updates
+          as you choose each reusable garment component and appearance treatment.
         </p>
       </div>
 
@@ -42,39 +42,44 @@
             <h2 id="controls-title">Design controls</h2>
           </div>
 
-          <form class="design-controls">
+          <form class="design-controls" id="design-controls">
             <fieldset class="control-group">
               <legend>Garment components</legend>
               <label for="top-select">Top</label>
               <select id="top-select" name="top">
-                <option>Choose a top</option>
-                <option>Shirt</option>
-                <option>Kurti</option>
-                <option>Blouse</option>
+                <option value="basic">Basic top</option>
+                <option value="crop">Crop top</option>
+                <option value="tunic">Tunic top</option>
               </select>
 
               <label for="bottom-select">Bottom</label>
               <select id="bottom-select" name="bottom">
-                <option>Choose a bottom</option>
-                <option>Skirt</option>
-                <option>Pants</option>
-                <option>Palazzo</option>
+                <option value="skirt">Skirt</option>
+                <option value="trousers">Trousers</option>
+                <option value="wide">Wide bottom</option>
               </select>
 
               <label for="sleeves-select">Sleeves</label>
               <select id="sleeves-select" name="sleeves">
-                <option>Choose sleeves</option>
-                <option>Sleeveless</option>
-                <option>Short sleeve</option>
-                <option>Long sleeve</option>
+                <option value="short">Short sleeves</option>
+                <option value="long">Long sleeves</option>
+                <option value="flare">Flare sleeves</option>
               </select>
 
               <label for="neckline-select">Neckline / Collar</label>
-              <select id="neckline-select" name="neckline">
-                <option>Choose a neckline</option>
-                <option>Round neck</option>
-                <option>V-neck</option>
-                <option>Collar neck</option>
+              <select id="neckline-select" name="collar">
+                <option value="round">Round neckline</option>
+                <option value="vneck">V-neck</option>
+                <option value="square">Square neckline</option>
+              </select>
+            </fieldset>
+
+            <fieldset class="control-group">
+              <legend>Croquis template</legend>
+              <label for="croquis-select">Figure</label>
+              <select id="croquis-select" name="croquis">
+                <option value="female">Female croquis</option>
+                <option value="male">Male croquis</option>
               </select>
             </fieldset>
 
@@ -82,28 +87,26 @@
               <legend>Surface details</legend>
               <label for="colour-select">Colour</label>
               <select id="colour-select" name="colour">
-                <option>Choose a colour</option>
-                <option>Pastel blue</option>
-                <option>Rose pink</option>
-                <option>Deep plum</option>
+                <option value="#b96b61">Rose clay</option>
+                <option value="#668b8a">Muted teal</option>
+                <option value="#6f587d">Soft plum</option>
+                <option value="#c28b62">Warm ochre</option>
               </select>
 
               <label for="fabric-select">Fabric</label>
               <select id="fabric-select" name="fabric">
-                <option>Choose a fabric</option>
-                <option>Cotton</option>
-                <option>Silk</option>
-                <option>Linen</option>
-                <option>Denim</option>
+                <option value="cotton">Cotton</option>
+                <option value="silk">Silk</option>
+                <option value="denim">Denim</option>
+                <option value="linen">Linen</option>
               </select>
 
               <label for="pattern-select">Pattern</label>
               <select id="pattern-select" name="pattern">
-                <option>Choose a pattern</option>
-                <option>Plain</option>
-                <option>Floral</option>
-                <option>Stripes</option>
-                <option>Checks</option>
+                <option value="solid">Solid</option>
+                <option value="stripes">Stripes</option>
+                <option value="checks">Checks</option>
+                <option value="dots">Dots</option>
               </select>
             </fieldset>
           </form>
@@ -115,7 +118,7 @@
               <p class="eyebrow">Visual workspace</p>
               <h2 id="preview-title">Design preview</h2>
             </div>
-            <span class="preview-state">Placeholder view</span>
+            <span class="preview-state" id="preview-state">Live preview</span>
           </div>
 
           <div class="view-controls" aria-label="Preview view controls">
@@ -123,20 +126,36 @@
             <button class="view-button" type="button" aria-pressed="false" disabled>Back view</button>
           </div>
 
-          <div class="mannequin-placeholder" role="img" aria-label="Placeholder for the future two-dimensional costume preview">
-            <div class="mannequin-head" aria-hidden="true"></div>
-            <div class="mannequin-body" aria-hidden="true">
-              <span class="mannequin-line mannequin-line-one"></span>
-              <span class="mannequin-line mannequin-line-two"></span>
-            </div>
-            <p>2D design preview</p>
-            <span class="placeholder-caption">Garment visualization will appear here</span>
+          <div class="mannequin-placeholder" role="img" aria-label="Layered two-dimensional costume preview">
+            <svg class="costume-preview" id="costume-preview" viewBox="0 0 240 360" aria-hidden="true">
+              <defs>
+                <pattern id="pattern-stripes" width="12" height="12" patternUnits="userSpaceOnUse">
+                  <path d="M0 0 L0 12" class="pattern-mark" stroke-width="4" />
+                </pattern>
+                <pattern id="pattern-checks" width="16" height="16" patternUnits="userSpaceOnUse">
+                  <path d="M0 0 H16 M0 0 V16" class="pattern-mark" stroke-width="3" />
+                </pattern>
+                <pattern id="pattern-dots" width="14" height="14" patternUnits="userSpaceOnUse">
+                  <circle cx="4" cy="4" r="2.5" class="pattern-mark" />
+                </pattern>
+              </defs>
+              <image class="base-layer" id="croquis-base" href="assets/croquis/female-croquis.webp" x="-87" y="22" width="480" height="350" preserveAspectRatio="none" />
+              <g class="garment-layer bottom-layer" data-layer="bottom"></g>
+              <g class="garment-layer top-layer" data-layer="top"></g>
+              <g class="garment-layer sleeves-layer" data-layer="sleeves"></g>
+              <g class="garment-layer collar-layer" data-layer="collar"></g>
+            </svg>
+            <p id="preview-label">2D live design preview</p>
+            <span class="placeholder-caption">Reusable SVG layers update as you design</span>
           </div>
 
-          <p class="preview-note">
-            Front view selected. The mannequin and view controls will become interactive
-            when the SVG system is added.
-          </p>
+          <div class="preview-status" id="preview-status" aria-live="polite">
+            <span>Top: Basic top</span>
+            <span>Bottom: Skirt</span>
+            <span>Sleeves: Short sleeves</span>
+            <span>Collar: Round neckline</span>
+          </div>
+          <p class="preview-note">Front view selected. Back rendering is reserved for the next phase.</p>
         </section>
 
         <aside class="studio-panel information-panel" aria-labelledby="information-title">
