@@ -34,19 +34,43 @@ function updateCroquis() {
 }
 
 function applyAppearance(preview) {
+  if (!preview) {
+    return;
+  }
+
   preview.setAttribute('class', `costume-preview fabric-${designState.fabric}`);
   preview.style.setProperty('--garment-color', designState.colour);
+  preview.style.setProperty('--garment-shadow', `color-mix(in srgb, ${designState.colour} 68%, #332b29)`);
+  preview.style.setProperty('--garment-highlight', `color-mix(in srgb, ${designState.colour} 55%, #ffffff)`);
   preview.style.setProperty('--pattern-detail', designState.colour);
 
-  const fill = designState.pattern === 'solid'
-    ? designState.colour
-    : `url(#pattern-${designState.pattern})`;
+  preview.querySelectorAll('.garment-layer .material-overlay, .garment-layer .pattern-overlay')
+    .forEach((overlay) => overlay.remove());
 
   preview.querySelectorAll('.garment-layer [fill]').forEach((shape) => {
-    if (shape.getAttribute('fill') !== 'none') {
-      shape.setAttribute('fill', fill);
+    if (shape.getAttribute('fill') === 'none') {
+      return;
     }
-    shape.setAttribute('stroke', '#5e5752');
+
+    shape.setAttribute('data-material-shape', 'true');
+    shape.setAttribute('fill', 'url(#material-surface)');
+    shape.setAttribute('stroke', '#514744');
+
+    const materialOverlay = shape.cloneNode(true);
+    materialOverlay.setAttribute('class', 'material-overlay');
+    materialOverlay.setAttribute('fill', `url(#fabric-${designState.fabric})`);
+    materialOverlay.setAttribute('stroke', 'none');
+    materialOverlay.setAttribute('opacity', designState.fabric === 'silk' ? '0.68' : '0.82');
+    shape.parentNode.appendChild(materialOverlay);
+
+    if (designState.pattern !== 'solid') {
+      const patternOverlay = shape.cloneNode(true);
+      patternOverlay.setAttribute('class', 'pattern-overlay');
+      patternOverlay.setAttribute('fill', `url(#pattern-${designState.pattern})`);
+      patternOverlay.setAttribute('stroke', 'none');
+      patternOverlay.setAttribute('opacity', '0.3');
+      shape.parentNode.appendChild(patternOverlay);
+    }
   });
 }
 

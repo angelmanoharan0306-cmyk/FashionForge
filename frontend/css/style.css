@@ -621,7 +621,7 @@ h3 {
 .preview-panel {
   min-width: 0;
   padding: var(--space-lg);
-  background: #e8e4e0;
+  background: linear-gradient(160deg, #ebe7e2 0%, #e1e8e6 100%);
 }
 
 .preview-heading {
@@ -644,12 +644,52 @@ h3 {
 .costume-preview {
   position: relative;
   z-index: 1;
-  width: min(100%, 20rem);
+  width: min(100%, 23rem);
   height: auto;
-  max-height: 29rem;
+  max-height: 34rem;
   overflow: visible;
   --garment-color: #b96b61;
+  --garment-shadow: #7b4b46;
+  --garment-highlight: #e6c4bc;
   --pattern-detail: #b96b61;
+}
+
+.base-layer {
+  opacity: 0.9;
+}
+
+.preview-ground-shadow {
+  fill: #5b514d;
+  opacity: 0.14;
+  filter: blur(1.5px);
+}
+
+.garment-layer {
+  isolation: isolate;
+}
+
+.garment-layer path[data-material-shape="true"] {
+  filter: url(#garment-soft-shadow);
+}
+
+.garment-layer path[fill="none"] {
+  stroke: #514744;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.76;
+}
+
+.material-overlay,
+.pattern-overlay {
+  pointer-events: none;
+}
+
+.material-overlay {
+  mix-blend-mode: soft-light;
+}
+
+.pattern-overlay {
+  mix-blend-mode: multiply;
 }
 
 .pattern-mark {
@@ -657,19 +697,23 @@ h3 {
   stroke: var(--pattern-detail);
 }
 
+.fabric-cotton .garment-layer {
+  filter: saturate(0.96);
+}
+
 .fabric-silk .garment-layer {
-  opacity: 0.84;
-  filter: brightness(1.12);
+  opacity: 0.9;
+  filter: brightness(1.08) saturate(1.05);
 }
 
 .fabric-denim .garment-layer {
-  opacity: 0.94;
-  filter: saturate(0.75) brightness(0.9);
+  opacity: 0.96;
+  filter: saturate(0.78) brightness(0.92);
 }
 
 .fabric-linen .garment-layer {
-  opacity: 0.9;
-  filter: brightness(1.05) saturate(0.8);
+  opacity: 0.92;
+  filter: brightness(1.03) saturate(0.82);
 }
 
 .layer-error {
@@ -709,33 +753,16 @@ h3 {
 .mannequin-placeholder {
   position: relative;
   display: flex;
-  min-height: 31rem;
+  min-height: 35rem;
   overflow: hidden;
   flex-direction: column;
   align-items: center;
   justify-content: end;
-  padding: var(--space-lg);
+  padding: var(--space-md);
   border: 1px dashed #b9aea7;
   border-radius: var(--radius-md);
   background: linear-gradient(145deg, #f6f2ee, #e1e8e6);
   text-align: center;
-}
-
-.mannequin-placeholder p,
-.placeholder-caption {
-  position: relative;
-  z-index: 2;
-  margin-bottom: var(--space-xs);
-  color: var(--color-accent-dark);
-  font-family: var(--font-display);
-  font-size: 1.15rem;
-}
-
-.placeholder-caption {
-  margin-bottom: 0;
-  color: var(--color-text-muted);
-  font-family: var(--font-body);
-  font-size: 0.75rem;
 }
 
 .preview-note {
