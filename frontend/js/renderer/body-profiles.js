@@ -92,6 +92,41 @@ export function getFemaleCroquisTarget(size = 'M', view = 'front') {
   return `assets/models/female-model-${normSize.toLowerCase()}-${normView}.png`;
 }
 
+export const SIZE_HAND_CLIPS = {
+  XS: {
+    left: 'M 234 610 L 266 610 L 266 745 L 234 745 Z',
+    right: 'M 504 610 L 536 610 L 536 745 L 504 745 Z'
+  },
+  S: {
+    left: 'M 234 610 L 266 610 L 266 745 L 234 745 Z',
+    right: 'M 504 610 L 536 610 L 536 745 L 504 745 Z'
+  },
+  M: {
+    left: 'M 238 580 L 275 580 L 275 750 L 238 750 Z',
+    right: 'M 495 580 L 535 580 L 535 750 L 495 750 Z'
+  },
+  L: {
+    left: 'M 224 610 L 254 610 L 254 745 L 224 745 Z',
+    right: 'M 516 610 L 546 610 L 546 745 L 516 745 Z'
+  },
+  XL: {
+    left: 'M 216 610 L 246 610 L 246 745 L 216 745 Z',
+    right: 'M 524 610 L 554 610 L 554 745 L 524 745 Z'
+  },
+  XXL: {
+    left: 'M 218 610 L 248 610 L 248 745 L 218 745 Z',
+    right: 'M 522 610 L 552 610 L 552 745 L 522 745 Z'
+  },
+  '3XL': {
+    left: 'M 218 610 L 248 610 L 248 745 L 218 745 Z',
+    right: 'M 522 610 L 552 610 L 552 745 L 522 745 Z'
+  },
+  '4XL': {
+    left: 'M 208 610 L 238 610 L 238 745 L 208 745 Z',
+    right: 'M 532 610 L 562 610 L 562 745 L 532 745 Z'
+  }
+};
+
 /**
  * Returns calibrated anatomical landmarks for the requested garment size.
  * For size 'M', returns coordinates identical to the baseline MODEL_GEOMETRY.landmarks.
@@ -125,6 +160,7 @@ export function getBodyLandmarks(sizeId = 'M') {
   };
 
   const baseLM = MODEL_GEOMETRY.landmarks;
+  const handClips = SIZE_HAND_CLIPS[String(sizeId).toUpperCase()] || SIZE_HAND_CLIPS['M'];
 
   return {
     head: baseLM.head,
@@ -143,11 +179,11 @@ export function getBodyLandmarks(sizeId = 'M') {
     },
     armscye: {
       leftPit: {
-        x: scaleX(baseLM.armscye.leftPit.x, 1 + (bustScale - 1) * 0.7),
+        x: scaleX(baseLM.armscye.leftPit.x, 1 + (bustScale - 1) * 0.8),
         y: Math.round(baseLM.armscye.leftPit.y + (armholeScale - 1) * 12)
       },
       rightPit: {
-        x: scaleX(baseLM.armscye.rightPit.x, 1 + (bustScale - 1) * 0.7),
+        x: scaleX(baseLM.armscye.rightPit.x, 1 + (bustScale - 1) * 0.8),
         y: Math.round(baseLM.armscye.rightPit.y + (armholeScale - 1) * 12)
       },
       leftMid: {
@@ -191,7 +227,7 @@ export function getBodyLandmarks(sizeId = 'M') {
         y: Math.round(baseLM.sleeveShort.leftOuterHem.y + (armholeScale - 1) * 8)
       },
       leftInnerHem: {
-        x: scaleX(baseLM.sleeveShort.leftInnerHem.x, 1 + (bustScale - 1) * 0.7),
+        x: scaleX(baseLM.sleeveShort.leftInnerHem.x, 1 + (bustScale - 1) * 0.8),
         y: Math.round(baseLM.sleeveShort.leftInnerHem.y + (armholeScale - 1) * 12)
       },
       rightOuterHem: {
@@ -199,13 +235,13 @@ export function getBodyLandmarks(sizeId = 'M') {
         y: Math.round(baseLM.sleeveShort.rightOuterHem.y + (armholeScale - 1) * 8)
       },
       rightInnerHem: {
-        x: scaleX(baseLM.sleeveShort.rightInnerHem.x, 1 + (bustScale - 1) * 0.7),
+        x: scaleX(baseLM.sleeveShort.rightInnerHem.x, 1 + (bustScale - 1) * 0.8),
         y: Math.round(baseLM.sleeveShort.rightInnerHem.y + (armholeScale - 1) * 12)
       }
     },
     armsForeground: {
-      leftClip: `M ${scaleX(238, hipScale)} 580 L ${scaleX(275, hipScale)} 580 L ${scaleX(275, hipScale)} 750 L ${scaleX(238, hipScale)} 750 Z`,
-      rightClip: `M ${scaleX(495, hipScale)} 580 L ${scaleX(535, hipScale)} 580 L ${scaleX(535, hipScale)} 750 L ${scaleX(495, hipScale)} 750 Z`
+      leftClip: handClips.left,
+      rightClip: handClips.right
     },
     feet: baseLM.feet
   };
