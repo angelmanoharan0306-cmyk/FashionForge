@@ -2,8 +2,8 @@
  * FashionForge — 2.5D Centralized Renderer: Geometry & Landmarks
  *
  * Mapped 1:1 to the real human fashion model assets:
- * frontend/assets/models/female-model-front.jpg
- * frontend/assets/models/female-model-back.jpg
+ * frontend/assets/models/female-model-front.png
+ * frontend/assets/models/female-model-back.png
  *
  * Native dimensions: 768 × 1376 pixels.
  * Primary anatomical vertical center axis: X = 385.
