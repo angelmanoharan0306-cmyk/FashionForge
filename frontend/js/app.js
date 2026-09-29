@@ -19,8 +19,8 @@ import { GARMENT_CATALOG } from './renderer/garment-data.js';
    ========================================================================== */
 
 export const designState = {
-  styleId: 'FF-2026-001',
-  name: 'Aria Fitted Ensemble',
+  styleId: 'FF-1024',
+  name: 'Fitted Bodice Dress',
   version: '1.0',
   view: 'front',              // 'front' | 'back'
   figure: 'female',           // 'female' | 'male'
@@ -230,7 +230,13 @@ export function syncUIFromState() {
     headerName.textContent = state.name;
   }
   const headerStyleId = document.querySelector('#header-style-id');
-  if (headerStyleId) headerStyleId.textContent = state.styleId;
+  if (headerStyleId) {
+    headerStyleId.textContent = state.styleId.startsWith('Design') ? state.styleId : `Design #${state.styleId}`;
+  }
+  const inspName = document.querySelector('#inspector-design-name');
+  if (inspName) inspName.innerHTML = `${state.name} &#9998;`;
+  const inspStyleId = document.querySelector('#inspector-style-id');
+  if (inspStyleId) inspStyleId.textContent = state.styleId;
 
   // 2. Control Value Labels
   const valTop = document.querySelector('#val-top');
@@ -245,7 +251,7 @@ export function syncUIFromState() {
   if (valBottom) valBottom.textContent = bottomName;
   if (valSleeves) valSleeves.textContent = sleevesName;
   if (valCollar) valCollar.textContent = collarName;
-  if (valFabric) valFabric.textContent = fabricName;
+  if (valFabric) valFabric.textContent = `${fabricName} (Polished)`;
   if (valPattern) valPattern.textContent = patternName;
 
   // 3. Highlight Selected Component Cards
@@ -352,8 +358,10 @@ export function syncUIFromState() {
 
   // 13. Zoom Indicator & Slider
   const zoomText = document.querySelector('#zoom-indicator');
+  const bottomZoomText = document.querySelector('#bottom-zoom-text');
   const zoomSlider = document.querySelector('#zoom-slider');
-  if (zoomText) zoomText.textContent = `${Math.round(state.zoom)}%`;
+  if (zoomText) zoomText.textContent = `${Math.round(state.zoom)}% \u203A`;
+  if (bottomZoomText) bottomZoomText.textContent = `\u203A ${Math.round(state.zoom)}% \u203A`;
   if (zoomSlider && Number(zoomSlider.value) !== Math.round(state.zoom)) {
     zoomSlider.value = String(Math.round(state.zoom));
   }
@@ -768,7 +776,65 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 17. Print Tech Pack Button
+  // 17. Component Selectors Modal Controls
+  const modalSelectors = document.querySelector('#modal-component-selectors');
+  const btnCloseSelectors = document.querySelector('#btn-close-selectors');
+  const btnDoneSelectors = document.querySelector('#btn-done-selectors');
+
+  const openSelectorsModal = () => modalSelectors?.classList.add('is-open');
+  const closeSelectorsModal = () => modalSelectors?.classList.remove('is-open');
+
+  const triggers = ['#trigger-top', '#trigger-bottom', '#trigger-sleeves', '#trigger-collar', '#bar-colour-active', '#bar-fabric-active', '#bar-pattern-active'];
+  triggers.forEach(sel => {
+    const el = document.querySelector(sel);
+    if (el) el.addEventListener('click', openSelectorsModal);
+  });
+
+  if (btnCloseSelectors) btnCloseSelectors.addEventListener('click', closeSelectorsModal);
+  if (btnDoneSelectors) btnDoneSelectors.addEventListener('click', closeSelectorsModal);
+
+  // 18. Croquis Model Switcher
+  const btnCroquisFemale = document.querySelector('#btn-croquis-female');
+  const btnCroquisMale = document.querySelector('#btn-croquis-male');
+  if (btnCroquisFemale) {
+    btnCroquisFemale.addEventListener('click', () => {
+      pushStateSnapshot();
+      designState.figure = 'female';
+      btnCroquisFemale.classList.add('is-active');
+      btnCroquisFemale.setAttribute('aria-checked', 'true');
+      if (btnCroquisMale) {
+        btnCroquisMale.classList.remove('is-active');
+        btnCroquisMale.setAttribute('aria-checked', 'false');
+      }
+      updatePreview();
+      showToast('Female Model active');
+    });
+  }
+  if (btnCroquisMale) {
+    btnCroquisMale.addEventListener('click', () => {
+      showToast('Male tailoring templates scheduled for Phase 4 expansion');
+    });
+  }
+
+  // 19. Additional Zoom & Canvas Controls
+  const btnFitCanvas = document.querySelector('#btn-fit-canvas');
+  if (btnFitCanvas) btnFitCanvas.addEventListener('click', () => setZoom(100));
+
+  const btnZoomResetTop = document.querySelector('#btn-zoom-reset-top');
+  if (btnZoomResetTop) btnZoomResetTop.addEventListener('click', () => setZoom(100));
+
+  const btnFullscreenTop = document.querySelector('#btn-fullscreen-top');
+  if (btnFullscreenTop && canvasCard) {
+    btnFullscreenTop.addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        canvasCard.requestFullscreen?.().catch(() => {});
+      } else {
+        document.exitFullscreen?.().catch(() => {});
+      }
+    });
+  }
+
+  // 20. Print Tech Pack Button
   const btnPrintTechPack = document.querySelector('#btn-print-techpack');
   if (btnPrintTechPack) {
     btnPrintTechPack.addEventListener('click', () => window.print());

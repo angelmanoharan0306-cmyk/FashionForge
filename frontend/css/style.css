@@ -11,10 +11,27 @@
    ========================================================================== */
 
 :root {
+  /* Required Centralized FashionForge Design Tokens */
+  --ff-bg: #fbf9f5;
+  --ff-surface: #ffffff;
+  --ff-surface-soft: #f7f3ed;
+  --ff-text: #2d2623;
+  --ff-muted: #7d726b;
+  --ff-accent: #b35338;
+  --ff-accent-dark: #963f27;
+  --ff-accent-light: #fbeee8;
+  --ff-border: #e6dfd5;
+  --ff-border-dark: #d4cbc0;
+  --ff-radius-sm: 6px;
+  --ff-radius-md: 10px;
+  --ff-radius-lg: 14px;
+  --ff-shadow: 0 4px 16px rgba(44, 37, 34, 0.06);
+
   /* 1.1 Typography */
   --font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
   --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  --font-cursive: 'Caveat', 'Playfair Display', cursive;
 
   /* Font Scales */
   --text-2xs: 0.6875rem; /* 11px */
@@ -30,16 +47,16 @@
   --text-5xl: 3.25rem;   /* 52px */
 
   /* 1.2 Color Palette: Warm Atelier / Couture Tones */
-  --color-brand: #6e332c;           /* Primary terracotta/burgundy */
-  --color-brand-hover: #562721;     /* Darkened brand for hover */
-  --color-brand-active: #421c17;    /* Pressed brand */
-  --color-brand-tint: #f6ede8;      /* Warm brand background tint */
-  --color-brand-border: #ebd8ce;    /* Subtle brand border */
+  --color-brand: #b35338;           /* Primary terracotta */
+  --color-brand-hover: #9c452e;     /* Darkened brand for hover */
+  --color-brand-active: #853621;    /* Pressed brand */
+  --color-brand-tint: #fdf5f0;      /* Warm brand background tint */
+  --color-brand-border: #edd6ca;    /* Subtle brand border */
   --color-brand-subtle: #b96b61;    /* Rose clay accent */
 
   /* Neutrals */
   --color-bg-studio: #fcfaf8;       /* Studio canvas backdrop */
-  --color-bg-page: #fbf9f6;         /* Homepage base background */
+  --color-bg-page: #fbf9f5;         /* Homepage base background */
   --color-surface: #ffffff;         /* Pure white card surface */
   --color-surface-subtle: #f8f5f1;  /* Off-white secondary surface */
   --color-surface-muted: #f2ebe3;   /* Muted container surface */
@@ -514,124 +531,184 @@ img, svg {
   margin-top: 0.2rem;
 }
 
-/* 4.3 Hero Visual Studio Showcase Card */
+/* 4.3 Hero Visual Studio Showcase (Free-Standing Model with Floating Atelier Accents) */
 .hero-visual-column {
   position: relative;
-}
-
-.hero-atelier-card {
-  position: relative;
-  background: #ffffff;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  padding: var(--space-6);
-  box-shadow: var(--shadow-lg);
-  overflow: hidden;
-}
-
-.card-studio-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: var(--space-4);
-  border-bottom: 1px solid var(--color-border-subtle);
-  margin-bottom: var(--space-4);
-}
-
-.card-title-group {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.card-title-group .live-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: var(--color-success);
-  box-shadow: 0 0 0 3px rgba(46, 125, 88, 0.15);
-}
-
-.card-title {
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--color-text-primary);
-}
-
-.card-preview-viewport {
-  position: relative;
-  height: 23rem;
-  background: radial-gradient(ellipse at 50% 36%, #ffffff 0%, #fbf9f6 45%, #f3ede4 75%, #ebe2d5 100%);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border-subtle);
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  min-height: 32rem;
+  background: radial-gradient(circle at 50% 45%, rgba(247, 236, 229, 0.95) 0%, rgba(251, 249, 245, 0.6) 55%, rgba(251, 249, 245, 0) 75%);
 }
 
-.card-preview-viewport img {
-  height: 94%;
+.hero-model-wrap {
+  position: relative;
+  height: 31rem;
+  width: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.hero-model-croquis {
+  height: 100%;
   width: auto;
   object-fit: contain;
-  filter: drop-shadow(0 8px 20px rgba(60, 42, 36, 0.08));
+  filter: drop-shadow(0 18px 32px rgba(60, 42, 36, 0.12));
 }
 
-/* Floating overlay widgets in hero card */
-.hero-floating-badge {
+.hero-garment-overlay {
   position: absolute;
-  top: var(--space-4);
-  right: var(--space-4);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Left Floating Color Strip (Vertical 5 Swatches) */
+.hero-swatch-strip-vertical {
+  position: absolute;
+  left: 0.5rem;
+  top: 36%;
+  transform: translateY(-50%);
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(8px);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-md);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 8px 24px rgba(44, 37, 34, 0.08);
+  z-index: 10;
+}
+
+.hero-swatch-disc {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.hero-swatch-disc:hover {
+  transform: scale(1.15);
+}
+
+.hero-swatch-disc.is-active {
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 3.5px var(--color-brand);
+}
+
+/* Right Floating Callout Group */
+.hero-callouts-right {
+  position: absolute;
+  right: 0.5rem;
+  top: 14%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  z-index: 10;
+  pointer-events: auto;
+}
+
+.hero-script-tag {
+  font-family: var(--font-cursive);
+  font-size: 1.5rem;
+  color: var(--color-brand);
+  text-align: right;
+  line-height: 1.1;
+  transform: rotate(-3deg);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+.hero-script-tag span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Floating Technical Sketch Card */
+.hero-floating-cad-card {
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
   padding: var(--space-3) var(--space-4);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 10px 28px rgba(44, 37, 34, 0.09);
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-cad-thumb {
+  width: 54px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+  background: #ffffff;
+  padding: 2px;
+}
+
+.hero-cad-thumb svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Floating Fabric Weave Tiles */
+.hero-fabric-tiles-strip {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.hero-fabric-tile {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 6px rgba(44, 37, 34, 0.08);
+}
+
+/* Floating Price Badge (Bottom Right) */
+.hero-floating-price-card {
+  position: absolute;
+  right: 2rem;
+  bottom: 12%;
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 8px 16px;
+  box-shadow: 0 8px 20px rgba(44, 37, 34, 0.08);
   display: flex;
   flex-direction: column;
   gap: 2px;
+  z-index: 10;
 }
 
-.badge-caption {
-  font-size: var(--text-2xs);
+.hero-floating-price-card .badge-caption {
+  font-size: 0.65rem;
   color: var(--color-text-muted);
   text-transform: uppercase;
   font-weight: 600;
+  letter-spacing: 0.05em;
 }
 
-.badge-price {
-  font-size: var(--text-md);
+.hero-floating-price-card .badge-price {
+  font-size: 1.15rem;
   font-weight: 700;
   color: var(--color-brand);
-}
-
-.hero-floating-swatches {
-  position: absolute;
-  bottom: var(--space-4);
-  left: var(--space-4);
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(8px);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-full);
-  padding: 6px 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  box-shadow: var(--shadow-sm);
-}
-
-.swatch-pill-dot {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-}
-
-.swatch-pill-label {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  color: var(--color-text-secondary);
+  line-height: 1;
 }
 
 /* 4.4 Capabilities Section */
@@ -851,39 +928,386 @@ img, svg {
   margin-bottom: var(--space-8);
 }
 
-/* 4.8 Footer */
-.site-footer {
-  background: #ffffff;
+/* 4.8 Blueprint Sections (Direct Reproduction of Reference Target) */
+.blueprint-showcase-section {
+  padding: var(--space-12) 0;
+  background-color: #f7f3ed;
   border-top: 1px solid var(--color-border-subtle);
-  padding: var(--space-8) 0;
+  border-bottom: 1px solid var(--color-border-subtle);
 }
 
-.footer-inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
+.blueprint-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
   gap: var(--space-4);
 }
 
-.footer-copy {
-  font-size: var(--text-xs);
+.blueprint-card {
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  box-shadow: 0 4px 12px rgba(44, 37, 34, 0.04);
+  display: flex;
+  flex-direction: column;
+}
+
+.blueprint-card-header {
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.blueprint-card-title {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-primary);
+}
+
+.blueprint-card-desc {
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+.blueprint-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  font-size: 0.75rem;
+}
+
+/* Blueprint 1: Design System Elements */
+.bs-type-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.bs-big-aa {
+  font-size: 1.85rem;
+  line-height: 1;
+  color: var(--color-text-primary);
+}
+
+.bs-colors-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.bs-color-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+}
+
+.bs-rhythm-list {
+  display: flex;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
   color: var(--color-text-muted);
 }
 
-.footer-nav {
+/* Blueprint 2: Responsive Device Frames */
+.bs-devices-wrap {
   display: flex;
+  gap: 6px;
+  align-items: flex-end;
+  justify-content: center;
+  padding: var(--space-2) 0;
+}
+
+.bs-device-box {
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-subtle);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px;
+}
+
+.bs-device-desktop { width: 68px; height: 46px; }
+.bs-device-tablet { width: 44px; height: 54px; }
+.bs-device-mobile { width: 28px; height: 50px; }
+
+/* Blueprint 3: Component Visual Grid Mini */
+.bs-components-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+
+.bs-mini-card {
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 4px;
+  padding: 3px;
+  text-align: center;
+  background: #ffffff;
+}
+
+.bs-mini-card.is-active {
+  border-color: var(--color-brand);
+  background: var(--color-brand-tint);
+}
+
+.bs-mini-thumb {
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bs-mini-thumb svg {
+  height: 100%;
+}
+
+.bs-mini-label {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Blueprint 4: State Architecture Flow */
+.bs-code-box {
+  background: #faf6f2;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 4px;
+  padding: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  color: #4a3f3b;
+  line-height: 1.35;
+}
+
+.bs-sync-nodes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+
+.bs-sync-node {
+  background: #ffffff;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 4px;
+  padding: 4px 2px;
+  text-align: center;
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+/* Blueprint 5: Key Functionality Checklist */
+.bs-checklist {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.bs-check-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.725rem;
+  color: var(--color-text-primary);
+}
+
+.bs-check-icon {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-brand);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  flex-shrink: 0;
+}
+
+/* 4.9 Dark Atelier Bottom Banner */
+.atelier-dark-banner {
+  background: #6e332c;
+  color: #ffffff;
+  padding: var(--space-6) 0;
+}
+
+.atelier-banner-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: var(--space-6);
 }
 
-.footer-nav a {
-  font-size: var(--text-xs);
-  color: var(--color-text-secondary);
-  transition: color var(--transition-fast);
+.atelier-banner-brand h2 {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.01em;
 }
 
-.footer-nav a:hover {
+.atelier-banner-brand span {
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #eed5cc;
+  display: block;
+}
+
+.atelier-banner-cta-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  text-align: center;
+}
+
+.atelier-banner-text {
+  font-size: 0.8125rem;
+  color: #f7e6e0;
+  max-width: 24rem;
+  line-height: 1.4;
+}
+
+.atelier-banner-btn {
+  background: #ffffff;
+  color: #6e332c;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+  transition: transform var(--transition-fast), background-color var(--transition-fast);
+}
+
+.atelier-banner-btn:hover {
+  background: #fdf5f0;
+  transform: translateY(-1px);
+}
+
+.atelier-banner-pillars {
+  display: flex;
+  gap: var(--space-4);
+  font-size: 0.75rem;
+  color: #eed5cc;
+}
+
+/* Left Studio Panel: Trigger Cards & Swatch Active Bars */
+.component-trigger-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0.45rem 0.65rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: #ffffff;
+  text-align: left;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  width: 100%;
+}
+
+.component-trigger-card:hover {
+  border-color: var(--color-brand);
+  background: #fdfbf9;
+  transform: translateY(-1px);
+}
+
+.component-trigger-card.is-active {
+  border-color: var(--color-brand);
+  background: var(--color-brand-tint);
+  box-shadow: 0 0 0 1px var(--color-brand);
+}
+
+.component-chevron {
+  font-size: 1.25rem;
+  color: #9e9188;
+  margin-left: auto;
+  line-height: 1;
+}
+
+.appearance-active-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: #faf6f2;
+  border: 1px solid var(--color-brand-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.78125rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  margin-top: 6px;
+  transition: background-color var(--transition-fast);
+}
+
+.appearance-active-bar:hover {
+  background: #f5ede4;
+}
+
+.appearance-active-bar .active-label-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.appearance-active-bar .diamond-glyph {
   color: var(--color-brand);
+  font-size: 0.65rem;
+}
+
+.croquis-segmented-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.croquis-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 2.625rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: #ffffff;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  transition: all var(--transition-fast);
+}
+
+.croquis-btn:hover:not(:disabled) {
+  border-color: #cbbeb2;
+  background: var(--color-surface-subtle);
+}
+
+.croquis-btn.is-active {
+  border-color: var(--color-brand);
+  background: var(--color-brand-tint);
+  color: var(--color-brand);
+  box-shadow: 0 0 0 1px var(--color-brand);
+}
+
+.croquis-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.croquis-btn svg {
+  width: 16px;
+  height: 16px;
 }
 
 /* ==========================================================================
@@ -1698,8 +2122,7 @@ img, svg {
 }
 
 .tech-sketch-frame svg,
-.tech-flat-thumb,
-.technical-flat-preview {
+.tech-flat-thumb {
   height: 100% !important;
   max-height: 7.2rem !important;
   width: auto !important;
@@ -1854,14 +2277,16 @@ img, svg {
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  height: 100%;
 }
 
 .main-flat-svg {
-  height: 90%;
-  max-height: 92%;
+  height: 94%;
   width: auto;
-  max-width: 88%;
+  max-width: 90%;
   display: block;
+  filter: drop-shadow(0 6px 18px rgba(60, 42, 36, 0.05));
 }
 
 /* Tech Pack Mode View */

@@ -3,42 +3,38 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FashionForge — Interactive Digital Fashion Design Studio</title>
-  <meta name="description" content="FashionForge is an interactive digital fashion design studio where users compose tailored garments, experiment with components and materials, and preview the results in real time.">
+  <title>FashionForge — Interactive Digital Fashion Studio</title>
+  <meta name="description" content="FashionForge is an interactive digital fashion design studio where users create garments, experiment with components, materials and patterns, and preview the result on a professional fashion model.">
 
-  <!-- Google Fonts for Haute Couture Aesthetics -->
+  <!-- Google Fonts: Playfair Display, Plus Jakarta Sans, Caveat -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
   <!-- ========================================================================
-       1. NAVIGATION HEADER
+       1. NAVIGATION HEADER (MATCHES TARGET REFERENCE)
        ======================================================================== -->
   <header class="home-nav-header" role="banner">
     <div class="container home-nav-inner">
       <a class="home-brand-logo" href="index.html" aria-label="FashionForge home">
         <span class="home-brand-title">FashionForge</span>
-        <span class="home-brand-badge">ATELIER</span>
       </a>
 
       <nav class="home-nav-links" aria-label="Primary navigation">
         <a class="home-nav-link" href="#home">Home</a>
+        <a class="home-nav-link" href="design.html">Design Studio</a>
         <a class="home-nav-link" href="#capabilities">Capabilities</a>
         <a class="home-nav-link" href="#how-it-works">How It Works</a>
         <a class="home-nav-link" href="#tech-pack">Tech Pack</a>
       </nav>
 
       <div class="home-nav-actions">
-        <a class="btn-primary" href="design.html">
-          <span>Enter Design Studio</span>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <line x1="5" y1="12" x2="19" y2="12"/>
-            <polyline points="12 5 19 12 12 19"/>
-          </svg>
+        <a class="btn-primary" href="design.html" style="border-radius: var(--radius-full); padding: 0 var(--space-6);">
+          <span>Start Designing</span>
         </a>
       </div>
     </div>
@@ -47,46 +43,42 @@
   <main>
 
     <!-- ========================================================================
-         2. HERO SECTION (2-COLUMN EDITORIAL)
+         2. HERO SECTION (2-COLUMN VISUAL HIERARCHY MATCHING REFERENCE)
          ======================================================================== -->
     <section class="home-hero-section" id="home" aria-labelledby="hero-headline">
       <div class="container">
         <div class="home-hero-grid">
 
-          <!-- Left Column: Typography & CTAs -->
+          <!-- Left Column: Editorial Headline, Subtitle, CTAs & Metrics -->
           <div class="hero-copy-column">
             <div class="hero-eyebrow-chip">
-              <span class="live-dot" style="width: 7px; height: 7px; border-radius: 50%; background-color: var(--color-brand); display: inline-block;" aria-hidden="true"></span>
               <span>Interactive Digital Fashion Studio</span>
             </div>
 
             <h1 class="hero-headline" id="hero-headline">
-              From first sketch to bespoke form.
+              From first sketch<br>to a style of your own.
             </h1>
 
             <p class="hero-description">
-              FashionForge is an interactive digital fashion design studio where users create garments, experiment with components and materials, and preview the results in real time on a professional fashion model.
+              Design garments, experiment with components, materials and patterns, and preview the result with our professional 2.5D fashion studio.
             </p>
 
             <div class="hero-cta-group">
-              <a class="btn-primary" href="design.html">
-                <span>Launch Design Studio</span>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M5 12h14"/>
-                  <path d="m12 5 7 7-7 7"/>
-                </svg>
+              <a class="btn-primary" href="design.html" style="border-radius: var(--radius-full); padding: 0 var(--space-6);">
+                <span>Start Designing &rarr;</span>
               </a>
 
-              <a class="btn-secondary" href="#capabilities">
-                <span>Explore Capabilities</span>
+              <a class="btn-secondary" href="#how-it-works" style="border-radius: var(--radius-full); padding: 0 var(--space-5);">
+                <span style="display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--color-brand-tint); color: var(--color-brand); font-size: 10px; margin-right: 4px;">&#9654;</span>
+                <span>Watch How It Works</span>
               </a>
             </div>
 
-            <!-- Quantitative atelier metrics -->
+            <!-- Metric Strip from Target Reference -->
             <div class="hero-stat-row">
               <div class="hero-stat-item">
                 <span class="stat-value">4-Part</span>
-                <span class="stat-label">Modular Silhouettes</span>
+                <span class="stat-label">Garment System</span>
               </div>
 
               <div class="hero-stat-item">
@@ -101,68 +93,97 @@
             </div>
           </div>
 
-          <!-- Right Column: Visual Atelier Showcase Card -->
+          <!-- Right Column: Free-Standing Model with Floating Atelier Accents -->
           <div class="hero-visual-column">
-            <div class="hero-atelier-card">
-              <div class="card-studio-header">
-                <div class="card-title-group">
-                  <span class="live-dot" aria-hidden="true"></span>
-                  <span class="card-title">Live Studio Viewport • Aria Ensemble</span>
-                </div>
-                <span class="badge-tag badge-active">Active Studio</span>
+
+            <!-- Vertical Swatch Strip on Left -->
+            <div class="hero-swatch-strip-vertical" aria-label="Color palette preview">
+              <span class="hero-swatch-disc is-active" style="background-color: #b96b61;" title="Rose Clay"></span>
+              <span class="hero-swatch-disc" style="background-color: #783733;" title="Wine"></span>
+              <span class="hero-swatch-disc" style="background-color: #d8ba9e;" title="Champagne"></span>
+              <span class="hero-swatch-disc" style="background-color: #738979;" title="Sage"></span>
+              <span class="hero-swatch-disc" style="background-color: #3f666f;" title="Slate"></span>
+            </div>
+
+            <!-- Central Dressed Model -->
+            <div class="hero-model-wrap">
+              <svg class="costume-preview hero-costume-preview" viewBox="85 70 600 1240" style="height: 100%; width: auto;" aria-label="FashionForge model wearing bespoke Rose Clay dress">
+                <!-- Ground Contact Shadow -->
+                <ellipse cx="385" cy="1295" rx="140" ry="14" fill="#3a2e2a" opacity="0.25" style="filter: blur(8px);"></ellipse>
+                <!-- Photographic Model -->
+                <image href="assets/models/female-model-front.png" x="0" y="0" width="768" height="1376" preserveAspectRatio="xMidYMid meet"></image>
+                <!-- 2.5D Garment Overlay -->
+                <g class="hero-garment-group">
+                  <!-- Skirt underside facing -->
+                  <path d="M 228 906 Q 385 902 542 906 Q 385 918 228 906 Z" fill="#6a352f" opacity="0.88"></path>
+                  <!-- A-Line Skirt -->
+                  <path d="M 306 490 Q 385 495 462 490 C 472 540, 488 600, 498 660 C 510 740, 536 820, 542 906 Q 385 918 228 906 C 234 820, 260 740, 272 660 C 282 600, 298 540, 306 490 Z" fill="#b96b61"></path>
+                  <!-- Skirt drape flutes -->
+                  <path d="M 345 492 Q 330 680 322 915" fill="none" stroke="#5d2923" stroke-width="1.2" opacity="0.35"></path>
+                  <path d="M 385 495 Q 385 690 385 918" fill="none" stroke="#5d2923" stroke-width="1.2" opacity="0.3"></path>
+                  <path d="M 425 492 Q 440 680 448 915" fill="none" stroke="#5d2923" stroke-width="1.2" opacity="0.35"></path>
+                  <!-- Waist Shadow -->
+                  <path d="M 306 490 Q 385 495 462 490 L 462 497 Q 385 502 306 497 Z" fill="#4d1f1a" opacity="0.35"></path>
+                  <!-- Bodice -->
+                  <path d="M 343 282 Q 385 314 427 282 C 445 292, 475 302, 510 323 C 492 362, 479 403, 475 418 C 461 440, 464 468, 462 490 Q 385 495 306 490 C 304 468, 309 440, 295 418 C 291 403, 278 362, 260 323 C 295 302, 325 292, 343 282 Z" fill="#b96b61"></path>
+                  <!-- Bust fullness highlights -->
+                  <circle cx="345" cy="385" r="42" fill="#d98f86" opacity="0.35" style="filter: blur(12px);"></circle>
+                  <circle cx="425" cy="385" r="42" fill="#d98f86" opacity="0.3" style="filter: blur(12px);"></circle>
+                  <!-- Princess Seams -->
+                  <path d="M 302 301 Q 341 345 345 385 Q 349 435 345 492" fill="none" stroke="#5d2923" stroke-width="1.1" opacity="0.45"></path>
+                  <path d="M 468 301 Q 429 345 425 385 Q 421 435 425 492" fill="none" stroke="#5d2923" stroke-width="1.1" opacity="0.45"></path>
+                  <!-- Sleeves -->
+                  <path d="M 260 323 C 255 345, 254 370, 256 398 C 260 408, 280 418, 295 416 C 291 398, 278 362, 260 323 Z" fill="#b96b61"></path>
+                  <path d="M 510 323 C 515 345, 516 370, 514 398 C 510 408, 490 418, 475 416 C 479 398, 492 362, 510 323 Z" fill="#b96b61"></path>
+                  <!-- Armscye seams -->
+                  <path d="M 260 323 C 278 362, 291 403, 295 418" fill="none" stroke="#5d2923" stroke-width="1" opacity="0.4"></path>
+                  <path d="M 510 323 C 492 362, 479 403, 475 418" fill="none" stroke="#5d2923" stroke-width="1" opacity="0.4"></path>
+                  <!-- Neckline Binding -->
+                  <path d="M 343 282 Q 385 314 427 282 L 427 288 Q 385 320 343 288 Z" fill="#b96b61" stroke="#5d2923" stroke-width="0.9"></path>
+                </g>
+              </svg>
+            </div>
+
+            <!-- Right Floating Atelier Callouts -->
+            <div class="hero-callouts-right">
+              <div class="hero-script-tag">
+                <span>Your Design &#10022;</span>
+                <span>Your Style</span>
               </div>
 
-              <div class="card-preview-viewport">
-                <!-- Calibrated 2.5D Studio Preview in Hero Card -->
-                <svg class="costume-preview hero-costume-preview" viewBox="85 70 600 1240" style="height: 94%; width: auto;" aria-label="FashionForge model wearing bespoke dress">
-                  <!-- Ground Shadow -->
-                  <ellipse cx="385" cy="1295" rx="140" ry="14" fill="#3a2e2a" opacity="0.3" style="filter: blur(8px);"></ellipse>
-                  <!-- Model Base Image -->
-                  <image href="assets/models/female-model-front.png" x="0" y="0" width="768" height="1376" preserveAspectRatio="xMidYMid meet"></image>
-                  <!-- Garment Silhouette Group -->
-                  <g class="hero-garment-group">
-                    <!-- Skirt underside facing -->
-                    <path d="M 228 906 Q 385 902 542 906 Q 385 918 228 906 Z" fill="#6a352f" opacity="0.88"></path>
-                    <!-- A-Line Skirt -->
-                    <path d="M 306 490 Q 385 495 462 490 C 472 540, 488 600, 498 660 C 510 740, 536 820, 542 906 Q 385 918 228 906 C 234 820, 260 740, 272 660 C 282 600, 298 540, 306 490 Z" fill="#b96b61"></path>
-                    <!-- Skirt drape flutes -->
-                    <path d="M 345 492 Q 330 680 322 915" fill="none" stroke="#5d2923" stroke-width="1.2" opacity="0.35"></path>
-                    <path d="M 385 495 Q 385 690 385 918" fill="none" stroke="#5d2923" stroke-width="1.2" opacity="0.3"></path>
-                    <path d="M 425 492 Q 440 680 448 915" fill="none" stroke="#5d2923" stroke-width="1.2" opacity="0.35"></path>
-                    <!-- Waist Shadow -->
-                    <path d="M 306 490 Q 385 495 462 490 L 462 497 Q 385 502 306 497 Z" fill="#4d1f1a" opacity="0.35"></path>
-                    <!-- Bodice -->
-                    <path d="M 343 282 Q 385 314 427 282 C 445 292, 475 302, 510 323 C 492 362, 479 403, 475 418 C 461 440, 464 468, 462 490 Q 385 495 306 490 C 304 468, 309 440, 295 418 C 291 403, 278 362, 260 323 C 295 302, 325 292, 343 282 Z" fill="#b96b61"></path>
-                    <!-- Bust fullness highlights -->
-                    <circle cx="345" cy="385" r="42" fill="#d98f86" opacity="0.35" style="filter: blur(12px);"></circle>
-                    <circle cx="425" cy="385" r="42" fill="#d98f86" opacity="0.3" style="filter: blur(12px);"></circle>
-                    <!-- Princess Seams -->
-                    <path d="M 302 301 Q 341 345 345 385 Q 349 435 345 492" fill="none" stroke="#5d2923" stroke-width="1.1" opacity="0.45"></path>
-                    <path d="M 468 301 Q 429 345 425 385 Q 421 435 425 492" fill="none" stroke="#5d2923" stroke-width="1.1" opacity="0.45"></path>
-                    <!-- Sleeves -->
-                    <path d="M 260 323 C 255 345, 254 370, 256 398 C 260 408, 280 418, 295 416 C 291 398, 278 362, 260 323 Z" fill="#b96b61"></path>
-                    <path d="M 510 323 C 515 345, 516 370, 514 398 C 510 408, 490 418, 475 416 C 479 398, 492 362, 510 323 Z" fill="#b96b61"></path>
-                    <!-- Armscye seams -->
-                    <path d="M 260 323 C 278 362, 291 403, 295 418" fill="none" stroke="#5d2923" stroke-width="1" opacity="0.4"></path>
-                    <path d="M 510 323 C 492 362, 479 403, 475 418" fill="none" stroke="#5d2923" stroke-width="1" opacity="0.4"></path>
-                    <!-- Neckline Binding -->
-                    <path d="M 343 282 Q 385 314 427 282 L 427 288 Q 385 320 343 288 Z" fill="#b96b61" stroke="#5d2923" stroke-width="0.9"></path>
-                  </g>
-                </svg>
-
-                <!-- Floating price badge -->
-                <div class="hero-floating-badge" aria-label="Estimated garment price">
-                  <span class="badge-caption">Estimated Price</span>
-                  <span class="badge-price">₹1,480</span>
+              <!-- Technical Sketch CAD Preview Card -->
+              <div class="hero-floating-cad-card" aria-label="Technical flat CAD preview">
+                <div class="hero-cad-thumb">
+                  <svg viewBox="215 270 340 660">
+                    <path d="M 306 490 Q 385 495 462 490 C 472 540, 488 600, 498 660 C 510 740, 536 820, 542 906 Q 385 918 228 906 C 234 820, 260 740, 272 660 C 282 600, 298 540, 306 490 Z" fill="#ffffff" stroke="#1e1c1b" stroke-width="7"/>
+                    <path d="M 343 282 Q 385 314 427 282 C 445 292, 475 302, 510 323 C 492 362, 479 403, 475 418 C 461 440, 464 468, 462 490 Q 385 495 306 490 C 304 468, 309 440, 295 418 C 291 403, 278 362, 260 323 C 295 302, 325 292, 343 282 Z" fill="#ffffff" stroke="#1e1c1b" stroke-width="7"/>
+                    <path d="M 260 323 C 255 345, 254 370, 256 398 C 260 408, 280 418, 295 416 C 291 398, 278 362, 260 323 Z" fill="#ffffff" stroke="#1e1c1b" stroke-width="6"/>
+                    <path d="M 510 323 C 515 345, 516 370, 514 398 C 510 408, 490 418, 475 416 C 479 398, 492 362, 510 323 Z" fill="#ffffff" stroke="#1e1c1b" stroke-width="6"/>
+                  </svg>
                 </div>
-
-                <!-- Floating swatch pill -->
-                <div class="hero-floating-swatches" aria-label="Selected fabric and color">
-                  <span class="swatch-pill-dot" style="background-color: #b96b61;" aria-hidden="true"></span>
-                  <span class="swatch-pill-label">Rose Clay • Organic Cotton</span>
+                <div class="hero-cad-thumb">
+                  <svg viewBox="215 270 340 660">
+                    <path d="M 306 490 Q 385 495 462 490 C 472 540, 488 600, 498 660 C 510 740, 536 820, 542 906 Q 385 918 228 906 C 234 820, 260 740, 272 660 C 282 600, 298 540, 306 490 Z" fill="#ffffff" stroke="#1e1c1b" stroke-width="7"/>
+                    <path d="M 343 275 Q 385 285 427 275 C 445 285, 475 298, 510 320 C 492 360, 479 402, 475 418 C 461 440, 464 468, 462 490 Q 385 495 306 490 C 304 468, 309 440, 295 418 C 291 402, 278 360, 260 320 C 295 298, 325 285, 343 275 Z" fill="#ffffff" stroke="#1e1c1b" stroke-width="7"/>
+                    <line x1="385" y1="285" x2="385" y2="600" stroke="#1e1c1b" stroke-width="4" stroke-dasharray="8 4"/>
+                  </svg>
                 </div>
+              </div>
+
+              <!-- Fabric Weave Swatch Tiles -->
+              <div class="hero-fabric-tiles-strip">
+                <div class="hero-fabric-tile" style="background: radial-gradient(circle at 30% 30%, #ecd0c9, #b96b61);" title="Polished Cotton"></div>
+                <div class="hero-fabric-tile" style="background: linear-gradient(135deg, #f7d4cb 0%, #e09489 50%, #9e4a3f 100%);" title="Mulberry Silk"></div>
+                <div class="hero-fabric-tile" style="background: repeating-linear-gradient(45deg, #cfb9a5, #cfb9a5 2px, #bfa894 2px, #bfa894 5px);" title="Natural Linen"></div>
               </div>
             </div>
+
+            <!-- Floating Price Badge -->
+            <div class="hero-floating-price-card" aria-label="Garment price">
+              <span class="badge-caption">Estimated Price</span>
+              <span class="badge-price">&#8377;1,480</span>
+            </div>
+
           </div>
 
         </div>
@@ -301,64 +322,283 @@
     </section>
 
     <!-- ========================================================================
-         5. DESIGN-TO-TECH-PACK SPOTLIGHT
+         5. THE 5 BLUEPRINT SPECIFICATION CARDS (FROM REFERENCE BLUEPRINT)
          ======================================================================== -->
-    <section class="home-techpack-spotlight" id="tech-pack" aria-labelledby="spotlight-title">
+    <section class="blueprint-showcase-section" aria-label="FashionForge Blueprint Specification">
       <div class="container">
-        <div class="spotlight-card">
-          <div class="spotlight-copy">
-            <p class="eyebrow">Production Ready</p>
-            <h2 id="spotlight-title">Bridging creative studio and garment manufacturing.</h2>
-            <p>
-              Traditional fashion design tools isolate sketching from manufacturing. FashionForge synchronizes your visual design choices with automated Bill of Materials (BOM), seam tolerances, and vector CAD drawings in real time.
-            </p>
-            <div style="display: flex; gap: var(--space-4);">
-              <a class="btn-primary" href="design.html">
-                <span>Try the Studio</span>
-              </a>
-              <a class="btn-secondary" href="design.html?mode=tech-pack">
-                <span>View Tech Pack</span>
-              </a>
+        <div class="blueprint-grid">
+
+          <!-- Card 1: DESIGN SYSTEM -->
+          <div class="blueprint-card">
+            <div class="blueprint-card-header">
+              <h3 class="blueprint-card-title">Design System</h3>
+              <p class="blueprint-card-desc">Consistent tokens for typography, color, spacing, and components.</p>
+            </div>
+            <div class="blueprint-card-body">
+              <div>
+                <span style="font-size: 0.65rem; color: var(--color-text-muted); font-weight: 600;">Typography</span>
+                <div class="bs-type-row" style="margin-top: 2px;">
+                  <span class="bs-big-aa" style="font-family: var(--font-display);">Aa</span>
+                  <span style="font-size: 0.6875rem; color: var(--color-text-muted);">Playfair Display (Headings)</span>
+                </div>
+                <div class="bs-type-row" style="margin-top: 4px;">
+                  <span class="bs-big-aa" style="font-family: var(--font-sans); font-weight: 700; font-size: 1.4rem;">Aa</span>
+                  <span style="font-size: 0.6875rem; color: var(--color-text-muted);">Plus Jakarta Sans (UI)</span>
+                </div>
+              </div>
+
+              <div>
+                <span style="font-size: 0.65rem; color: var(--color-text-muted); font-weight: 600;">Colors</span>
+                <div class="bs-colors-row" style="margin-top: 4px;">
+                  <span class="bs-color-dot" style="background: #b35338;"></span>
+                  <span class="bs-color-dot" style="background: #783733;"></span>
+                  <span class="bs-color-dot" style="background: #d8ba9e;"></span>
+                  <span class="bs-color-dot" style="background: #fbf9f5; border: 1px solid #ddd;"></span>
+                  <span class="bs-color-dot" style="background: #3f666f;"></span>
+                  <span class="bs-color-dot" style="background: #28333c;"></span>
+                </div>
+              </div>
+
+              <div>
+                <span style="font-size: 0.65rem; color: var(--color-text-muted); font-weight: 600;">Spacing (8px rhythm)</span>
+                <div class="bs-rhythm-list" style="margin-top: 2px;">
+                  <span>4</span> <span>8</span> <span>16</span> <span>20</span> <span>24</span> <span>32</span> <span>48</span> <span>64</span>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 4px; margin-top: auto;">
+                <button class="btn-primary" style="font-size: 0.625rem; height: 1.6rem; padding: 0 8px; border-radius: 4px;" type="button">Primary Button</button>
+                <button class="btn-secondary" style="font-size: 0.625rem; height: 1.6rem; padding: 0 8px; border-radius: 4px;" type="button">Secondary</button>
+              </div>
             </div>
           </div>
 
-          <div class="spotlight-preview-frame">
-            <div class="preview-cad-header">
-              <span>TECHNICAL SPECIFICATION PREVIEW</span>
-              <span class="status-indicator-circle"></span>
+          <!-- Card 2: RESPONSIVE BEHAVIOUR -->
+          <div class="blueprint-card">
+            <div class="blueprint-card-header">
+              <h3 class="blueprint-card-title">Responsive Behaviour</h3>
+              <p class="blueprint-card-desc">Optimized for every device, with the right experience at every size.</p>
             </div>
-            <div style="display: flex; gap: var(--space-4); align-items: center; justify-content: center; height: 180px;">
-              <svg viewBox="215 270 340 660" style="height: 100%; width: auto;" aria-hidden="true">
-                <path d="M 306 490 Q 385 495 462 490 C 472 540, 488 600, 498 660 C 510 740, 536 820, 542 906 Q 385 918 228 906 C 234 820, 260 740, 272 660 C 282 600, 298 540, 306 490 Z" fill="#ffffff" stroke="#1e1c1b" stroke-width="6"/>
-                <path d="M 343 282 Q 385 314 427 282 C 445 292, 475 302, 510 323 C 492 362, 479 403, 475 418 C 461 440, 464 468, 462 490 Q 385 495 306 490 C 304 468, 309 440, 295 418 C 291 403, 278 362, 260 323 C 295 302, 325 292, 343 282 Z" fill="#ffffff" stroke="#1e1c1b" stroke-width="6"/>
-                <path d="M 260 323 C 255 345, 254 370, 256 398 C 260 408, 280 418, 295 416 C 291 398, 278 362, 260 323 Z" fill="#ffffff" stroke="#1e1c1b" stroke-width="5"/>
-                <path d="M 510 323 C 515 345, 516 370, 514 398 C 510 408, 490 418, 475 416 C 479 398, 492 362, 510 323 Z" fill="#ffffff" stroke="#1e1c1b" stroke-width="5"/>
-              </svg>
+            <div class="blueprint-card-body">
+              <div class="bs-devices-wrap">
+                <div class="bs-device-box bs-device-desktop">
+                  <div style="width: 100%; height: 6px; background: #ebdcd3; border-radius: 1px; margin-bottom: 2px;"></div>
+                  <div style="display: flex; width: 100%; gap: 2px; flex: 1;">
+                    <div style="width: 12px; background: #e2d4cb;"></div>
+                    <div style="flex: 1; background: #fdfbf9; border: 1px solid #ebdcd3;"></div>
+                    <div style="width: 14px; background: #e2d4cb;"></div>
+                  </div>
+                </div>
+
+                <div class="bs-device-box bs-device-tablet">
+                  <div style="width: 100%; height: 5px; background: #ebdcd3; border-radius: 1px; margin-bottom: 2px;"></div>
+                  <div style="display: flex; width: 100%; gap: 2px; flex: 1;">
+                    <div style="flex: 1; background: #fdfbf9; border: 1px solid #ebdcd3;"></div>
+                  </div>
+                </div>
+
+                <div class="bs-device-box bs-device-mobile">
+                  <div style="width: 100%; height: 4px; background: #ebdcd3; border-radius: 1px; margin-bottom: 2px;"></div>
+                  <div style="width: 100%; flex: 1; background: #fdfbf9;"></div>
+                </div>
+              </div>
+
+              <div>
+                <strong style="font-size: 0.6875rem;">Desktop &ge; 1280px</strong>
+                <p style="font-size: 0.625rem; color: var(--color-text-muted);">Full 4-region studio layout</p>
+              </div>
+              <div>
+                <strong style="font-size: 0.6875rem;">Tablet 768&ndash;1023px</strong>
+                <p style="font-size: 0.625rem; color: var(--color-text-muted);">Collapsible drawer inspector</p>
+              </div>
+              <div>
+                <strong style="font-size: 0.6875rem;">Mobile &lt; 768px</strong>
+                <p style="font-size: 0.625rem; color: var(--color-text-muted);">Bottom sheet controls</p>
+              </div>
             </div>
           </div>
+
+          <!-- Card 3: COMPONENT SELECTORS -->
+          <div class="blueprint-card">
+            <div class="blueprint-card-header">
+              <h3 class="blueprint-card-title">Component Selectors</h3>
+              <p class="blueprint-card-desc">Visual, intuitive, and easy to explore.</p>
+            </div>
+            <div class="blueprint-card-body">
+              <div>
+                <span style="font-size: 0.65rem; color: var(--color-text-muted); font-weight: 600;">Tops</span>
+                <div class="bs-components-mini-grid" style="margin-top: 3px;">
+                  <div class="bs-mini-card is-active">
+                    <div class="bs-mini-thumb">
+                      <svg viewBox="0 0 240 360"><path d="M72 78 L101 84 Q120 96 139 84 L168 78 L177 106 L160 114 L151 98 V132 Q120 136 89 132 V98 L80 114 L63 106 Z" fill="#b96b61"/></svg>
+                    </div>
+                    <span class="bs-mini-label">Fitted</span>
+                  </div>
+                  <div class="bs-mini-card">
+                    <div class="bs-mini-thumb"><svg viewBox="0 0 240 360"><path d="M72 78 L168 78 L177 106 L151 98 V132 L89 132 V98 L63 106 Z" fill="#d8d2cc"/></svg></div>
+                    <span class="bs-mini-label">Relaxed</span>
+                  </div>
+                  <div class="bs-mini-card">
+                    <div class="bs-mini-thumb"><svg viewBox="0 0 240 360"><path d="M72 78 L168 78 L151 98 V118 L89 118 V98 Z" fill="#d8d2cc"/></svg></div>
+                    <span class="bs-mini-label">Wrap</span>
+                  </div>
+                  <div class="bs-mini-card">
+                    <div class="bs-mini-thumb"><svg viewBox="0 0 240 360"><path d="M72 78 L168 78 L151 98 V140 L89 140 V98 Z" fill="#d8d2cc"/></svg></div>
+                    <span class="bs-mini-label">Peplum</span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <span style="font-size: 0.65rem; color: var(--color-text-muted); font-weight: 600;">Bottoms</span>
+                <div class="bs-components-mini-grid" style="margin-top: 3px;">
+                  <div class="bs-mini-card is-active">
+                    <div class="bs-mini-thumb"><svg viewBox="0 0 240 360"><path d="M89 132 Q120 136 151 132 L172 230 Q120 240 68 230 Z" fill="#b96b61"/></svg></div>
+                    <span class="bs-mini-label">A-Line</span>
+                  </div>
+                  <div class="bs-mini-card">
+                    <div class="bs-mini-thumb"><svg viewBox="0 0 240 360"><path d="M89 132 L151 132 L151 230 L89 230 Z" fill="#d8d2cc"/></svg></div>
+                    <span class="bs-mini-label">Straight</span>
+                  </div>
+                  <div class="bs-mini-card">
+                    <div class="bs-mini-thumb"><svg viewBox="0 0 240 360"><path d="M89 132 L151 132 L165 240 L125 240 L120 160 L115 240 L75 240 Z" fill="#d8d2cc"/></svg></div>
+                    <span class="bs-mini-label">Wide</span>
+                  </div>
+                  <div class="bs-mini-card">
+                    <div class="bs-mini-thumb"><svg viewBox="0 0 240 360"><path d="M89 132 L151 132 L145 240 L125 240 L120 160 L115 240 L95 240 Z" fill="#d8d2cc"/></svg></div>
+                    <span class="bs-mini-label">Trousers</span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <span style="font-size: 0.65rem; color: var(--color-text-muted); font-weight: 600;">Fabrics &amp; Patterns</span>
+                <div style="display: flex; gap: 4px; margin-top: 2px;">
+                  <span style="font-size: 0.6rem; padding: 2px 5px; border-radius: 3px; background: #eed5cc; color: var(--color-brand); font-weight: 600;">Cotton</span>
+                  <span style="font-size: 0.6rem; padding: 2px 5px; border-radius: 3px; background: #e8e2d8;">Silk</span>
+                  <span style="font-size: 0.6rem; padding: 2px 5px; border-radius: 3px; background: #e8e2d8;">Linen</span>
+                  <span style="font-size: 0.6rem; padding: 2px 5px; border-radius: 3px; background: #e8e2d8;">Denim</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 4: STATE ARCHITECTURE -->
+          <div class="blueprint-card">
+            <div class="blueprint-card-header">
+              <h3 class="blueprint-card-title">State Architecture</h3>
+              <p class="blueprint-card-desc">Single source of truth for all updates.</p>
+            </div>
+            <div class="blueprint-card-body">
+              <div class="bs-code-box">
+                designState = {<br>
+                &nbsp;&nbsp;figure: 'female',<br>
+                &nbsp;&nbsp;top: 'fitted-bodice',<br>
+                &nbsp;&nbsp;bottom: 'a-line-skirt',<br>
+                &nbsp;&nbsp;sleeves: 'short',<br>
+                &nbsp;&nbsp;neckline: 'round-jewel',<br>
+                &nbsp;&nbsp;colour: 'rose-clay',<br>
+                &nbsp;&nbsp;fabric: 'cotton',<br>
+                &nbsp;&nbsp;pattern: 'solid',<br>
+                &nbsp;&nbsp;zoom: 100<br>
+                }
+              </div>
+
+              <div style="text-align: center; font-size: 0.625rem; font-weight: 700; color: var(--color-brand); margin: 2px 0;">
+                &#8595; SYNCHRONIZED ACROSS
+              </div>
+
+              <div class="bs-sync-nodes">
+                <div class="bs-sync-node">2.5D View</div>
+                <div class="bs-sync-node">Tech Flat</div>
+                <div class="bs-sync-node">Specs BOM</div>
+                <div class="bs-sync-node">Pricing</div>
+                <div class="bs-sync-node">Recs</div>
+                <div class="bs-sync-node">History</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 5: KEY FUNCTIONALITY -->
+          <div class="blueprint-card">
+            <div class="blueprint-card-header">
+              <h3 class="blueprint-card-title">Key Functionality</h3>
+              <p class="blueprint-card-desc">Every control does something real.</p>
+            </div>
+            <div class="blueprint-card-body">
+              <ul class="bs-checklist">
+                <li class="bs-check-item">
+                  <span class="bs-check-icon">&#10003;</span>
+                  <span>Front / Back view switching</span>
+                </li>
+                <li class="bs-check-item">
+                  <span class="bs-check-icon">&#10003;</span>
+                  <span>Component visual selector</span>
+                </li>
+                <li class="bs-check-item">
+                  <span class="bs-check-icon">&#10003;</span>
+                  <span>Colour / Fabric / Pattern</span>
+                </li>
+                <li class="bs-check-item">
+                  <span class="bs-check-icon">&#10003;</span>
+                  <span>Figure / Garment visibility</span>
+                </li>
+                <li class="bs-check-item">
+                  <span class="bs-check-icon">&#10003;</span>
+                  <span>Zoom / Fit / Fullscreen</span>
+                </li>
+                <li class="bs-check-item">
+                  <span class="bs-check-icon">&#10003;</span>
+                  <span>Undo / Redo / Reset</span>
+                </li>
+                <li class="bs-check-item">
+                  <span class="bs-check-icon">&#10003;</span>
+                  <span>Design notes &amp; Style ID</span>
+                </li>
+                <li class="bs-check-item">
+                  <span class="bs-check-icon">&#10003;</span>
+                  <span>Save design (localStorage)</span>
+                </li>
+                <li class="bs-check-item">
+                  <span class="bs-check-icon">&#10003;</span>
+                  <span>Export SVG CAD &amp; Tech Pack</span>
+                </li>
+                <li class="bs-check-item">
+                  <span class="bs-check-icon">&#10003;</span>
+                  <span>Real-time price &amp; spec sync</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>
 
     <!-- ========================================================================
-         6. FINAL CALL TO ACTION
+         6. DARK ATELIER BOTTOM BANNER (FROM REFERENCE BLUEPRINT)
          ======================================================================== -->
-    <section class="home-final-cta" aria-labelledby="cta-title">
-      <div class="container final-cta-content">
-        <p class="eyebrow">Begin Your Collection</p>
-        <h2 class="final-cta-title" id="cta-title">
-          Make room for your point of view.
-        </h2>
-        <p class="final-cta-description">
-          The FashionForge Design Studio is ready for your creative exploration. Compose your first silhouette in seconds.
-        </p>
-        <a class="btn-primary" href="design.html" style="font-size: var(--text-md); height: 3rem; padding: 0 var(--space-8);">
-          <span>Enter the Design Studio</span>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <line x1="5" y1="12" x2="19" y2="12"/>
-            <polyline points="12 5 19 12 12 19"/>
-          </svg>
-        </a>
+    <section class="atelier-dark-banner" aria-label="Atelier Call to Action">
+      <div class="container atelier-banner-inner">
+        <div class="atelier-banner-brand">
+          <h2>FashionForge</h2>
+          <span>The Digital Fashion Studio</span>
+        </div>
+
+        <div class="atelier-banner-cta-group">
+          <p class="atelier-banner-text">
+            Ready to bring your next design to life? Join thousands of creators using FashionForge to design, visualize and produce.
+          </p>
+          <a class="atelier-banner-btn" href="design.html">
+            <span>Enter Design Studio &rarr;</span>
+          </a>
+        </div>
+
+        <div class="atelier-banner-pillars">
+          <span>&#9998; Design</span>
+          <span>&#9670; Create</span>
+          <span>&#9733; Innovate</span>
+        </div>
       </div>
     </section>
 
@@ -370,14 +610,14 @@
   <footer class="site-footer" role="contentinfo">
     <div class="container footer-inner">
       <div class="footer-copy">
-        &copy; 2026 FashionForge Atelier. All rights reserved. Interactive Digital Fashion Design Studio.
+        &copy; 2026 FashionForge. All rights reserved. Interactive Digital Fashion Design Studio.
       </div>
       <nav class="footer-nav" aria-label="Footer navigation">
         <a href="#home">Home</a>
-        <a href="design.html">Studio</a>
+        <a href="design.html">Design Studio</a>
         <a href="#capabilities">Capabilities</a>
-        <a href="#how-it-works">Workflow</a>
-        <a href="#tech-pack">Tech Pack</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="design.html?mode=tech-pack">Tech Pack</a>
       </nav>
     </div>
   </footer>

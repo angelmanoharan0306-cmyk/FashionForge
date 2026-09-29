@@ -716,13 +716,16 @@ function renderDepth(container, palette, isBack) {
  */
 function buildTechnicalFlatSvg(containerSvg, isBack = false) {
   if (!containerSvg) return;
+  const isMainCanvas = containerSvg.id === 'main-flat-svg';
   // Frame focused tightly on the garment silhouette: X 215..555, Y 270..930
   containerSvg.setAttribute('viewBox', '215 270 340 660');
-  containerSvg.setAttribute('class', `tech-flat-thumb technical-flat-preview ${isBack ? 'view-back' : 'view-front'}`);
-  containerSvg.style.height = '100%';
-  containerSvg.style.maxHeight = '7.2rem';
-  containerSvg.style.width = 'auto';
-  containerSvg.style.maxWidth = '100%';
+  containerSvg.setAttribute('class', isMainCanvas ? `main-flat-svg ${isBack ? 'view-back' : 'view-front'}` : `tech-flat-thumb ${isBack ? 'view-back' : 'view-front'}`);
+  if (!isMainCanvas) {
+    containerSvg.style.height = '100%';
+    containerSvg.style.maxHeight = '7.2rem';
+    containerSvg.style.width = 'auto';
+    containerSvg.style.maxWidth = '100%';
+  }
   containerSvg.style.display = 'block';
   containerSvg.replaceChildren();
 
