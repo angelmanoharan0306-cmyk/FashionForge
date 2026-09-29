@@ -39,7 +39,9 @@ import {
 } from './lighting.js';
 
 import {
-  getBodyLandmarks
+  getBodyLandmarks,
+  getFemaleCroquis,
+  getFemaleCroquisTarget
 } from './body-profiles.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -66,12 +68,12 @@ export function renderDesign(designState, svgElement) {
   }
 
   const isBack = designState.view === 'back';
+  const size = designState?.size || 'M';
   const palette = getHarmonizedPalette(
     designState.material?.colour || designState.colour || '#b96b61',
     designState.material?.fabric || designState.fabric || 'cotton'
   );
 
-  // 1. Establish Coordinate System (Preserves 768x1376 model without distortion)
   // 1. Establish Coordinate System (Preserves 768x1376 model without distortion)
   const vb = MODEL_GEOMETRY.viewBox;
   svgElement.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.width} ${vb.height}`);
@@ -81,7 +83,7 @@ export function renderDesign(designState, svgElement) {
   svgElement.replaceChildren();
 
   // Retrieve calibrated anatomical landmarks for active garment size
-  const LM = getBodyLandmarks(designState?.size || 'M');
+  const LM = getBodyLandmarks(size);
 
   // 2. Defs Layer (Dynamic Materials, Lighting, Patterns, Depth Filters, Clip Paths)
   const defsElement = createSvgElement('defs');
@@ -101,7 +103,7 @@ export function renderDesign(designState, svgElement) {
 
   // 3. Stage 1: Realistic Human Model Foundation
   if (designState.figureVisible !== false) {
-    renderHumanModel(svgElement, isBack);
+    renderHumanModel(svgElement, isBack, size);
   }
 
   // 4. Stage 2: 2.5D Editable Garment Composition
@@ -140,7 +142,7 @@ export function renderDesign(designState, svgElement) {
 
     // Stage 2i: Foreground Bare Hands Layer (Natural front occlusion over skirt flare)
     if (designState.figureVisible !== false && !isBack) {
-      renderForegroundHands(svgElement, isBack);
+      renderForegroundHands(svgElement, isBack, size);
     }
   }
 }
@@ -149,7 +151,7 @@ export function renderDesign(designState, svgElement) {
  * 1. Human Model Base Layer
  * Seamless blend onto studio backdrop using photographic alpha PNG
  */
-function renderHumanModel(svgElement, isBack) {
+function renderHumanModel(svgElement, isBack, size = 'M') {
   // Ground ambient shadow under shoes
   const groundShadow = createSvgElement('ellipse', {
     cx: String(MODEL_GEOMETRY.centerX),
@@ -168,14 +170,17 @@ function renderHumanModel(svgElement, isBack) {
     class: 'human-model-group'
   });
 
-  const modelImageSrc = isBack
-    ? 'assets/models/female-model-back.png'
-    : 'assets/models/female-model-front.png';
+  const viewName = isBack ? 'back' : 'front';
+  const modelImageSrc = getFemaleCroquis(size, viewName);
+  const targetImageSrc = getFemaleCroquisTarget(size, viewName);
 
   const modelImage = createSvgElement('image', {
     id: 'model-base-photo',
     class: 'base-model-layer',
     href: modelImageSrc,
+    'data-size': String(size).toUpperCase(),
+    'data-view': viewName,
+    'data-target-croquis': targetImageSrc,
     x: '0',
     y: '0',
     width: String(MODEL_GEOMETRY.nativeWidth),
@@ -191,20 +196,23 @@ function renderHumanModel(svgElement, isBack) {
  * Foreground Hands Layer:
  * Preserves the model's actual hands and wrists resting naturally in front of the flared skirt
  */
-function renderForegroundHands(svgElement, isBack) {
+function renderForegroundHands(svgElement, isBack, size = 'M') {
   const fgGroup = createSvgElement('g', {
     id: 'foreground-hands-group',
     class: 'foreground-hands-group',
     'clip-path': 'url(#ff-foreground-hands-clip)'
   });
 
-  const modelImageSrc = isBack
-    ? 'assets/models/female-model-back.png'
-    : 'assets/models/female-model-front.png';
+  const viewName = isBack ? 'back' : 'front';
+  const modelImageSrc = getFemaleCroquis(size, viewName);
+  const targetImageSrc = getFemaleCroquisTarget(size, viewName);
 
   const fgImage = createSvgElement('image', {
     class: 'foreground-hands-photo',
     href: modelImageSrc,
+    'data-size': String(size).toUpperCase(),
+    'data-view': viewName,
+    'data-target-croquis': targetImageSrc,
     x: '0',
     y: '0',
     width: String(MODEL_GEOMETRY.nativeWidth),

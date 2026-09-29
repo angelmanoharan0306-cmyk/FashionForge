@@ -19,6 +19,80 @@ import { getSizeData } from './size-data.js';
 const CX = MODEL_GEOMETRY.centerX; // 385
 
 /**
+ * Authoritative Registry of Female Photographic Croquis Assets (8 sizes × 2 views)
+ * Native coordinate system: 768 × 1376 px, center axis X = 385.
+ * Size M is the authoritative visual and anatomical baseline reference.
+ */
+export const FEMALE_CROQUIS_REGISTRY = {
+  XS: {
+    front: 'assets/models/female-model-xs-front.png',
+    back: 'assets/models/female-model-xs-back.png'
+  },
+  S: {
+    front: 'assets/models/female-model-s-front.png',
+    back: 'assets/models/female-model-s-back.png'
+  },
+  M: {
+    front: 'assets/models/female-model-front.png',
+    back: 'assets/models/female-model-back.png'
+  },
+  L: {
+    front: 'assets/models/female-model-l-front.png',
+    back: 'assets/models/female-model-l-back.png'
+  },
+  XL: {
+    front: 'assets/models/female-model-xl-front.png',
+    back: 'assets/models/female-model-xl-back.png'
+  },
+  XXL: {
+    front: 'assets/models/female-model-xxl-front.png',
+    back: 'assets/models/female-model-xxl-back.png'
+  },
+  '3XL': {
+    front: 'assets/models/female-model-3xl-front.png',
+    back: 'assets/models/female-model-3xl-back.png'
+  },
+  '4XL': {
+    front: 'assets/models/female-model-4xl-front.png',
+    back: 'assets/models/female-model-4xl-back.png'
+  }
+};
+
+/**
+ * Returns the photographic croquis asset path for a given female size and view.
+ * Gracefully falls back to authoritative M if size is unmapped or missing.
+ *
+ * @param {string} size - 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL' | '3XL' | '4XL'
+ * @param {string} view - 'front' | 'back'
+ * @returns {string} Relative asset URL
+ */
+export function getFemaleCroquis(size = 'M', view = 'front') {
+  const normSize = String(size || 'M').toUpperCase();
+  const normView = String(view || 'front').toLowerCase() === 'back' ? 'back' : 'front';
+  const entry = FEMALE_CROQUIS_REGISTRY[normSize];
+  if (entry && entry[normView]) {
+    return entry[normView];
+  }
+  // Graceful fallback to authoritative M baseline
+  return normView === 'back'
+    ? 'assets/models/female-model-back.png'
+    : 'assets/models/female-model-front.png';
+}
+
+/**
+ * Returns the canonical target asset name for documentation and verification
+ *
+ * @param {string} size - 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL' | '3XL' | '4XL'
+ * @param {string} view - 'front' | 'back'
+ * @returns {string} Target asset path
+ */
+export function getFemaleCroquisTarget(size = 'M', view = 'front') {
+  const normSize = String(size || 'M').toUpperCase();
+  const normView = String(view || 'front').toLowerCase() === 'back' ? 'back' : 'front';
+  return `assets/models/female-model-${normSize.toLowerCase()}-${normView}.png`;
+}
+
+/**
  * Returns calibrated anatomical landmarks for the requested garment size.
  * For size 'M', returns coordinates identical to the baseline MODEL_GEOMETRY.landmarks.
  */
@@ -129,7 +203,10 @@ export function getBodyLandmarks(sizeId = 'M') {
         y: Math.round(baseLM.sleeveShort.rightInnerHem.y + (armholeScale - 1) * 12)
       }
     },
-    armsForeground: baseLM.armsForeground,
+    armsForeground: {
+      leftClip: `M ${scaleX(238, hipScale)} 580 L ${scaleX(275, hipScale)} 580 L ${scaleX(275, hipScale)} 750 L ${scaleX(238, hipScale)} 750 Z`,
+      rightClip: `M ${scaleX(495, hipScale)} 580 L ${scaleX(535, hipScale)} 580 L ${scaleX(535, hipScale)} 750 L ${scaleX(495, hipScale)} 750 Z`
+    },
     feet: baseLM.feet
   };
 }
