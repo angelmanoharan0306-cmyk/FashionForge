@@ -116,75 +116,107 @@ export function generateMaterialDefs(designState) {
   const defs = [];
 
   // 1. Fabric Weave Micro-Textures
-  // Cotton
+  // Cotton (Soft combed matte cross-weave)
   defs.push(`
     <pattern id="ff-fabric-weave-cotton" width="10" height="10" patternUnits="userSpaceOnUse">
       <rect width="10" height="10" fill="none" />
-      <path d="M0 2.5 H10 M0 7.5 H10" stroke="${palette.highlightSoft}" stroke-width="0.75" opacity="0.35" />
-      <path d="M2.5 0 V10 M7.5 0 V10" stroke="${palette.shadowDeep}" stroke-width="0.7" opacity="0.25" />
-      <circle cx="2.5" cy="2.5" r="0.5" fill="${palette.highlightCrisp}" opacity="0.35" />
-      <circle cx="7.5" cy="7.5" r="0.5" fill="${palette.highlightCrisp}" opacity="0.35" />
+      <path d="M0 2.5 H10 M0 7.5 H10" stroke="${palette.highlightSoft}" stroke-width="0.8" opacity="0.38" />
+      <path d="M2.5 0 V10 M7.5 0 V10" stroke="${palette.shadowDeep}" stroke-width="0.75" opacity="0.28" />
+      <circle cx="2.5" cy="2.5" r="0.6" fill="${palette.highlightCrisp}" opacity="0.35" />
+      <circle cx="7.5" cy="7.5" r="0.6" fill="${palette.highlightCrisp}" opacity="0.35" />
     </pattern>
   `);
 
-  // Silk (Directional diagonal luster lines)
+  // Silk (High-luster diagonal sheen and fine fluid specular glints)
   defs.push(`
     <pattern id="ff-fabric-weave-silk" width="16" height="16" patternUnits="userSpaceOnUse">
       <rect width="16" height="16" fill="none" />
-      <line x1="0" y1="16" x2="16" y2="0" stroke="${palette.highlightCrisp}" stroke-width="1.2" opacity="0.45" />
-      <line x1="-8" y1="8" x2="8" y2="-8" stroke="${palette.highlightSoft}" stroke-width="0.8" opacity="0.25" />
-      <line x1="8" y1="24" x2="24" y2="8" stroke="${palette.highlightSoft}" stroke-width="0.8" opacity="0.25" />
+      <line x1="0" y1="16" x2="16" y2="0" stroke="${palette.highlightCrisp}" stroke-width="1.8" opacity="0.55" />
+      <line x1="-8" y1="8" x2="8" y2="-8" stroke="${palette.highlightSoft}" stroke-width="1.0" opacity="0.35" />
+      <line x1="8" y1="24" x2="24" y2="8" stroke="${palette.highlightSoft}" stroke-width="1.0" opacity="0.35" />
+      <circle cx="8" cy="8" r="0.8" fill="#ffffff" opacity="0.45" />
     </pattern>
   `);
 
-  // Denim (Distinct diagonal twill weave)
+  // Denim (Pronounced 45° diagonal twill weave with deep contrast ribs)
   defs.push(`
-    <pattern id="ff-fabric-weave-denim" width="8" height="8" patternUnits="userSpaceOnUse">
-      <rect width="8" height="8" fill="none" />
-      <line x1="0" y1="0" x2="8" y2="8" stroke="${palette.shadowDeep}" stroke-width="1.8" opacity="0.45" />
-      <line x1="0" y1="4" x2="4" y2="8" stroke="${palette.highlightSoft}" stroke-width="1.0" opacity="0.35" />
-      <line x1="4" y1="0" x2="8" y2="4" stroke="${palette.highlightSoft}" stroke-width="1.0" opacity="0.35" />
+    <pattern id="ff-fabric-weave-denim" width="10" height="10" patternUnits="userSpaceOnUse">
+      <rect width="10" height="10" fill="none" />
+      <line x1="0" y1="0" x2="10" y2="10" stroke="${palette.shadowDeep}" stroke-width="2.4" opacity="0.65" />
+      <line x1="0" y1="5" x2="5" y2="10" stroke="${palette.highlightSoft}" stroke-width="1.2" opacity="0.45" />
+      <line x1="5" y1="0" x2="10" y2="5" stroke="${palette.highlightSoft}" stroke-width="1.2" opacity="0.45" />
     </pattern>
   `);
 
-  // Linen (Subtle irregular slub grid)
+  // Linen (Natural organic cross-slub grid with visible texture variations)
   defs.push(`
-    <pattern id="ff-fabric-weave-linen" width="14" height="14" patternUnits="userSpaceOnUse">
-      <rect width="14" height="14" fill="none" />
-      <path d="M0 3.5 H14 M0 10.5 H14" stroke="${palette.shadowSoft}" stroke-width="0.9" opacity="0.35" />
-      <path d="M3.5 0 V14 M10.5 0 V14" stroke="${palette.highlightSoft}" stroke-width="0.8" opacity="0.35" />
-      <rect x="2" y="9" width="3" height="1.5" fill="${palette.shadowDeep}" opacity="0.3" />
-      <rect x="9" y="2" width="1.5" height="3" fill="${palette.shadowDeep}" opacity="0.3" />
+    <pattern id="ff-fabric-weave-linen" width="16" height="16" patternUnits="userSpaceOnUse">
+      <rect width="16" height="16" fill="none" />
+      <path d="M0 4 H16 M0 12 H16" stroke="${palette.shadowSoft}" stroke-width="1.2" opacity="0.45" />
+      <path d="M4 0 V16 M12 0 V16" stroke="${palette.highlightSoft}" stroke-width="1.0" opacity="0.40" />
+      <rect x="2" y="10" width="4.5" height="1.8" rx="0.5" fill="${palette.shadowDeep}" opacity="0.45" />
+      <rect x="10" y="2" width="2" height="4.5" rx="0.5" fill="${palette.shadowDeep}" opacity="0.45" />
+      <rect x="9" y="11" width="3" height="1.5" rx="0.5" fill="${palette.highlightCrisp}" opacity="0.35" />
     </pattern>
   `);
 
   // 2. Garment Surface Decorative Patterns
   if (patternId === 'stripes') {
     defs.push(`
-      <pattern id="ff-garment-pattern" width="18" height="18" patternUnits="userSpaceOnUse">
-        <rect width="18" height="18" fill="none" />
-        <line x1="9" y1="0" x2="9" y2="18" stroke="${palette.patternStroke}" stroke-width="2.5" opacity="0.42" />
-        <line x1="9" y1="0" x2="9" y2="18" stroke="${palette.highlightSoft}" stroke-width="0.8" opacity="0.25" />
+      <pattern id="ff-garment-pattern" width="16" height="16" patternUnits="userSpaceOnUse">
+        <rect width="16" height="16" fill="none" />
+        <line x1="8" y1="0" x2="8" y2="16" stroke="${palette.patternStroke}" stroke-width="2.6" opacity="0.45" />
+        <line x1="9" y1="0" x2="9" y2="16" stroke="${palette.highlightSoft}" stroke-width="0.9" opacity="0.30" />
       </pattern>
     `);
   } else if (patternId === 'checks') {
     defs.push(`
       <pattern id="ff-garment-pattern" width="24" height="24" patternUnits="userSpaceOnUse">
         <rect width="24" height="24" fill="none" />
-        <rect x="0" y="0" width="12" height="12" fill="${palette.patternStroke}" opacity="0.20" />
-        <rect x="12" y="12" width="12" height="12" fill="${palette.patternStroke}" opacity="0.20" />
-        <line x1="0" y1="0" x2="24" y2="0" stroke="${palette.patternStroke}" stroke-width="1.0" opacity="0.3" />
-        <line x1="0" y1="0" x2="0" y2="24" stroke="${palette.patternStroke}" stroke-width="1.0" opacity="0.3" />
+        <rect x="0" y="0" width="12" height="12" fill="${palette.patternStroke}" opacity="0.25" />
+        <rect x="12" y="12" width="12" height="12" fill="${palette.patternStroke}" opacity="0.25" />
+        <line x1="0" y1="0" x2="24" y2="0" stroke="${palette.patternStroke}" stroke-width="1.2" opacity="0.35" />
+        <line x1="0" y1="0" x2="0" y2="24" stroke="${palette.patternStroke}" stroke-width="1.2" opacity="0.35" />
+        <line x1="0" y1="12" x2="24" y2="12" stroke="${palette.highlightSoft}" stroke-width="0.8" opacity="0.25" />
+        <line x1="12" y1="0" x2="12" y2="24" stroke="${palette.highlightSoft}" stroke-width="0.8" opacity="0.25" />
+      </pattern>
+    `);
+  } else if (patternId === 'floral') {
+    defs.push(`
+      <pattern id="ff-garment-pattern" width="28" height="28" patternUnits="userSpaceOnUse">
+        <rect width="28" height="28" fill="none" />
+        <!-- 4-petal floral damask motif -->
+        <circle cx="14" cy="9" r="4.2" fill="${palette.patternStroke}" opacity="0.30" />
+        <circle cx="14" cy="19" r="4.2" fill="${palette.patternStroke}" opacity="0.30" />
+        <circle cx="9" cy="14" r="4.2" fill="${palette.patternStroke}" opacity="0.30" />
+        <circle cx="19" cy="14" r="4.2" fill="${palette.patternStroke}" opacity="0.30" />
+        <circle cx="14" cy="14" r="2.2" fill="${palette.highlightCrisp}" opacity="0.50" />
+        <!-- Corner vine accents -->
+        <circle cx="0" cy="0" r="2.5" fill="${palette.patternStroke}" opacity="0.22" />
+        <circle cx="28" cy="0" r="2.5" fill="${palette.patternStroke}" opacity="0.22" />
+        <circle cx="0" cy="28" r="2.5" fill="${palette.patternStroke}" opacity="0.22" />
+        <circle cx="28" cy="28" r="2.5" fill="${palette.patternStroke}" opacity="0.22" />
+      </pattern>
+    `);
+  } else if (patternId === 'geometric') {
+    defs.push(`
+      <pattern id="ff-garment-pattern" width="20" height="20" patternUnits="userSpaceOnUse">
+        <rect width="20" height="20" fill="none" />
+        <!-- Diamond lattice geometry -->
+        <path d="M10 0 L20 10 L10 20 L0 10 Z" fill="none" stroke="${palette.patternStroke}" stroke-width="1.4" opacity="0.35" />
+        <circle cx="10" cy="10" r="1.8" fill="${palette.patternStroke}" opacity="0.40" />
+        <circle cx="0" cy="0" r="1.4" fill="${palette.highlightSoft}" opacity="0.35" />
+        <circle cx="20" cy="20" r="1.4" fill="${palette.highlightSoft}" opacity="0.35" />
       </pattern>
     `);
   } else if (patternId === 'dots') {
     defs.push(`
-      <pattern id="ff-garment-pattern" width="22" height="22" patternUnits="userSpaceOnUse">
-        <rect width="22" height="22" fill="none" />
-        <circle cx="5.5" cy="5.5" r="2.5" fill="${palette.patternStroke}" opacity="0.35" />
-        <circle cx="16.5" cy="16.5" r="2.5" fill="${palette.patternStroke}" opacity="0.35" />
-        <circle cx="5" cy="5" r="1.0" fill="${palette.highlightSoft}" opacity="0.3" />
-        <circle cx="16" cy="16" r="1.0" fill="${palette.highlightSoft}" opacity="0.3" />
+      <pattern id="ff-garment-pattern" width="20" height="20" patternUnits="userSpaceOnUse">
+        <rect width="20" height="20" fill="none" />
+        <circle cx="5" cy="5" r="2.5" fill="${palette.patternStroke}" opacity="0.35" />
+        <circle cx="15" cy="15" r="2.5" fill="${palette.patternStroke}" opacity="0.35" />
+        <circle cx="4.5" cy="4.5" r="1.0" fill="${palette.highlightSoft}" opacity="0.35" />
+        <circle cx="14.5" cy="14.5" r="1.0" fill="${palette.highlightSoft}" opacity="0.35" />
       </pattern>
     `);
   }

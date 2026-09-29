@@ -11,6 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✂️</text></svg>">
   <link rel="stylesheet" href="css/style.css">
   <script type="module" src="js/app.js"></script>
 </head>
@@ -245,7 +246,76 @@
         </div>
       </section>
 
-      <!-- Section C: Appearance -->
+      <!-- Section C: Size & Fit System -->
+      <section class="control-section" aria-labelledby="heading-size-fit">
+        <div class="control-section-header">
+          <h2 class="control-section-title" id="heading-size-fit">Size &amp; Fit</h2>
+          <span class="control-label-value" id="val-active-size">Size M</span>
+        </div>
+
+        <div class="control-field">
+          <div class="control-label">
+            <span>Standard Size</span>
+            <span style="font-size: 0.6875rem; color: var(--color-text-muted); font-weight: 500;">Inches (in)</span>
+          </div>
+          <div class="size-pill-grid" role="radiogroup" aria-label="Garment size selection">
+            <button class="size-pill-btn" data-size="XS" role="radio" aria-checked="false" type="button">XS</button>
+            <button class="size-pill-btn" data-size="S" role="radio" aria-checked="false" type="button">S</button>
+            <button class="size-pill-btn is-active" data-size="M" role="radio" aria-checked="true" type="button">M</button>
+            <button class="size-pill-btn" data-size="L" role="radio" aria-checked="false" type="button">L</button>
+            <button class="size-pill-btn" data-size="XL" role="radio" aria-checked="false" type="button">XL</button>
+            <button class="size-pill-btn" data-size="XXL" role="radio" aria-checked="false" type="button">XXL</button>
+            <button class="size-pill-btn" data-size="3XL" role="radio" aria-checked="false" type="button">3XL</button>
+            <button class="size-pill-btn" data-size="4XL" role="radio" aria-checked="false" type="button">4XL</button>
+          </div>
+        </div>
+
+        <div class="control-field">
+          <div class="control-label">
+            <span>Measurement Reference</span>
+          </div>
+          <div class="size-measurements-compact">
+            <div class="size-summary-grid">
+              <div class="size-metric-card">
+                <span class="metric-name">Chest</span>
+                <span class="metric-val" id="size-metric-chest">36"</span>
+              </div>
+              <div class="size-metric-card">
+                <span class="metric-name">Waist</span>
+                <span class="metric-val" id="size-metric-waist">32–34"</span>
+              </div>
+              <div class="size-metric-card">
+                <span class="metric-name">Hip</span>
+                <span class="metric-val" id="size-metric-hip">40"</span>
+              </div>
+              <div class="size-metric-card">
+                <span class="metric-name">Length</span>
+                <span class="metric-val" id="size-metric-length">40–44"</span>
+              </div>
+              <div class="size-metric-card">
+                <span class="metric-name">Shoulder</span>
+                <span class="metric-val" id="size-metric-shoulder">14.5"</span>
+              </div>
+              <div class="size-metric-card">
+                <span class="metric-name">Arm Hole</span>
+                <span class="metric-val" id="size-metric-armhole">15"</span>
+              </div>
+            </div>
+          </div>
+          <button class="btn-view-size-chart" id="btn-open-size-chart" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <line x1="3" y1="9" x2="21" y2="9"/>
+              <line x1="3" y1="15" x2="21" y2="15"/>
+              <line x1="9" y1="3" x2="9" y2="21"/>
+              <line x1="15" y1="3" x2="15" y2="21"/>
+            </svg>
+            <span>View Full Size Chart</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Section D: Appearance -->
       <section class="control-section" aria-labelledby="heading-appearance">
         <div class="control-section-header">
           <h2 class="control-section-title" id="heading-appearance">Appearance</h2>
@@ -318,18 +388,21 @@
           <div class="control-label">
             <span>Pattern</span>
           </div>
-          <div class="colour-swatches-grid" style="grid-template-columns: repeat(4, 1fr);" role="radiogroup" aria-label="Pattern selection">
+          <div class="colour-swatches-grid" style="grid-template-columns: repeat(5, 1fr);" role="radiogroup" aria-label="Pattern selection">
             <button class="swatch-button is-selected" data-pattern="solid" role="radio" aria-checked="true" type="button" title="Solid Colour">
               <span class="pattern-preview-box" id="pattern-preview-solid" style="background-color: #b96b61; width: 100%; height: 100%; border-radius: 50%;"></span>
             </button>
-            <button class="swatch-button" data-pattern="stripes" role="radio" aria-checked="false" type="button" title="Pinstripes">
+            <button class="swatch-button" data-pattern="stripes" role="radio" aria-checked="false" type="button" title="Subtle Stripe">
               <span class="pattern-preview-box" id="pattern-preview-stripes" style="background: repeating-linear-gradient(90deg, #b96b61, #b96b61 2px, #ffffff 2px, #ffffff 5px); width: 100%; height: 100%; border-radius: 50%;"></span>
             </button>
-            <button class="swatch-button" data-pattern="checks" role="radio" aria-checked="false" type="button" title="Checks / Gingham">
+            <button class="swatch-button" data-pattern="checks" role="radio" aria-checked="false" type="button" title="Check / Plaid">
               <span class="pattern-preview-box" id="pattern-preview-checks" style="background: repeating-conic-gradient(#b96b61 0% 25%, #ffffff 0% 50%) 50% / 8px 8px; width: 100%; height: 100%; border-radius: 50%;"></span>
             </button>
-            <button class="swatch-button" data-pattern="dots" role="radio" aria-checked="false" type="button" title="Dots">
-              <span class="pattern-preview-box" id="pattern-preview-dots" style="background: radial-gradient(circle, #b96b61 35%, #ffffff 40%) 0 0 / 6px 6px; width: 100%; height: 100%; border-radius: 50%;"></span>
+            <button class="swatch-button" data-pattern="floral" role="radio" aria-checked="false" type="button" title="Floral Motif">
+              <span class="pattern-preview-box" id="pattern-preview-floral" style="background: radial-gradient(circle, #ffffff 25%, #b96b61 30%, #b96b61 65%, #ffffff 70%) 0 0 / 8px 8px; width: 100%; height: 100%; border-radius: 50%;"></span>
+            </button>
+            <button class="swatch-button" data-pattern="geometric" role="radio" aria-checked="false" type="button" title="Geometric Motif">
+              <span class="pattern-preview-box" id="pattern-preview-geometric" style="background: conic-gradient(from 45deg, #b96b61 25%, #ffffff 0% 50%, #b96b61 0% 75%, #ffffff 0%) 0 0 / 8px 8px; width: 100%; height: 100%; border-radius: 50%;"></span>
             </button>
           </div>
           <div class="appearance-active-bar" id="bar-pattern-active">
@@ -448,7 +521,7 @@
             <div>
               <span class="eyebrow">Haute Couture Technical Specification</span>
               <h2 class="tech-pack-title" id="tp-design-name">Fitted Bodice Dress</h2>
-              <p class="component-sub" id="tp-style-id">Style ID: FF-1024 | Season: Bespoke SS26</p>
+              <p class="component-sub" id="tp-style-id">Style ID: FF-1024 | Size: <span id="tp-header-size">M</span> | Season: Bespoke SS26</p>
             </div>
             <button class="btn-secondary" id="btn-print-techpack" type="button">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -558,6 +631,28 @@
                 </tbody>
               </table>
             </div>
+
+            <div style="grid-column: 1 / -1;">
+              <h3 class="control-section-title">Garment Measurement Specifications (<span id="tp-size-label">Size M</span>)</h3>
+              <table class="tech-table">
+                <thead>
+                  <tr>
+                    <th>Measurement Point</th>
+                    <th>Dimension (Inches)</th>
+                    <th>Tolerance</th>
+                    <th>Reference Standard</th>
+                  </tr>
+                </thead>
+                <tbody id="tp-measurements-tbody">
+                  <tr><td>Chest / Bust</td><td id="tp-meas-chest">36"</td><td>&plusmn; 0.5"</td><td>Garment Size Reference</td></tr>
+                  <tr><td>Waist</td><td id="tp-meas-waist">32–34"</td><td>&plusmn; 0.5"</td><td>Garment Size Reference</td></tr>
+                  <tr><td>Hip</td><td id="tp-meas-hip">40"</td><td>&plusmn; 0.5"</td><td>Garment Size Reference</td></tr>
+                  <tr><td>Total Garment Length</td><td id="tp-meas-length">40–44"</td><td>&plusmn; 0.75"</td><td>Garment Size Reference</td></tr>
+                  <tr><td>Cross Shoulder</td><td id="tp-meas-shoulder">14.5"</td><td>&plusmn; 0.25"</td><td>Garment Size Reference</td></tr>
+                  <tr><td>Armhole Circumference</td><td id="tp-meas-armhole">15"</td><td>&plusmn; 0.25"</td><td>Garment Size Reference</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -611,6 +706,34 @@
       <section class="info-section" style="padding-bottom: var(--space-2); gap: 4px;">
         <h3 class="info-subtitle" style="font-size: 0.6875rem;">Garment Specifications</h3>
         <dl class="specs-table" id="specification-list">
+          <div class="specs-row" style="padding: 0.18rem 0;">
+            <dt class="spec-term">Size</dt>
+            <dd class="spec-desc" id="spec-size">M</dd>
+          </div>
+          <div class="specs-row" style="padding: 0.18rem 0;">
+            <dt class="spec-term">Chest</dt>
+            <dd class="spec-desc" id="spec-chest">36"</dd>
+          </div>
+          <div class="specs-row" style="padding: 0.18rem 0;">
+            <dt class="spec-term">Waist</dt>
+            <dd class="spec-desc" id="spec-waist">32–34"</dd>
+          </div>
+          <div class="specs-row" style="padding: 0.18rem 0;">
+            <dt class="spec-term">Hip</dt>
+            <dd class="spec-desc" id="spec-hip">40"</dd>
+          </div>
+          <div class="specs-row" style="padding: 0.18rem 0;">
+            <dt class="spec-term">Length</dt>
+            <dd class="spec-desc" id="spec-length">40–44"</dd>
+          </div>
+          <div class="specs-row" style="padding: 0.18rem 0;">
+            <dt class="spec-term">Shoulder</dt>
+            <dd class="spec-desc" id="spec-shoulder">14.5"</dd>
+          </div>
+          <div class="specs-row" style="padding: 0.18rem 0;">
+            <dt class="spec-term">Arm Hole</dt>
+            <dd class="spec-desc" id="spec-armhole">15"</dd>
+          </div>
           <div class="specs-row" style="padding: 0.18rem 0;">
             <dt class="spec-term">Top / Bodice</dt>
             <dd class="spec-desc" id="spec-top">Fitted Bodice</dd>
@@ -934,6 +1057,56 @@
       <div style="display: flex; gap: var(--space-3);">
         <button class="btn-secondary" style="flex: 1;" id="btn-cancel-cart" type="button">Continue Designing</button>
         <button class="btn-primary" style="flex: 1;" id="btn-confirm-cart" type="button">Confirm & Proceed</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Size Chart Modal Dialog -->
+  <div class="modal-backdrop" id="modal-size-chart" role="dialog" aria-modal="true" aria-labelledby="modal-size-chart-title">
+    <div class="modal-dialog" style="max-width: 680px; width: 92%;">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title" id="modal-size-chart-title">Garment Measurement Reference Chart</h3>
+          <p class="component-sub" style="margin-top: 2px;">Authoritative Atelier Garment Specifications &bull; Dimensions in Inches (in)</p>
+        </div>
+        <button class="modal-close-btn" id="btn-close-size-chart" type="button" aria-label="Close dialog">&times;</button>
+      </div>
+
+      <div class="size-chart-table-wrap" style="overflow-x: auto; margin: var(--space-4) 0;">
+        <table class="tech-table size-chart-table" id="size-chart-table">
+          <thead>
+            <tr>
+              <th>SIZE</th>
+              <th>CHEST</th>
+              <th>WAIST</th>
+              <th>HIP</th>
+              <th>LENGTH</th>
+              <th>SHOULDER</th>
+              <th>ARM HOLE</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-size-row="XS"><td><strong>XS</strong></td><td>32"</td><td>28–30"</td><td>36"</td><td>38–40"</td><td>13"</td><td>13"</td></tr>
+            <tr data-size-row="S"><td><strong>S</strong></td><td>34"</td><td>30–32"</td><td>38"</td><td>40–44"</td><td>14"</td><td>14"</td></tr>
+            <tr data-size-row="M" class="is-selected-row"><td><strong>M</strong></td><td>36"</td><td>32–34"</td><td>40"</td><td>40–44"</td><td>14.5"</td><td>15"</td></tr>
+            <tr data-size-row="L"><td><strong>L</strong></td><td>38"</td><td>34–36"</td><td>42"</td><td>40–44"</td><td>15"</td><td>16"</td></tr>
+            <tr data-size-row="XL"><td><strong>XL</strong></td><td>40"</td><td>36–38"</td><td>44"</td><td>42–46"</td><td>15.5"</td><td>17"</td></tr>
+            <tr data-size-row="XXL"><td><strong>XXL</strong></td><td>42"</td><td>38–40"</td><td>46"</td><td>42–46"</td><td>16"</td><td>18"</td></tr>
+            <tr data-size-row="3XL"><td><strong>3XL</strong></td><td>44"</td><td>40–42"</td><td>48"</td><td>44–48"</td><td>16.5"</td><td>19"</td></tr>
+            <tr data-size-row="4XL"><td><strong>4XL</strong></td><td>46"</td><td>42–44"</td><td>50"</td><td>44–48"</td><td>17"</td><td>20"</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: var(--space-3) var(--space-4); margin-bottom: var(--space-4);">
+        <h4 style="font-size: 0.75rem; font-weight: 700; color: var(--color-text-primary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em;">Measurement Guide</h4>
+        <p style="font-size: var(--text-xs); color: var(--color-text-secondary); line-height: 1.45; margin: 0;">
+          All measurements are taken on the finished garment in inches with garment laid flat. Chest is measured 1" below armholes across bust apex. Waist is measured across natural narrowest waistline. Hip is measured 8" below natural waistline. Shoulder is measured from outer seam to seam across back. Arm Hole is circumference along armscye curve.
+        </p>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end;">
+        <button class="btn-primary" id="btn-done-size-chart" type="button" style="padding: 0 var(--space-6);">Close Chart</button>
       </div>
     </div>
   </div>

@@ -158,17 +158,31 @@ export const GARMENT_CATALOG = {
     },
     stripes: {
       id: 'stripes',
-      name: 'Vertical Pinstripe',
+      name: 'Subtle Stripe',
       status: 'active',
       price: 120,
       description: 'Fine vertical woven pinstripe with tailored cadence.'
     },
     checks: {
       id: 'checks',
-      name: 'Micro Check',
+      name: 'Check / Plaid',
       status: 'active',
       price: 140,
       description: 'Classic yarn-dyed windowpane micro-check.'
+    },
+    floral: {
+      id: 'floral',
+      name: 'Floral Damask',
+      status: 'active',
+      price: 180,
+      description: 'Artisanal botanical motif softly harmonized with base tone.'
+    },
+    geometric: {
+      id: 'geometric',
+      name: 'Geometric Motif',
+      status: 'active',
+      price: 150,
+      description: 'Tessellated modern geometric repeat pattern.'
     },
     dots: {
       id: 'dots',

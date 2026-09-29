@@ -38,6 +38,10 @@ import {
   generateLightingDefs
 } from './lighting.js';
 
+import {
+  getBodyLandmarks
+} from './body-profiles.js';
+
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
 /**
@@ -68,6 +72,7 @@ export function renderDesign(designState, svgElement) {
   );
 
   // 1. Establish Coordinate System (Preserves 768x1376 model without distortion)
+  // 1. Establish Coordinate System (Preserves 768x1376 model without distortion)
   const vb = MODEL_GEOMETRY.viewBox;
   svgElement.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.width} ${vb.height}`);
   svgElement.setAttribute('class', `costume-preview view-${designState.view || 'front'}`);
@@ -75,7 +80,8 @@ export function renderDesign(designState, svgElement) {
   // Clear previous dynamic layers
   svgElement.replaceChildren();
 
-  const LM = MODEL_GEOMETRY.landmarks;
+  // Retrieve calibrated anatomical landmarks for active garment size
+  const LM = getBodyLandmarks(designState?.size || 'M');
 
   // 2. Defs Layer (Dynamic Materials, Lighting, Patterns, Depth Filters, Clip Paths)
   const defsElement = createSvgElement('defs');
@@ -108,29 +114,29 @@ export function renderDesign(designState, svgElement) {
 
     // Stage 2a: Back Interior Depth (Visible inside collar scoop & under hem)
     if (!isBack) {
-      renderBackDepth(garmentGroup, palette);
+      renderBackDepth(garmentGroup, palette, LM);
     }
 
     // Stage 2b: Lower Garment (A-Line Skirt with 2.5D drape flutes)
-    renderBottom(garmentGroup, designState, palette, isBack);
+    renderBottom(garmentGroup, designState, palette, isBack, LM);
 
     // Stage 2c: Waist Interface Connection
-    renderWaistInterface(garmentGroup, palette, isBack);
+    renderWaistInterface(garmentGroup, palette, isBack, LM);
 
     // Stage 2d: Bodice (Fitted Torso with princess seams & bust fullness)
-    renderTop(garmentGroup, designState, palette, isBack);
+    renderTop(garmentGroup, designState, palette, isBack, LM);
 
     // Stage 2e: Sleeves (Set-In Short Sleeves with cylindrical volume)
-    renderSleeves(garmentGroup, designState, palette, isBack);
+    renderSleeves(garmentGroup, designState, palette, isBack, LM);
 
     // Stage 2f: Neckline / Collar Finished Binding
-    renderNeckline(garmentGroup, palette, isBack);
+    renderNeckline(garmentGroup, palette, isBack, LM);
 
     // Stage 2g: Construction Seams, Topstitching & Flutes
-    applyConstructionDetails(garmentGroup, palette, isBack);
+    applyConstructionDetails(garmentGroup, palette, isBack, LM);
 
     // Stage 2h: Final Depth and Contact Shadows
-    renderDepth(garmentGroup, palette, isBack);
+    renderDepth(garmentGroup, palette, isBack, LM);
 
     // Stage 2i: Foreground Bare Hands Layer (Natural front occlusion over skirt flare)
     if (designState.figureVisible !== false && !isBack) {
@@ -213,12 +219,12 @@ function renderForegroundHands(svgElement, isBack) {
 /**
  * 2. Back Interior Depth
  */
-function renderBackDepth(container, palette) {
+function renderBackDepth(container, palette, LM = MODEL_GEOMETRY.landmarks) {
   const depthGroup = createSvgElement('g', { class: 'garment-interior-depth' });
 
   // Underside facing shadow under the skirt hem
   const hemFacing = createSvgElement('path', {
-    d: getHemFacingDepthPath(),
+    d: getHemFacingDepthPath(LM),
     fill: 'url(#ff-light-hem-depth)',
     opacity: '0.88'
   });
@@ -230,9 +236,9 @@ function renderBackDepth(container, palette) {
 /**
  * 3. Lower Garment (A-Line Skirt)
  */
-function renderBottom(container, designState, palette, isBack) {
+function renderBottom(container, designState, palette, isBack, LM = MODEL_GEOMETRY.landmarks) {
   const skirtGroup = createSvgElement('g', { class: 'garment-region bottom-region', 'data-region': 'bottom' });
-  const skirtPathData = isBack ? getSkirtBackPath() : getSkirtFrontPath();
+  const skirtPathData = isBack ? getSkirtBackPath(LM) : getSkirtFrontPath(LM);
   const fabricId = designState.fabric || 'cotton';
 
   // 3a. Base structural fabric fill with soft shadow filter
@@ -268,11 +274,30 @@ function renderBottom(container, designState, palette, isBack) {
   const weaveOverlay = createSvgElement('path', {
     d: skirtPathData,
     fill: `url(#${weavePatternId})`,
-    style: 'mix-blend-mode: overlay; opacity: 0.32;'
+    style: 'mix-blend-mode: overlay; opacity: 0.35;'
   });
   skirtGroup.appendChild(weaveOverlay);
 
-  // 3e. Decorative Surface Pattern (stripes, checks, dots)
+  // Material-specific tactile luster enhancements
+  if (fabricId === 'silk') {
+    // Directional lustrous sheen for silk
+    const silkGlint = createSvgElement('path', {
+      d: skirtPathData,
+      fill: 'url(#ff-fabric-weave-silk)',
+      style: 'mix-blend-mode: screen; opacity: 0.45;'
+    });
+    skirtGroup.appendChild(silkGlint);
+  } else if (fabricId === 'denim') {
+    // Accentuated diagonal twill body for denim
+    const denimTwill = createSvgElement('path', {
+      d: skirtPathData,
+      fill: 'url(#ff-fabric-weave-denim)',
+      style: 'mix-blend-mode: multiply; opacity: 0.35;'
+    });
+    skirtGroup.appendChild(denimTwill);
+  }
+
+  // 3e. Decorative Surface Pattern (stripes, checks, floral, geometric, dots)
   if (designState.pattern && designState.pattern !== 'solid') {
     const patternOverlay = createSvgElement('path', {
       d: skirtPathData,
@@ -288,9 +313,8 @@ function renderBottom(container, designState, palette, isBack) {
 /**
  * 4. Waist Interface Seam
  */
-function renderWaistInterface(container, palette, isBack) {
+function renderWaistInterface(container, palette, isBack, LM = MODEL_GEOMETRY.landmarks) {
   const waistGroup = createSvgElement('g', { class: 'garment-region waist-interface-region' });
-  const LM = MODEL_GEOMETRY.landmarks;
   const waistCenterY = isBack ? LM.waist.centerBack.y : LM.waist.centerFront.y;
 
   // Waistband line
@@ -317,9 +341,9 @@ function renderWaistInterface(container, palette, isBack) {
 /**
  * 5. Upper Garment (Fitted Bodice)
  */
-function renderTop(container, designState, palette, isBack) {
+function renderTop(container, designState, palette, isBack, LM = MODEL_GEOMETRY.landmarks) {
   const topGroup = createSvgElement('g', { class: 'garment-region top-region', 'data-region': 'top' });
-  const bodicePathData = isBack ? getBodiceBackPath() : getBodiceFrontPath();
+  const bodicePathData = isBack ? getBodiceBackPath(LM) : getBodiceFrontPath(LM);
   const fabricId = designState.fabric || 'cotton';
 
   // 5a. Base structural fabric fill
@@ -342,16 +366,16 @@ function renderTop(container, designState, palette, isBack) {
   // 5c. Bust fullness highlights (front view only)
   if (!isBack) {
     const leftBust = createSvgElement('ellipse', {
-      cx: '350',
-      cy: '382',
+      cx: String(LM.bust.leftApex.x),
+      cy: String(LM.bust.leftApex.y),
       rx: '38',
       ry: '38',
       fill: 'url(#ff-light-bust-left)',
       style: 'mix-blend-mode: screen; opacity: 0.48;'
     });
     const rightBust = createSvgElement('ellipse', {
-      cx: '422',
-      cy: '385',
+      cx: String(LM.bust.rightApex.x),
+      cy: String(LM.bust.rightApex.y),
       rx: '36',
       ry: '36',
       fill: 'url(#ff-light-bust-right)',
@@ -366,9 +390,26 @@ function renderTop(container, designState, palette, isBack) {
   const weaveOverlay = createSvgElement('path', {
     d: bodicePathData,
     fill: `url(#${weavePatternId})`,
-    style: 'mix-blend-mode: overlay; opacity: 0.32;'
+    style: 'mix-blend-mode: overlay; opacity: 0.35;'
   });
   topGroup.appendChild(weaveOverlay);
+
+  // Material-specific tactile luster enhancements on bodice
+  if (fabricId === 'silk') {
+    const silkGlint = createSvgElement('path', {
+      d: bodicePathData,
+      fill: 'url(#ff-fabric-weave-silk)',
+      style: 'mix-blend-mode: screen; opacity: 0.45;'
+    });
+    topGroup.appendChild(silkGlint);
+  } else if (fabricId === 'denim') {
+    const denimTwill = createSvgElement('path', {
+      d: bodicePathData,
+      fill: 'url(#ff-fabric-weave-denim)',
+      style: 'mix-blend-mode: multiply; opacity: 0.35;'
+    });
+    topGroup.appendChild(denimTwill);
+  }
 
   // 5e. Decorative Surface Pattern
   if (designState.pattern && designState.pattern !== 'solid') {
@@ -386,10 +427,10 @@ function renderTop(container, designState, palette, isBack) {
 /**
  * 6. Sleeves (Set-In Short Sleeves)
  */
-function renderSleeves(container, designState, palette, isBack) {
+function renderSleeves(container, designState, palette, isBack, LM = MODEL_GEOMETRY.landmarks) {
   const sleevesGroup = createSvgElement('g', { class: 'garment-region sleeves-region', 'data-region': 'sleeves' });
-  const leftPathData = getLeftSleevePath(isBack);
-  const rightPathData = getRightSleevePath(isBack);
+  const leftPathData = getLeftSleevePath(isBack, LM);
+  const rightPathData = getRightSleevePath(isBack, LM);
   const fabricId = designState.fabric || 'cotton';
   const weavePatternId = `ff-fabric-weave-${fabricId}`;
 
@@ -446,7 +487,6 @@ function renderSleeves(container, designState, palette, isBack) {
   }
 
   // Armscye attachment seam indication
-  const LM = MODEL_GEOMETRY.landmarks;
   const leftArmscyeSeam = createSvgElement('path', {
     d: `M ${LM.shoulders.leftTip.x} ${LM.shoulders.leftTip.y} C ${LM.armscye.leftMid.x} ${LM.armscye.leftMid.y}, ${LM.armscye.leftPit.x - 4} ${LM.armscye.leftPit.y - 15}, ${LM.armscye.leftPit.x} ${LM.armscye.leftPit.y}`,
     fill: 'none',
@@ -482,13 +522,12 @@ function renderSleeves(container, designState, palette, isBack) {
 /**
  * 7. Neckline / Collar
  */
-function renderNeckline(container, palette, isBack) {
+function renderNeckline(container, palette, isBack, LM = MODEL_GEOMETRY.landmarks) {
   const neckGroup = createSvgElement('g', { class: 'garment-region neckline-region', 'data-region': 'collar' });
-  const LM = MODEL_GEOMETRY.landmarks;
 
   // Finished slender neck binding strip
   const binding = createSvgElement('path', {
-    d: getNecklineBindingPath(isBack),
+    d: getNecklineBindingPath(isBack, LM),
     fill: palette.base,
     stroke: palette.seamColor,
     'stroke-width': '0.9',
@@ -516,9 +555,9 @@ function renderNeckline(container, palette, isBack) {
 /**
  * 8. Construction Seams, Topstitching & Flutes
  */
-function applyConstructionDetails(container, palette, isBack) {
+function applyConstructionDetails(container, palette, isBack, LM = MODEL_GEOMETRY.landmarks) {
   const detailsGroup = createSvgElement('g', { class: 'garment-construction-details' });
-  const lines = getConstructionLines(isBack ? 'back' : 'front');
+  const lines = getConstructionLines(isBack ? 'back' : 'front', LM);
 
   if (!isBack) {
     // Front Princess Seams (Shadow line + soft highlight line)
@@ -609,9 +648,8 @@ function applyConstructionDetails(container, palette, isBack) {
       opacity: '0.85'
     });
     // Zipper pull at top
-    const LM = MODEL_GEOMETRY.landmarks;
     const zipperPull = createSvgElement('rect', {
-      x: '382',
+      x: String(LM.bust.center.x - 3),
       y: String(LM.neck.backCervicaleDip.y + 4),
       width: '6',
       height: '11',
@@ -691,8 +729,7 @@ function applyConstructionDetails(container, palette, isBack) {
 /**
  * 9. Depth and Contact Shadows
  */
-function renderDepth(container, palette, isBack) {
-  const LM = MODEL_GEOMETRY.landmarks;
+function renderDepth(container, palette, isBack, LM = MODEL_GEOMETRY.landmarks) {
   const depthGroup = createSvgElement('g', { class: 'garment-ambient-depth' });
 
   // Contact shadow under skirt hem casting onto model's legs
@@ -714,9 +751,12 @@ function renderDepth(container, palette, isBack) {
  * Helper to render a clean single technical flat (Front or Back)
  * Professional vector CAD representation on white background
  */
-function buildTechnicalFlatSvg(containerSvg, isBack = false) {
+function buildTechnicalFlatSvg(containerSvg, isBack = false, designState = null) {
   if (!containerSvg) return;
   const isMainCanvas = containerSvg.id === 'main-flat-svg';
+  const size = designState?.size || 'M';
+  const LM = getBodyLandmarks(size);
+
   // Frame focused tightly on the garment silhouette: X 215..555, Y 270..930
   containerSvg.setAttribute('viewBox', '215 270 340 660');
   containerSvg.setAttribute('class', isMainCanvas ? `main-flat-svg ${isBack ? 'view-back' : 'view-front'}` : `tech-flat-thumb ${isBack ? 'view-back' : 'view-front'}`);
@@ -739,11 +779,11 @@ function buildTechnicalFlatSvg(containerSvg, isBack = false) {
   });
 
   // Base garment pieces
-  const skirtPath = createSvgElement('path', { d: isBack ? getSkirtBackPath() : getSkirtFrontPath() });
-  const bodicePath = createSvgElement('path', { d: isBack ? getBodiceBackPath() : getBodiceFrontPath() });
-  const leftSleeve = createSvgElement('path', { d: getLeftSleevePath(isBack) });
-  const rightSleeve = createSvgElement('path', { d: getRightSleevePath(isBack) });
-  const neckBinding = createSvgElement('path', { d: getNecklineBindingPath(isBack), fill: '#f6f4f2' });
+  const skirtPath = createSvgElement('path', { d: isBack ? getSkirtBackPath(LM) : getSkirtFrontPath(LM) });
+  const bodicePath = createSvgElement('path', { d: isBack ? getBodiceBackPath(LM) : getBodiceFrontPath(LM) });
+  const leftSleeve = createSvgElement('path', { d: getLeftSleevePath(isBack, LM) });
+  const rightSleeve = createSvgElement('path', { d: getRightSleevePath(isBack, LM) });
+  const neckBinding = createSvgElement('path', { d: getNecklineBindingPath(isBack, LM), fill: '#f6f4f2' });
 
   g.appendChild(skirtPath);
   g.appendChild(bodicePath);
@@ -757,7 +797,7 @@ function buildTechnicalFlatSvg(containerSvg, isBack = false) {
     stroke: '#1e1c1b',
     'stroke-width': '1.0'
   });
-  const lines = getConstructionLines(isBack ? 'back' : 'front');
+  const lines = getConstructionLines(isBack ? 'back' : 'front', LM);
 
   if (!isBack) {
     [lines.leftPrincessSeam, lines.rightPrincessSeam, lines.leftArmscye, lines.rightArmscye, lines.waistSeam, lines.skirtFluteLeft, lines.skirtFluteRight].forEach(d => {
@@ -769,9 +809,18 @@ function buildTechnicalFlatSvg(containerSvg, isBack = false) {
     });
   } else {
     // Back center zipper
-    details.appendChild(createSvgElement('path', { d: lines.centerBackZipper, 'stroke-width': '1.8' }));
-    // Zipper pull
-    details.appendChild(createSvgElement('rect', { x: '382', y: '294', width: '6', height: '11', rx: '2', fill: '#1e1c1b' }));
+    if (lines.centerBackZipper) {
+      details.appendChild(createSvgElement('path', { d: lines.centerBackZipper, 'stroke-width': '1.8' }));
+    }
+    // Zipper pull at neckline
+    details.appendChild(createSvgElement('rect', {
+      x: String(LM.bust.center.x - 3),
+      y: String(LM.neck.backCervicaleDip.y + 4),
+      width: '6',
+      height: '11',
+      rx: '2',
+      fill: '#1e1c1b'
+    }));
     [lines.leftBackDart, lines.rightBackDart, lines.leftArmscye, lines.rightArmscye, lines.waistSeam, lines.skirtFluteLeft, lines.skirtFluteRight].forEach(d => {
       if (d) details.appendChild(createSvgElement('path', { d }));
     });
@@ -789,13 +838,13 @@ function buildTechnicalFlatSvg(containerSvg, isBack = false) {
  */
 export function renderTechnicalFlat(designState, containerSvg) {
   const isBack = designState.view === 'back';
-  buildTechnicalFlatSvg(containerSvg, isBack);
+  buildTechnicalFlatSvg(containerSvg, isBack, designState);
 }
 
 /**
  * Dual Technical Flat Pair (Renders Front & Back side-by-side in information panel)
  */
-export function renderTechnicalFlatPair(frontSvg, backSvg) {
-  buildTechnicalFlatSvg(frontSvg, false);
-  buildTechnicalFlatSvg(backSvg, true);
+export function renderTechnicalFlatPair(frontSvg, backSvg, designState = null) {
+  buildTechnicalFlatSvg(frontSvg, false, designState);
+  buildTechnicalFlatSvg(backSvg, true, designState);
 }

@@ -13,6 +13,7 @@ import {
 } from './renderer/renderer.js';
 
 import { GARMENT_CATALOG } from './renderer/garment-data.js';
+import { GARMENT_SIZES, getSizeData } from './renderer/size-data.js';
 
 /* ==========================================================================
    1. CENTRALIZED APPLICATION STATE (SINGLE SOURCE OF TRUTH)
@@ -37,10 +38,13 @@ export const designState = {
   sleeves: 'short',           // 'short' | 'long' | 'flare'
   collar: 'round',            // 'round' | 'vneck' | 'square'
 
+  // Size & Fit
+  size: 'M',                  // 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL' | '3XL' | '4XL'
+
   // Appearance & Materials
   colour: '#b96b61',
   fabric: 'cotton',           // 'cotton' | 'silk' | 'denim' | 'linen'
-  pattern: 'solid',           // 'solid' | 'stripes' | 'checks' | 'dots'
+  pattern: 'solid',           // 'solid' | 'stripes' | 'checks' | 'floral' | 'geometric'
 
   // Metadata & Commercial Pricing
   pricing: 1480,
@@ -64,6 +68,7 @@ function pushStateSnapshot() {
     bottom: designState.bottom,
     sleeves: designState.sleeves,
     collar: designState.collar,
+    size: designState.size,
     colour: designState.colour,
     fabric: designState.fabric,
     pattern: designState.pattern,
@@ -89,6 +94,7 @@ export function undo() {
     bottom: designState.bottom,
     sleeves: designState.sleeves,
     collar: designState.collar,
+    size: designState.size,
     colour: designState.colour,
     fabric: designState.fabric,
     pattern: designState.pattern,
@@ -118,6 +124,7 @@ export function redo() {
     bottom: designState.bottom,
     sleeves: designState.sleeves,
     collar: designState.collar,
+    size: designState.size,
     colour: designState.colour,
     fabric: designState.fabric,
     pattern: designState.pattern,
@@ -156,6 +163,7 @@ export function resetDesign() {
   designState.bottom = 'skirt';
   designState.sleeves = 'short';
   designState.collar = 'round';
+  designState.size = 'M';
   designState.colour = '#b96b61';
   designState.fabric = 'cotton';
   designState.pattern = 'solid';
@@ -246,6 +254,7 @@ export function syncUIFromState() {
   const valColour = document.querySelector('#val-colour');
   const valFabric = document.querySelector('#val-fabric');
   const valPattern = document.querySelector('#val-pattern');
+  const valActiveSize = document.querySelector('#val-active-size');
 
   if (valTop) valTop.textContent = topName;
   if (valBottom) valBottom.textContent = bottomName;
@@ -253,6 +262,34 @@ export function syncUIFromState() {
   if (valCollar) valCollar.textContent = collarName;
   if (valFabric) valFabric.textContent = `${fabricName} (Polished)`;
   if (valPattern) valPattern.textContent = patternName;
+  if (valActiveSize) valActiveSize.textContent = `Size ${state.size}`;
+
+  // 2b. Size & Fit System Synchronization
+  const sizeData = getSizeData(state.size);
+  document.querySelectorAll('.size-pill-btn[data-size]').forEach(btn => {
+    const isSelected = (btn.dataset.size === state.size);
+    btn.classList.toggle('is-active', isSelected);
+    btn.setAttribute('aria-checked', isSelected ? 'true' : 'false');
+  });
+
+  const sChest = document.querySelector('#size-metric-chest');
+  const sWaist = document.querySelector('#size-metric-waist');
+  const sHip = document.querySelector('#size-metric-hip');
+  const sLength = document.querySelector('#size-metric-length');
+  const sShoulder = document.querySelector('#size-metric-shoulder');
+  const sArmhole = document.querySelector('#size-metric-armhole');
+  if (sChest) sChest.textContent = `${sizeData.chest}"`;
+  if (sWaist) sWaist.textContent = `${sizeData.waistMin}–${sizeData.waistMax}"`;
+  if (sHip) sHip.textContent = `${sizeData.hip}"`;
+  if (sLength) sLength.textContent = `${sizeData.lengthMin}–${sizeData.lengthMax}"`;
+  if (sShoulder) sShoulder.textContent = `${sizeData.shoulder}"`;
+  if (sArmhole) sArmhole.textContent = `${sizeData.armhole}"`;
+
+  // Highlight active row in Size Chart table modal
+  document.querySelectorAll('#size-chart-table tr[data-size-row]').forEach(row => {
+    const isRowActive = (row.dataset.sizeRow === state.size);
+    row.classList.toggle('is-selected-row', isRowActive);
+  });
 
   // 3. Highlight Selected Component Cards
   document.querySelectorAll('.component-card[data-component-group]').forEach(card => {
@@ -271,15 +308,15 @@ export function syncUIFromState() {
     if (isSelected && valColour) valColour.textContent = btn.dataset.name || state.colour;
   });
 
-  // 5. Highlight Selected Fabric Card
-  document.querySelectorAll('.fabric-card[data-fabric]').forEach(card => {
+  // 5. Highlight Selected Fabric Swatch / Card
+  document.querySelectorAll('[data-fabric]').forEach(card => {
     const isSelected = (card.dataset.fabric === state.fabric);
     card.classList.toggle('is-selected', isSelected);
     card.setAttribute('aria-checked', isSelected ? 'true' : 'false');
   });
 
-  // 6. Highlight Selected Pattern Card & Update Dynamic Pattern Previews
-  document.querySelectorAll('.pattern-card[data-pattern]').forEach(card => {
+  // 6. Highlight Selected Pattern Swatch / Card & Update Dynamic Pattern Previews
+  document.querySelectorAll('[data-pattern]').forEach(card => {
     const isSelected = (card.dataset.pattern === state.pattern);
     card.classList.toggle('is-selected', isSelected);
     card.setAttribute('aria-checked', isSelected ? 'true' : 'false');
@@ -289,10 +326,14 @@ export function syncUIFromState() {
   const pSolid = document.querySelector('#pattern-preview-solid');
   const pStripes = document.querySelector('#pattern-preview-stripes');
   const pChecks = document.querySelector('#pattern-preview-checks');
+  const pFloral = document.querySelector('#pattern-preview-floral');
+  const pGeometric = document.querySelector('#pattern-preview-geometric');
   const pDots = document.querySelector('#pattern-preview-dots');
   if (pSolid) pSolid.style.backgroundColor = state.colour;
   if (pStripes) pStripes.style.background = `repeating-linear-gradient(90deg, ${state.colour}, ${state.colour} 2px, #ffffff 2px, #ffffff 5px)`;
   if (pChecks) pChecks.style.background = `repeating-conic-gradient(${state.colour} 0% 25%, #ffffff 0% 50%) 50% / 8px 8px`;
+  if (pFloral) pFloral.style.background = `radial-gradient(circle, #ffffff 25%, ${state.colour} 30%, ${state.colour} 65%, #ffffff 70%) 0 0 / 8px 8px`;
+  if (pGeometric) pGeometric.style.background = `conic-gradient(from 45deg, ${state.colour} 25%, #ffffff 0% 50%, ${state.colour} 0% 75%, #ffffff 0%) 0 0 / 8px 8px`;
   if (pDots) pDots.style.background = `radial-gradient(circle, ${state.colour} 35%, #ffffff 40%) 0 0 / 6px 6px`;
 
   // 7. Workspace Bottom Component Chips
@@ -306,6 +347,13 @@ export function syncUIFromState() {
   if (chipCollar) chipCollar.textContent = `Neckline: ${collarName}`;
 
   // 8. Inspector Garment Specifications Table
+  const specSize = document.querySelector('#spec-size');
+  const specChest = document.querySelector('#spec-chest');
+  const specWaist = document.querySelector('#spec-waist');
+  const specHip = document.querySelector('#spec-hip');
+  const specLength = document.querySelector('#spec-length');
+  const specShoulder = document.querySelector('#spec-shoulder');
+  const specArmhole = document.querySelector('#spec-armhole');
   const specTop = document.querySelector('#spec-top');
   const specBottom = document.querySelector('#spec-bottom');
   const specSleeves = document.querySelector('#spec-sleeves');
@@ -314,6 +362,13 @@ export function syncUIFromState() {
   const specColour = document.querySelector('#spec-colour');
   const specPattern = document.querySelector('#spec-pattern');
 
+  if (specSize) specSize.textContent = state.size;
+  if (specChest) specChest.textContent = `${sizeData.chest}"`;
+  if (specWaist) specWaist.textContent = `${sizeData.waistMin}–${sizeData.waistMax}"`;
+  if (specHip) specHip.textContent = `${sizeData.hip}"`;
+  if (specLength) specLength.textContent = `${sizeData.lengthMin}–${sizeData.lengthMax}"`;
+  if (specShoulder) specShoulder.textContent = `${sizeData.shoulder}"`;
+  if (specArmhole) specArmhole.textContent = `${sizeData.armhole}"`;
   if (specTop) specTop.textContent = topName;
   if (specBottom) specBottom.textContent = bottomName;
   if (specSleeves) specSleeves.textContent = sleevesName;
@@ -346,15 +401,31 @@ export function syncUIFromState() {
   // 12. Tech Pack Sheet Synchronizer
   const tpName = document.querySelector('#tp-design-name');
   const tpStyleId = document.querySelector('#tp-style-id');
+  const tpHeaderSize = document.querySelector('#tp-header-size');
+  const tpSizeLabel = document.querySelector('#tp-size-label');
   const tpFabric = document.querySelector('#tp-bom-fabric');
   const tpColor = document.querySelector('#tp-bom-color');
   const tpFabricCost = document.querySelector('#tp-bom-fabric-cost');
+  const tpMeasChest = document.querySelector('#tp-meas-chest');
+  const tpMeasWaist = document.querySelector('#tp-meas-waist');
+  const tpMeasHip = document.querySelector('#tp-meas-hip');
+  const tpMeasLength = document.querySelector('#tp-meas-length');
+  const tpMeasShoulder = document.querySelector('#tp-meas-shoulder');
+  const tpMeasArmhole = document.querySelector('#tp-meas-armhole');
 
   if (tpName) tpName.textContent = state.name;
-  if (tpStyleId) tpStyleId.textContent = `Style ID: ${state.styleId} | Season: Bespoke SS26`;
+  if (tpStyleId) tpStyleId.innerHTML = `Style ID: ${state.styleId} | Size: <span id="tp-header-size">${state.size}</span> | Season: Bespoke SS26`;
+  if (tpSizeLabel) tpSizeLabel.textContent = `Size ${state.size}`;
   if (tpFabric) tpFabric.textContent = fabricName;
   if (tpColor) tpColor.textContent = `${valColour ? valColour.textContent : 'Rose Clay'} (${state.colour})`;
   if (tpFabricCost) tpFabricCost.textContent = `₹${GARMENT_CATALOG.fabrics[state.fabric]?.price || 250}`;
+
+  if (tpMeasChest) tpMeasChest.textContent = `${sizeData.chest}"`;
+  if (tpMeasWaist) tpMeasWaist.textContent = `${sizeData.waistMin}–${sizeData.waistMax}"`;
+  if (tpMeasHip) tpMeasHip.textContent = `${sizeData.hip}"`;
+  if (tpMeasLength) tpMeasLength.textContent = `${sizeData.lengthMin}–${sizeData.lengthMax}"`;
+  if (tpMeasShoulder) tpMeasShoulder.textContent = `${sizeData.shoulder}"`;
+  if (tpMeasArmhole) tpMeasArmhole.textContent = `${sizeData.armhole}"`;
 
   // 13. Zoom Indicator & Slider
   const zoomText = document.querySelector('#zoom-indicator');
@@ -573,20 +644,61 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // 3. Fabric Weave Selector Handlers
-  document.querySelectorAll('.fabric-card[data-fabric]').forEach(card => {
+  document.querySelectorAll('[data-fabric]').forEach(card => {
     card.addEventListener('click', () => {
       pushStateSnapshot();
       designState.fabric = card.dataset.fabric;
       updatePreview();
+      const name = GARMENT_CATALOG.fabrics[card.dataset.fabric]?.name || card.dataset.fabric;
+      showToast(`Fabric changed to ${name}`);
     });
   });
 
   // 4. Surface Pattern Selector Handlers
-  document.querySelectorAll('.pattern-card[data-pattern]').forEach(card => {
+  document.querySelectorAll('[data-pattern]').forEach(card => {
     card.addEventListener('click', () => {
       pushStateSnapshot();
       designState.pattern = card.dataset.pattern;
       updatePreview();
+      const name = GARMENT_CATALOG.patterns[card.dataset.pattern]?.name || card.dataset.pattern;
+      showToast(`Pattern changed to ${name}`);
+    });
+  });
+
+  // 4b. Size & Fit System Selector Handlers
+  document.querySelectorAll('.size-pill-btn[data-size]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      pushStateSnapshot();
+      designState.size = btn.dataset.size;
+      updatePreview();
+      showToast(`Size ${btn.dataset.size} selected`);
+    });
+  });
+
+  // 4c. Size Chart Modal Controls
+  const modalSizeChart = document.querySelector('#modal-size-chart');
+  const btnOpenSizeChart = document.querySelector('#btn-open-size-chart');
+  const btnCloseSizeChart = document.querySelector('#btn-close-size-chart');
+  const btnDoneSizeChart = document.querySelector('#btn-done-size-chart');
+
+  const openSizeChartModal = () => modalSizeChart?.classList.add('is-open');
+  const closeSizeChartModal = () => modalSizeChart?.classList.remove('is-open');
+
+  if (btnOpenSizeChart) btnOpenSizeChart.addEventListener('click', openSizeChartModal);
+  if (btnCloseSizeChart) btnCloseSizeChart.addEventListener('click', closeSizeChartModal);
+  if (btnDoneSizeChart) btnDoneSizeChart.addEventListener('click', closeSizeChartModal);
+
+  // Interactive row selection in Size Chart
+  document.querySelectorAll('#size-chart-table tr[data-size-row]').forEach(row => {
+    row.style.cursor = 'pointer';
+    row.addEventListener('click', () => {
+      const selectedSize = row.dataset.sizeRow;
+      if (selectedSize) {
+        pushStateSnapshot();
+        designState.size = selectedSize;
+        updatePreview();
+        showToast(`Size ${selectedSize} selected from chart`);
+      }
     });
   });
 
