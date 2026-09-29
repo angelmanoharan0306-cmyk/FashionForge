@@ -446,6 +446,38 @@ export function syncUIFromState() {
   if (btnToggleDetails) {
     btnToggleDetails.classList.toggle('is-toggled-off', !state.detailsVisible);
   }
+
+  // 15. Front/Back View States & Technical Sketch Thumbnails
+  const isFront = (state.view === 'front');
+  const btnFront = document.querySelector('#btn-view-front');
+  const btnBack = document.querySelector('#btn-view-back');
+  const btnCadFront = document.querySelector('#btn-cad-view-front');
+  const btnCadBack = document.querySelector('#btn-cad-view-back');
+  const frameFront = document.querySelector('#frame-tech-flat-front');
+  const frameBack = document.querySelector('#frame-tech-flat-back');
+
+  if (btnFront) {
+    btnFront.classList.toggle('is-active', isFront);
+    btnFront.setAttribute('aria-pressed', isFront ? 'true' : 'false');
+  }
+  if (btnBack) {
+    btnBack.classList.toggle('is-active', !isFront);
+    btnBack.setAttribute('aria-pressed', !isFront ? 'true' : 'false');
+  }
+  if (btnCadFront) {
+    btnCadFront.classList.toggle('is-active', isFront);
+    btnCadFront.setAttribute('aria-pressed', isFront ? 'true' : 'false');
+  }
+  if (btnCadBack) {
+    btnCadBack.classList.toggle('is-active', !isFront);
+    btnCadBack.setAttribute('aria-pressed', !isFront ? 'true' : 'false');
+  }
+  if (frameFront) {
+    frameFront.classList.toggle('is-active', isFront);
+  }
+  if (frameBack) {
+    frameBack.classList.toggle('is-active', !isFront);
+  }
 }
 
 /* ==========================================================================
@@ -484,15 +516,31 @@ export function setView(viewName) {
   if (viewName !== 'front' && viewName !== 'back') return;
   designState.view = viewName;
 
+  const isFront = (viewName === 'front');
+
   const btnFront = document.querySelector('#btn-view-front');
   const btnBack = document.querySelector('#btn-view-back');
-
   if (btnFront && btnBack) {
-    const isFront = (viewName === 'front');
     btnFront.classList.toggle('is-active', isFront);
     btnFront.setAttribute('aria-pressed', isFront ? 'true' : 'false');
     btnBack.classList.toggle('is-active', !isFront);
     btnBack.setAttribute('aria-pressed', !isFront ? 'true' : 'false');
+  }
+
+  const btnCadFront = document.querySelector('#btn-cad-view-front');
+  const btnCadBack = document.querySelector('#btn-cad-view-back');
+  if (btnCadFront && btnCadBack) {
+    btnCadFront.classList.toggle('is-active', isFront);
+    btnCadFront.setAttribute('aria-pressed', isFront ? 'true' : 'false');
+    btnCadBack.classList.toggle('is-active', !isFront);
+    btnCadBack.setAttribute('aria-pressed', !isFront ? 'true' : 'false');
+  }
+
+  const frameFront = document.querySelector('#frame-tech-flat-front');
+  const frameBack = document.querySelector('#frame-tech-flat-back');
+  if (frameFront && frameBack) {
+    frameFront.classList.toggle('is-active', isFront);
+    frameBack.classList.toggle('is-active', !isFront);
   }
 
   updatePreview();
@@ -767,6 +815,46 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnFlatReturn = document.querySelector('#btn-flat-return');
   if (btnFlatReturn) {
     btnFlatReturn.addEventListener('click', () => setStudioMode('design'));
+  }
+
+  // CAD Workspace Toolbar Front/Back Toggle Buttons
+  const btnCadViewFront = document.querySelector('#btn-cad-view-front');
+  const btnCadViewBack = document.querySelector('#btn-cad-view-back');
+  if (btnCadViewFront) {
+    btnCadViewFront.addEventListener('click', () => setView('front'));
+  }
+  if (btnCadViewBack) {
+    btnCadViewBack.addEventListener('click', () => setView('back'));
+  }
+
+  // Interactive Technical Sketch Thumbnails in Inspector
+  const colFlatFront = document.querySelector('#col-tech-flat-front');
+  const colFlatBack = document.querySelector('#col-tech-flat-back');
+  if (colFlatFront) {
+    colFlatFront.addEventListener('click', () => {
+      setView('front');
+      setStudioMode('technical-flat');
+    });
+    colFlatFront.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        setView('front');
+        setStudioMode('technical-flat');
+      }
+    });
+  }
+  if (colFlatBack) {
+    colFlatBack.addEventListener('click', () => {
+      setView('back');
+      setStudioMode('technical-flat');
+    });
+    colFlatBack.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        setView('back');
+        setStudioMode('technical-flat');
+      }
+    });
   }
 
   // 11. Undo / Redo / Reset Commands

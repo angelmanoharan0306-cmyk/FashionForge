@@ -2107,6 +2107,13 @@ img, svg {
   flex-direction: column;
   align-items: center;
   overflow: hidden;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: opacity var(--transition-fast);
+}
+
+.tech-sketch-col:hover .tech-sketch-frame {
+  border-color: var(--color-brand);
 }
 
 .tech-sketch-frame {
@@ -2119,6 +2126,12 @@ img, svg {
   background: #ffffff;
   border-radius: var(--radius-sm);
   border: 1px solid #ebe4de;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.tech-sketch-frame.is-active {
+  border-color: var(--color-brand) !important;
+  box-shadow: 0 0 0 1.5px var(--color-brand);
 }
 
 .tech-sketch-frame svg,

@@ -812,6 +812,10 @@ function buildTechnicalFlatSvg(containerSvg, isBack = false, designState = null)
     if (lines.centerBackZipper) {
       details.appendChild(createSvgElement('path', { d: lines.centerBackZipper, 'stroke-width': '1.8' }));
     }
+    // Center back seam below zipper to hem
+    if (lines.centerBackSeam) {
+      details.appendChild(createSvgElement('path', { d: lines.centerBackSeam, 'stroke-width': '1.0' }));
+    }
     // Zipper pull at neckline
     details.appendChild(createSvgElement('rect', {
       x: String(LM.bust.center.x - 3),

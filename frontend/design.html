@@ -499,8 +499,12 @@
       <!-- Viewport 2: Full-Scale Technical Flat CAD Workspace (Toggled via Mode Switcher) -->
       <div class="workspace-viewport" id="workspace-technical-flat" style="display: none;">
         <header class="workspace-toolbar">
-          <div class="toolbar-left">
-            <h2 class="control-section-title">Vector Technical Flat CAD View</h2>
+          <div class="toolbar-left" style="display: flex; align-items: center; gap: var(--space-4);">
+            <h2 class="control-section-title" style="margin: 0;">Vector Technical Flat CAD View</h2>
+            <div class="segmented-control" role="group" aria-label="Technical Flat View Selection">
+              <button class="segmented-pill is-active" id="btn-cad-view-front" type="button" aria-pressed="true">Front View</button>
+              <button class="segmented-pill" id="btn-cad-view-back" type="button" aria-pressed="false">Back View</button>
+            </div>
           </div>
           <div class="toolbar-right">
             <button class="header-action-btn" id="btn-flat-return" type="button">
@@ -686,14 +690,14 @@
         </div>
         <div class="technical-sketch-card" style="padding: 6px;">
           <div class="tech-sketch-columns" style="gap: 8px;">
-            <div class="tech-sketch-col">
-              <div class="tech-sketch-frame" style="height: 5.8rem;">
+            <div class="tech-sketch-col" id="col-tech-flat-front" role="button" tabindex="0" title="View Front technical flat in CAD">
+              <div class="tech-sketch-frame is-active" id="frame-tech-flat-front" style="height: 5.8rem;">
                 <svg id="tech-flat-front-svg" class="tech-flat-thumb" viewBox="215 270 340 660" aria-label="Front technical sketch"></svg>
               </div>
               <span class="tech-sketch-caption" style="margin-top: 2px;">Front</span>
             </div>
-            <div class="tech-sketch-col">
-              <div class="tech-sketch-frame" style="height: 5.8rem;">
+            <div class="tech-sketch-col" id="col-tech-flat-back" role="button" tabindex="0" title="View Back technical flat in CAD">
+              <div class="tech-sketch-frame" id="frame-tech-flat-back" style="height: 5.8rem;">
                 <svg id="tech-flat-back-svg" class="tech-flat-thumb" viewBox="215 270 340 660" aria-label="Back technical sketch"></svg>
               </div>
               <span class="tech-sketch-caption" style="margin-top: 2px;">Back</span>
