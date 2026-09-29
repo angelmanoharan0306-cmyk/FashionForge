@@ -4,241 +4,379 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FashionForge | Design Studio</title>
+  <!-- Google Fonts for Haute Couture Studio Aesthetics -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
-  <script src="js/app.js" defer></script>
+  <script type="module" src="js/app.js"></script>
 </head>
-<body class="studio-page">
-  <header class="site-header studio-header">
-    <div class="container studio-header-content">
-      <a class="brand" href="index.html" aria-label="FashionForge home">FashionForge</a>
-      <nav class="studio-navigation" aria-label="Design Studio navigation">
-        <a href="index.html">Home</a>
-        <a class="current-page" href="design.html" aria-current="page">Design Studio</a>
+<body class="studio-app-body">
+  <div class="studio-app-layout">
+
+    <!-- 1. Far Left Studio Navigation Rail -->
+    <aside class="studio-rail" aria-label="Studio mode navigation">
+      <div class="rail-brand">
+        <a href="index.html" class="rail-logo-link" title="FashionForge Home">
+          <span class="brand-title">FashionForge</span>
+          <span class="brand-subtitle">DESIGN STUDIO</span>
+        </a>
+      </div>
+
+      <nav class="rail-navigation">
+        <button class="rail-item is-active" id="rail-btn-design" data-mode="design" type="button" aria-current="page" title="Design Studio">
+          <svg class="rail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 20h9"/>
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+          </svg>
+          <span class="rail-label">Design</span>
+        </button>
+
+        <button class="rail-item" id="rail-btn-technical" data-mode="technical-flat" type="button" title="Technical Flat CAD">
+          <svg class="rail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/>
+          </svg>
+          <span class="rail-label">Technical Flat</span>
+        </button>
+
+        <button class="rail-item" id="rail-btn-techpack" data-mode="tech-pack" type="button" title="Tech Pack Lite">
+          <svg class="rail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+          <span class="rail-label">Tech Pack</span>
+        </button>
+
+        <button class="rail-item" id="rail-btn-settings" data-mode="settings" type="button" title="Studio Settings">
+          <svg class="rail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+          <span class="rail-label">Settings</span>
+        </button>
       </nav>
-      <div class="account-placeholder" aria-label="Account area placeholder">
-        <span class="status-dot" aria-hidden="true"></span>
-        Guest workspace
-      </div>
-    </div>
-  </header>
+    </aside>
 
-  <main class="studio-main">
-    <div class="container">
-      <div class="studio-intro">
-        <div>
-          <p class="eyebrow">Phase 5 interface</p>
-          <h1>Design Studio</h1>
-        </div>
-        <p class="studio-intro-text">
-          Assemble the direction of your costume concept. The layered preview updates
-          as you choose each reusable garment component and appearance treatment.
-        </p>
-      </div>
+    <!-- 2. Left Design Controls Panel -->
+    <aside class="controls-panel" aria-label="Garment design palette">
+      <form class="design-form" id="design-controls" onsubmit="return false;">
 
-      <div class="studio-layout">
-        <aside class="studio-panel control-panel" aria-labelledby="controls-title">
-          <div class="panel-heading">
-            <p class="eyebrow">Start here</p>
-            <h2 id="controls-title">Design controls</h2>
-          </div>
+        <!-- Garment Components -->
+        <section class="control-section">
+          <h2 class="control-section-title">Garment Components</h2>
 
-          <form class="design-controls" id="design-controls">
-            <fieldset class="control-group">
-              <legend>Garment components</legend>
-              <label for="top-select">Top</label>
-              <select id="top-select" name="top">
-                <option value="basic">Basic top</option>
-                <option value="crop">Crop top</option>
-                <option value="tunic">Tunic top</option>
+          <div class="control-field">
+            <label class="control-label" for="top-select">Top / Bodice</label>
+            <div class="select-wrapper">
+              <select id="top-select" name="top" class="studio-select">
+                <option value="basic" selected>Fitted Bodice</option>
+                <option value="crop" disabled>Crop Top (Phase 4)</option>
+                <option value="tunic" disabled>Tunic Top (Phase 4)</option>
               </select>
-
-              <label for="bottom-select">Bottom</label>
-              <select id="bottom-select" name="bottom">
-                <option value="skirt">Skirt</option>
-                <option value="trousers">Trousers</option>
-                <option value="wide">Wide bottom</option>
-              </select>
-
-              <label for="sleeves-select">Sleeves</label>
-              <select id="sleeves-select" name="sleeves">
-                <option value="short">Short sleeves</option>
-                <option value="long">Long sleeves</option>
-                <option value="flare">Flare sleeves</option>
-              </select>
-
-              <label for="neckline-select">Neckline / Collar</label>
-              <select id="neckline-select" name="collar">
-                <option value="round">Round neckline</option>
-                <option value="vneck">V-neck</option>
-                <option value="square">Square neckline</option>
-              </select>
-            </fieldset>
-
-            <fieldset class="control-group">
-              <legend>Croquis template</legend>
-              <label for="croquis-select">Figure</label>
-              <select id="croquis-select" name="croquis">
-                <option value="female">Female croquis</option>
-                <option value="male">Male croquis</option>
-              </select>
-            </fieldset>
-
-            <fieldset class="control-group">
-              <legend>Surface details</legend>
-              <label for="colour-select">Colour</label>
-              <select id="colour-select" name="colour">
-                <option value="#b96b61">Rose clay</option>
-                <option value="#668b8a">Muted teal</option>
-                <option value="#6f587d">Soft plum</option>
-                <option value="#c28b62">Warm ochre</option>
-              </select>
-
-              <label for="fabric-select">Fabric</label>
-              <select id="fabric-select" name="fabric">
-                <option value="cotton">Cotton</option>
-                <option value="silk">Silk</option>
-                <option value="denim">Denim</option>
-                <option value="linen">Linen</option>
-              </select>
-
-              <label for="pattern-select">Pattern</label>
-              <select id="pattern-select" name="pattern">
-                <option value="solid">Solid</option>
-                <option value="stripes">Stripes</option>
-                <option value="checks">Checks</option>
-                <option value="dots">Dots</option>
-              </select>
-            </fieldset>
-          </form>
-        </aside>
-
-        <section class="preview-panel" aria-labelledby="preview-title">
-          <div class="preview-heading">
-            <div>
-              <p class="eyebrow">Visual workspace</p>
-              <h2 id="preview-title">Design preview</h2>
             </div>
-            <span class="preview-state" id="preview-state">Live preview</span>
           </div>
 
-          <div class="view-controls" aria-label="Preview view controls">
-            <button class="view-button is-selected" type="button" aria-pressed="true" disabled>Front view</button>
-            <button class="view-button" type="button" aria-pressed="false" disabled>Back view</button>
+          <div class="control-field">
+            <label class="control-label" for="bottom-select">Bottom</label>
+            <div class="select-wrapper">
+              <select id="bottom-select" name="bottom" class="studio-select">
+                <option value="skirt" selected>A-Line Skirt</option>
+                <option value="trousers" disabled>Trousers (Phase 4)</option>
+                <option value="wide" disabled>Wide Bottom (Phase 4)</option>
+              </select>
+            </div>
           </div>
 
-          <div class="mannequin-placeholder" role="img" aria-label="Layered two-dimensional costume preview">
-            <svg class="costume-preview" id="costume-preview" viewBox="0 0 240 360" aria-hidden="true">
-              <defs>
-                <linearGradient id="material-surface" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stop-color="var(--garment-color)" stop-opacity="0.98" />
-                  <stop offset="0.48" stop-color="var(--garment-color)" stop-opacity="0.94" />
-                  <stop offset="1" stop-color="var(--garment-shadow)" stop-opacity="0.98" />
-                </linearGradient>
-                <radialGradient id="material-highlight" cx="35%" cy="18%" r="70%">
-                  <stop offset="0" stop-color="#ffffff" stop-opacity="0.22" />
-                  <stop offset="0.42" stop-color="#ffffff" stop-opacity="0.04" />
-                  <stop offset="1" stop-color="#ffffff" stop-opacity="0" />
-                </radialGradient>
-                <pattern id="fabric-cotton" width="8" height="8" patternUnits="userSpaceOnUse">
-                  <path d="M0 1 H8 M1 0 V8" fill="none" stroke="var(--garment-highlight)" stroke-width="0.55" opacity="0.16" />
-                </pattern>
-                <pattern id="fabric-denim" width="8" height="8" patternUnits="userSpaceOnUse">
-                  <path d="M-2 6 L2 10 M0 4 L4 8 M4 0 L8 4 M6 -2 L10 2" fill="none" stroke="var(--garment-shadow)" stroke-width="1" opacity="0.22" />
-                </pattern>
-                <pattern id="fabric-linen" width="7" height="7" patternUnits="userSpaceOnUse">
-                  <path d="M0 2 L7 1 M1 6 L6 5 M2 0 L1 7" fill="none" stroke="var(--garment-highlight)" stroke-width="0.45" opacity="0.2" />
-                </pattern>
-                <pattern id="fabric-silk" width="18" height="18" patternUnits="userSpaceOnUse">
-                  <path d="M-4 14 Q5 4 22 4" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.12" />
-                </pattern>
-                <filter id="garment-soft-shadow" x="-20%" y="-10%" width="140%" height="130%">
-                  <feGaussianBlur in="SourceAlpha" stdDeviation="0.7" result="blur" />
-                  <feOffset dy="1" result="offsetBlur" />
-                  <feFlood flood-color="#3d302b" flood-opacity="0.16" result="shadowColor" />
-                  <feComposite in="shadowColor" in2="offsetBlur" operator="in" result="shadow" />
-                  <feMerge>
-                    <feMergeNode in="shadow" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-                <pattern id="pattern-stripes" width="12" height="12" patternUnits="userSpaceOnUse">
-                  <path d="M0 0 L0 12" class="pattern-mark" stroke-width="4" />
-                </pattern>
-                <pattern id="pattern-checks" width="16" height="16" patternUnits="userSpaceOnUse">
-                  <path d="M0 0 H16 M0 0 V16" class="pattern-mark" stroke-width="3" />
-                </pattern>
-                <pattern id="pattern-dots" width="14" height="14" patternUnits="userSpaceOnUse">
-                  <circle cx="4" cy="4" r="2.5" class="pattern-mark" />
-                </pattern>
-              </defs>
-              <defs>
-                <clipPath id="croquis-figure-clip">
-                  <rect x="82" y="0" width="80" height="360" />
-                </clipPath>
-              </defs>
-              <ellipse class="preview-ground-shadow" cx="120" cy="350" rx="46" ry="4" />
-              <image class="base-layer" id="croquis-base" href="assets/croquis/female-croquis.webp" x="7" y="0" width="269" height="360" preserveAspectRatio="none" clip-path="url(#croquis-figure-clip)" />
-              <g class="garment-layer bottom-layer" data-layer="bottom"></g>
-              <g class="garment-layer top-layer" data-layer="top"></g>
-              <g class="garment-layer sleeves-layer" data-layer="sleeves"></g>
-              <g class="garment-layer collar-layer" data-layer="collar"></g>
-            </svg>
+          <div class="control-field">
+            <label class="control-label" for="sleeves-select">Sleeves</label>
+            <div class="select-wrapper">
+              <select id="sleeves-select" name="sleeves" class="studio-select">
+                <option value="short" selected>Set-In Short Sleeves</option>
+                <option value="long" disabled>Long Sleeves (Phase 4)</option>
+                <option value="flare" disabled>Flare Sleeves (Phase 4)</option>
+              </select>
+            </div>
           </div>
 
-          <div class="preview-status" id="preview-status" aria-live="polite">
-            <span>Top: Basic top</span>
-            <span>Bottom: Skirt</span>
-            <span>Sleeves: Short sleeves</span>
-            <span>Collar: Round neckline</span>
+          <div class="control-field">
+            <label class="control-label" for="neckline-select">Neckline / Collar</label>
+            <div class="select-wrapper">
+              <select id="neckline-select" name="collar" class="studio-select">
+                <option value="round" selected>Round Jewel Neckline</option>
+                <option value="vneck" disabled>V-Neck (Phase 4)</option>
+                <option value="square" disabled>Square Neckline (Phase 4)</option>
+              </select>
+            </div>
           </div>
-          <p class="preview-note">Front view selected. Back rendering is reserved for the next phase.</p>
         </section>
 
-        <aside class="studio-panel information-panel" aria-labelledby="information-title">
-          <div class="panel-heading">
-            <p class="eyebrow">Design notes</p>
-            <h2 id="information-title">Information</h2>
+        <!-- Croquis / Model Template -->
+        <section class="control-section">
+          <h2 class="control-section-title">Croquis Template</h2>
+
+          <div class="control-field">
+            <label class="control-label" for="croquis-select">Figure</label>
+            <div class="select-wrapper">
+              <select id="croquis-select" name="croquis" class="studio-select">
+                <option value="female" selected>Female Croquis</option>
+                <option value="male" disabled>Male Croquis (Phase 4)</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <!-- Appearance -->
+        <section class="control-section">
+          <h2 class="control-section-title">Appearance</h2>
+
+          <div class="control-field">
+            <label class="control-label" for="colour-select">Colour</label>
+            <div class="select-wrapper select-with-swatch">
+              <span class="swatch-indicator swatch-colour" id="colour-swatch-dot" style="background-color: #b96b61;" aria-hidden="true"></span>
+              <select id="colour-select" name="colour" class="studio-select swatch-padded">
+                <option value="#b96b61" selected>Rose Clay</option>
+                <option value="#668b8a">Muted Teal</option>
+                <option value="#6f587d">Soft Plum</option>
+                <option value="#c28b62">Warm Ochre</option>
+              </select>
+            </div>
           </div>
 
-          <section class="information-section" aria-labelledby="sketch-title">
-            <h3 id="sketch-title">Technical Sketch</h3>
-            <div class="info-placeholder">Technical outline placeholder</div>
-          </section>
-
-          <section class="information-section" aria-labelledby="specifications-title">
-            <h3 id="specifications-title">Garment Specifications</h3>
-            <dl class="specification-list">
-              <div><dt>Top</dt><dd>Not selected</dd></div>
-              <div><dt>Fabric</dt><dd>Not selected</dd></div>
-              <div><dt>Pattern</dt><dd>Not selected</dd></div>
-            </dl>
-          </section>
-
-          <section class="information-section" aria-labelledby="recommendation-title">
-            <h3 id="recommendation-title">Style Recommendation</h3>
-            <p class="info-copy">Recommendations will appear after the design rules are added.</p>
-          </section>
-
-          <section class="information-section price-section" aria-labelledby="price-title">
-            <h3 id="price-title">Estimated Price</h3>
-            <p class="price-placeholder">--</p>
-            <p class="info-copy">Price calculation is reserved for a later phase.</p>
-          </section>
-
-          <div class="studio-actions" aria-label="Future design actions">
-            <button class="secondary-button action-button" type="button" disabled>Save Design</button>
-            <button class="primary-button action-button" type="button" disabled>Add to Cart</button>
+          <div class="control-field">
+            <label class="control-label" for="fabric-select">Fabric</label>
+            <div class="select-wrapper select-with-swatch">
+              <span class="swatch-indicator swatch-fabric" id="fabric-swatch-dot" aria-hidden="true"></span>
+              <select id="fabric-select" name="fabric" class="studio-select swatch-padded">
+                <option value="cotton" selected>Organic Cotton (Polished)</option>
+                <option value="silk">Mulberry Silk</option>
+                <option value="denim">Structured Denim</option>
+                <option value="linen">Natural Linen</option>
+              </select>
+            </div>
           </div>
-        </aside>
+
+          <div class="control-field">
+            <label class="control-label" for="pattern-select">Pattern</label>
+            <div class="select-wrapper select-with-swatch">
+              <span class="swatch-indicator swatch-pattern" id="pattern-swatch-dot" aria-hidden="true"></span>
+              <select id="pattern-select" name="pattern" class="studio-select swatch-padded">
+                <option value="solid" selected>Solid Colour</option>
+                <option value="stripes">Vertical Pinstripe</option>
+                <option value="checks">Micro Check</option>
+                <option value="dots">Polka Dots</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+      </form>
+    </aside>
+
+    <!-- 3. Center Main Visual Workspace -->
+    <main class="workspace-panel" aria-label="Visual design preview">
+
+      <!-- 2.5D Studio Workspace View -->
+      <div class="workspace-viewport" id="workspace-2d">
+        <!-- Top Toolbar -->
+        <header class="workspace-toolbar">
+          <div class="toolbar-left">
+            <div class="view-toggle-group" role="group" aria-label="Model view angle">
+              <button class="view-btn is-active" id="btn-view-front" type="button" aria-pressed="true">Front View</button>
+              <button class="view-btn" id="btn-view-back" type="button" aria-pressed="false">Back View</button>
+            </div>
+          </div>
+
+          <div class="toolbar-right">
+            <button class="toolbar-tool-btn" id="btn-toggle-figure" type="button" title="Toggle Figure Visibility" aria-label="Toggle Figure">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </button>
+
+            <button class="toolbar-tool-btn" id="btn-toggle-details" type="button" title="Toggle Garment Details" aria-label="Toggle Garment Details">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+
+            <button class="toolbar-tool-btn" id="btn-fullscreen" type="button" title="Toggle Fullscreen" aria-label="Fullscreen">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="15 3 21 3 21 9"/>
+                <polyline points="9 21 3 21 3 15"/>
+                <line x1="21" y1="3" x2="14" y2="10"/>
+                <line x1="3" y1="21" x2="10" y2="14"/>
+              </svg>
+            </button>
+
+            <button class="toolbar-tool-btn zoom-dropdown-btn" id="btn-zoom-reset" type="button" title="Reset Zoom">
+              <span id="zoom-indicator">100%</span>
+              <svg class="dropdown-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </button>
+          </div>
+        </header>
+
+        <!-- Main Visual Canvas Card -->
+        <div class="canvas-card" id="canvas-card">
+          <svg class="costume-preview" id="costume-preview" viewBox="44 0 680 1376" aria-label="FashionForge 2.5D Garment Preview"></svg>
+        </div>
+
+        <!-- Bottom Workspace Information Bar -->
+        <footer class="workspace-footer">
+          <div class="chips-group" aria-label="Selected garment components">
+            <span class="component-chip" id="chip-top">Top: Fitted Bodice</span>
+            <span class="component-chip" id="chip-bottom">Bottom: A-Line Skirt</span>
+            <span class="component-chip" id="chip-sleeves">Sleeves: Set-In Short Sleeve</span>
+            <span class="component-chip" id="chip-collar">Neckline: Round Jewel Neckline</span>
+          </div>
+
+          <div class="zoom-slider-container" aria-label="Preview zoom controls">
+            <button class="zoom-stepper-btn" id="btn-zoom-out" type="button" title="Zoom Out" aria-label="Zoom out">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                <line x1="8" y1="11" x2="14" y2="11"/>
+              </svg>
+            </button>
+
+            <input type="range" class="zoom-range" id="zoom-slider" min="50" max="200" value="100" step="5" aria-label="Zoom percentage slider">
+
+            <button class="zoom-stepper-btn" id="btn-zoom-plus" type="button" title="Zoom In" aria-label="Zoom in">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                <line x1="11" y1="8" x2="11" y2="14"/>
+              </svg>
+            </button>
+          </div>
+        </footer>
       </div>
-    </div>
-  </main>
 
-  <footer class="site-footer">
-    <div class="container footer-content">
-      <p>&copy; 2026 FashionForge</p>
-      <p>Design Studio UI preview</p>
-    </div>
-  </footer>
+      <!-- Technical Flat CAD View (Toggled via Left Rail) -->
+      <div class="workspace-viewport" id="workspace-technical-flat" style="display: none;">
+        <header class="workspace-toolbar">
+          <div class="toolbar-left">
+            <h2 class="mode-view-title">Technical Flat CAD Sketch</h2>
+          </div>
+          <div class="toolbar-right">
+            <button class="primary-pill-btn" onclick="document.querySelector('#rail-btn-design').click();">Return to 2.5D Studio</button>
+          </div>
+        </header>
+        <div class="canvas-card technical-canvas-card">
+          <svg id="main-flat-svg" class="main-flat-svg" viewBox="210 265 350 670" aria-label="Full-scale Technical Flat CAD"></svg>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- 4. Right Information & Commercial Panel -->
+    <aside class="info-panel" aria-label="Garment specifications and pricing">
+      <header class="info-panel-header">
+        <p class="info-eyebrow">Design Notes</p>
+        <h1 class="info-title">Information</h1>
+      </header>
+
+      <!-- Technical Sketch Card (Dual Front & Back Side-by-Side) -->
+      <section class="info-section technical-sketch-section">
+        <h3 class="info-subtitle">Technical Sketch</h3>
+        <div class="technical-sketch-card">
+          <div class="tech-sketch-columns">
+            <div class="tech-sketch-col">
+              <div class="tech-sketch-frame">
+                <svg id="tech-flat-front-svg" class="tech-flat-thumb" viewBox="210 265 350 670" aria-hidden="true"></svg>
+              </div>
+              <span class="tech-sketch-caption">Front</span>
+            </div>
+            <div class="tech-sketch-col">
+              <div class="tech-sketch-frame">
+                <svg id="tech-flat-back-svg" class="tech-flat-thumb" viewBox="210 265 350 670" aria-hidden="true"></svg>
+              </div>
+              <span class="tech-sketch-caption">Back</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Garment Specifications -->
+      <section class="info-section">
+        <h3 class="info-subtitle">Garment Specifications</h3>
+        <dl class="specs-table" id="specification-list">
+          <div class="specs-row">
+            <dt class="spec-term">Top / Bodice</dt>
+            <dd class="spec-desc" id="spec-top">Fitted Bodice</dd>
+          </div>
+          <div class="specs-row">
+            <dt class="spec-term">Bottom / Skirt</dt>
+            <dd class="spec-desc" id="spec-bottom">A-Line Skirt</dd>
+          </div>
+          <div class="specs-row">
+            <dt class="spec-term">Sleeves</dt>
+            <dd class="spec-desc" id="spec-sleeves">Set-In Short Sleeve</dd>
+          </div>
+          <div class="specs-row">
+            <dt class="spec-term">Neckline / Collar</dt>
+            <dd class="spec-desc" id="spec-collar">Round Jewel Neckline</dd>
+          </div>
+          <div class="specs-row">
+            <dt class="spec-term">Fabric</dt>
+            <dd class="spec-desc" id="spec-fabric">Organic Cotton</dd>
+          </div>
+          <div class="specs-row">
+            <dt class="spec-term">Pattern</dt>
+            <dd class="spec-desc" id="spec-pattern">Solid Colour</dd>
+          </div>
+        </dl>
+      </section>
+
+      <!-- Style Recommendation -->
+      <section class="info-section recommendation-section">
+        <div class="recommendation-header">
+          <svg class="recommendation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="9" y1="18" x2="15" y2="18"/>
+            <line x1="10" y1="22" x2="14" y2="22"/>
+            <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/>
+          </svg>
+          <h3 class="info-subtitle rec-title">Style Recommendation</h3>
+        </div>
+        <p class="recommendation-copy" id="recommendation-text">
+          A classic and versatile design that works well for both casual and semi-formal occasions. The A-line skirt flatters most body types and offers comfortable movement.
+        </p>
+      </section>
+
+      <!-- Estimated Price -->
+      <section class="info-section price-section">
+        <h3 class="info-subtitle">Estimated Price</h3>
+        <p class="price-display" id="price-display">₹1,480</p>
+        <p class="price-note">Real-time estimate based on selected base, fabric and construction details.</p>
+      </section>
+
+      <!-- Commercial Action Buttons -->
+      <div class="info-actions">
+        <button class="studio-btn secondary-btn" id="btn-save-design" type="button">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+          </svg>
+          Save Design
+        </button>
+
+        <button class="studio-btn primary-btn" id="btn-add-cart" type="button">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="9" cy="21" r="1"/>
+            <circle cx="20" cy="21" r="1"/>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+          </svg>
+          Add to Cart
+        </button>
+      </div>
+
+    </aside>
+
+  </div>
 </body>
 </html>
