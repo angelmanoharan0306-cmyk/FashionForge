@@ -3,157 +3,384 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FashionForge | Digital Costume Design Studio</title>
+  <title>FashionForge — Interactive Digital Fashion Design Studio</title>
+  <meta name="description" content="FashionForge is an interactive digital fashion design studio where users compose tailored garments, experiment with components and materials, and preview the results in real time.">
+
+  <!-- Google Fonts for Haute Couture Aesthetics -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="css/style.css">
-  <script src="js/app.js" defer></script>
 </head>
 <body>
-  <header class="site-header">
-    <div class="container header-content">
-      <a class="brand" href="index.html" aria-label="FashionForge home">FashionForge</a>
-      <nav class="site-navigation" aria-label="Primary navigation">
-        <a href="#home">Home</a>
-        <a href="design.html">Design Studio</a>
-        <a href="#capabilities">Capabilities</a>
-        <a href="#how-it-works">How it works</a>
+
+  <!-- ========================================================================
+       1. NAVIGATION HEADER
+       ======================================================================== -->
+  <header class="home-nav-header" role="banner">
+    <div class="container home-nav-inner">
+      <a class="home-brand-logo" href="index.html" aria-label="FashionForge home">
+        <span class="home-brand-title">FashionForge</span>
+        <span class="home-brand-badge">ATELIER</span>
+      </a>
+
+      <nav class="home-nav-links" aria-label="Primary navigation">
+        <a class="home-nav-link" href="#home">Home</a>
+        <a class="home-nav-link" href="#capabilities">Capabilities</a>
+        <a class="home-nav-link" href="#how-it-works">How It Works</a>
+        <a class="home-nav-link" href="#tech-pack">Tech Pack</a>
       </nav>
+
+      <div class="home-nav-actions">
+        <a class="btn-primary" href="design.html">
+          <span>Enter Design Studio</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </a>
+      </div>
     </div>
   </header>
 
   <main>
-    <section class="hero-section" id="home">
-      <div class="container hero-content">
-        <div class="hero-copy">
-          <p class="eyebrow">Interactive digital costume design</p>
-          <h1>From first sketch to a style of your own.</h1>
-          <p class="hero-description">
-            FashionForge is a focused design studio for building costume concepts
-            from reusable garment components, colour, fabric, and pattern choices.
+
+    <!-- ========================================================================
+         2. HERO SECTION (2-COLUMN EDITORIAL)
+         ======================================================================== -->
+    <section class="home-hero-section" id="home" aria-labelledby="hero-headline">
+      <div class="container">
+        <div class="home-hero-grid">
+
+          <!-- Left Column: Typography & CTAs -->
+          <div class="hero-copy-column">
+            <div class="hero-eyebrow-chip">
+              <span class="live-dot" style="width: 7px; height: 7px; border-radius: 50%; background-color: var(--color-brand); display: inline-block;" aria-hidden="true"></span>
+              <span>Interactive Digital Fashion Studio</span>
+            </div>
+
+            <h1 class="hero-headline" id="hero-headline">
+              From first sketch to bespoke form.
+            </h1>
+
+            <p class="hero-description">
+              FashionForge is an interactive digital fashion design studio where users create garments, experiment with components and materials, and preview the results in real time on a professional fashion model.
+            </p>
+
+            <div class="hero-cta-group">
+              <a class="btn-primary" href="design.html">
+                <span>Launch Design Studio</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M5 12h14"/>
+                  <path d="m12 5 7 7-7 7"/>
+                </svg>
+              </a>
+
+              <a class="btn-secondary" href="#capabilities">
+                <span>Explore Capabilities</span>
+              </a>
+            </div>
+
+            <!-- Quantitative atelier metrics -->
+            <div class="hero-stat-row">
+              <div class="hero-stat-item">
+                <span class="stat-value">4-Part</span>
+                <span class="stat-label">Modular Silhouettes</span>
+              </div>
+
+              <div class="hero-stat-item">
+                <span class="stat-value">2.5D</span>
+                <span class="stat-label">Volumetric Lighting</span>
+              </div>
+
+              <div class="hero-stat-item">
+                <span class="stat-value">100%</span>
+                <span class="stat-label">CAD Synchronized</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Visual Atelier Showcase Card -->
+          <div class="hero-visual-column">
+            <div class="hero-atelier-card">
+              <div class="card-studio-header">
+                <div class="card-title-group">
+                  <span class="live-dot" aria-hidden="true"></span>
+                  <span class="card-title">Live Studio Viewport • Aria Ensemble</span>
+                </div>
+                <span class="badge-tag badge-active">Active Studio</span>
+              </div>
+
+              <div class="card-preview-viewport">
+                <!-- Calibrated 2.5D Studio Preview in Hero Card -->
+                <svg class="costume-preview hero-costume-preview" viewBox="85 70 600 1240" style="height: 94%; width: auto;" aria-label="FashionForge model wearing bespoke dress">
+                  <!-- Ground Shadow -->
+                  <ellipse cx="385" cy="1295" rx="140" ry="14" fill="#3a2e2a" opacity="0.3" style="filter: blur(8px);"></ellipse>
+                  <!-- Model Base Image -->
+                  <image href="assets/models/female-model-front.png" x="0" y="0" width="768" height="1376" preserveAspectRatio="xMidYMid meet"></image>
+                  <!-- Garment Silhouette Group -->
+                  <g class="hero-garment-group">
+                    <!-- Skirt underside facing -->
+                    <path d="M 228 906 Q 385 902 542 906 Q 385 918 228 906 Z" fill="#6a352f" opacity="0.88"></path>
+                    <!-- A-Line Skirt -->
+                    <path d="M 306 490 Q 385 495 462 490 C 472 540, 488 600, 498 660 C 510 740, 536 820, 542 906 Q 385 918 228 906 C 234 820, 260 740, 272 660 C 282 600, 298 540, 306 490 Z" fill="#b96b61"></path>
+                    <!-- Skirt drape flutes -->
+                    <path d="M 345 492 Q 330 680 322 915" fill="none" stroke="#5d2923" stroke-width="1.2" opacity="0.35"></path>
+                    <path d="M 385 495 Q 385 690 385 918" fill="none" stroke="#5d2923" stroke-width="1.2" opacity="0.3"></path>
+                    <path d="M 425 492 Q 440 680 448 915" fill="none" stroke="#5d2923" stroke-width="1.2" opacity="0.35"></path>
+                    <!-- Waist Shadow -->
+                    <path d="M 306 490 Q 385 495 462 490 L 462 497 Q 385 502 306 497 Z" fill="#4d1f1a" opacity="0.35"></path>
+                    <!-- Bodice -->
+                    <path d="M 343 282 Q 385 314 427 282 C 445 292, 475 302, 510 323 C 492 362, 479 403, 475 418 C 461 440, 464 468, 462 490 Q 385 495 306 490 C 304 468, 309 440, 295 418 C 291 403, 278 362, 260 323 C 295 302, 325 292, 343 282 Z" fill="#b96b61"></path>
+                    <!-- Bust fullness highlights -->
+                    <circle cx="345" cy="385" r="42" fill="#d98f86" opacity="0.35" style="filter: blur(12px);"></circle>
+                    <circle cx="425" cy="385" r="42" fill="#d98f86" opacity="0.3" style="filter: blur(12px);"></circle>
+                    <!-- Princess Seams -->
+                    <path d="M 302 301 Q 341 345 345 385 Q 349 435 345 492" fill="none" stroke="#5d2923" stroke-width="1.1" opacity="0.45"></path>
+                    <path d="M 468 301 Q 429 345 425 385 Q 421 435 425 492" fill="none" stroke="#5d2923" stroke-width="1.1" opacity="0.45"></path>
+                    <!-- Sleeves -->
+                    <path d="M 260 323 C 255 345, 254 370, 256 398 C 260 408, 280 418, 295 416 C 291 398, 278 362, 260 323 Z" fill="#b96b61"></path>
+                    <path d="M 510 323 C 515 345, 516 370, 514 398 C 510 408, 490 418, 475 416 C 479 398, 492 362, 510 323 Z" fill="#b96b61"></path>
+                    <!-- Armscye seams -->
+                    <path d="M 260 323 C 278 362, 291 403, 295 418" fill="none" stroke="#5d2923" stroke-width="1" opacity="0.4"></path>
+                    <path d="M 510 323 C 492 362, 479 403, 475 418" fill="none" stroke="#5d2923" stroke-width="1" opacity="0.4"></path>
+                    <!-- Neckline Binding -->
+                    <path d="M 343 282 Q 385 314 427 282 L 427 288 Q 385 320 343 288 Z" fill="#b96b61" stroke="#5d2923" stroke-width="0.9"></path>
+                  </g>
+                </svg>
+
+                <!-- Floating price badge -->
+                <div class="hero-floating-badge" aria-label="Estimated garment price">
+                  <span class="badge-caption">Estimated Price</span>
+                  <span class="badge-price">₹1,480</span>
+                </div>
+
+                <!-- Floating swatch pill -->
+                <div class="hero-floating-swatches" aria-label="Selected fabric and color">
+                  <span class="swatch-pill-dot" style="background-color: #b96b61;" aria-hidden="true"></span>
+                  <span class="swatch-pill-label">Rose Clay • Organic Cotton</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================
+         3. PRODUCT CAPABILITIES SECTION
+         ======================================================================== -->
+    <section class="home-capabilities-section" id="capabilities" aria-labelledby="capabilities-title">
+      <div class="container">
+        <div class="section-editorial-header">
+          <p class="eyebrow">Studio Capabilities</p>
+          <h2 class="section-editorial-title" id="capabilities-title">
+            One workspace for the entire creative cycle.
+          </h2>
+          <p class="section-editorial-lead">
+            Every feature of FashionForge is engineered to keep experimentation clear, visual, and immediately grounded in real garment construction.
           </p>
-          <div class="hero-actions">
-            <a class="primary-button" href="design.html">Explore the Studio</a>
-            <a class="text-link" href="#how-it-works">See how it works <span aria-hidden="true">&rarr;</span></a>
+        </div>
+
+        <div class="capability-cards-grid">
+          <article class="capability-card">
+            <span class="capability-number">01 / SILHOUETTES</span>
+            <div class="capability-icon-wrap" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="18" height="18" x="3" y="3" rx="2"/>
+                <path d="M3 9h18"/>
+                <path d="M9 21V9"/>
+              </svg>
+            </div>
+            <h3 class="capability-title">Component-Based Modeling</h3>
+            <p class="capability-desc">
+              Compose bespoke dresses and outfits by assembling bodices, skirts, set-in sleeves, and finished necklines calibrated to anatomical landmarks.
+            </p>
+          </article>
+
+          <article class="capability-card">
+            <span class="capability-number">02 / LIGHTING</span>
+            <div class="capability-icon-wrap" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="5"/>
+                <line x1="12" y1="1" x2="12" y2="3"/>
+                <line x1="12" y1="21" x2="12" y2="23"/>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+              </svg>
+            </div>
+            <h3 class="capability-title">2.5D Volumetric Draping</h3>
+            <p class="capability-desc">
+              Experience authentic fabric depth through directional key lighting, bust fullness highlights, sleeve contouring, and undulating skirt drape flutes.
+            </p>
+          </article>
+
+          <article class="capability-card">
+            <span class="capability-number">03 / PRECISION</span>
+            <div class="capability-icon-wrap" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 12h20"/>
+                <path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6"/>
+                <path d="m12 2 4 4-4 4"/>
+              </svg>
+            </div>
+            <h3 class="capability-title">Dual Technical Flat CAD</h3>
+            <p class="capability-desc">
+              Instantly generate clean vector technical flats for front and back construction with princess seams, armscye attachments, and center-back zipper details.
+            </p>
+          </article>
+
+          <article class="capability-card">
+            <span class="capability-number">04 / INTELLIGENCE</span>
+            <div class="capability-icon-wrap" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v20"/>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+            </div>
+            <h3 class="capability-title">Live Cost & Specifications</h3>
+            <p class="capability-desc">
+              View real-time itemized price estimates and rule-based style recommendations that adapt automatically as you select premium fabrics and silhouettes.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================
+         4. HOW FASHIONFORGE WORKS SECTION
+         ======================================================================== -->
+    <section class="home-workflow-section" id="how-it-works" aria-labelledby="workflow-title">
+      <div class="container">
+        <div class="section-editorial-header">
+          <p class="eyebrow">Creative Flow</p>
+          <h2 class="section-editorial-title" id="workflow-title">
+            From imagination to finished concept.
+          </h2>
+          <p class="section-editorial-lead">
+            A straightforward four-step studio workflow that bridges artistic vision and technical garment construction.
+          </p>
+        </div>
+
+        <div class="workflow-steps-grid">
+          <article class="workflow-step-card">
+            <span class="step-marker">1</span>
+            <h3 class="step-title">Choose Components</h3>
+            <p class="step-copy">
+              Select your bodice shape, skirt length, sleeve contour, and collar style from our visual component selector.
+            </p>
+          </article>
+
+          <article class="workflow-step-card">
+            <span class="step-marker">2</span>
+            <h3 class="step-title">Express with Materials</h3>
+            <p class="step-copy">
+              Explore curated atelier color swatches, procedural fabric textures (silk, denim, cotton, linen), and surface patterns.
+            </p>
+          </article>
+
+          <article class="workflow-step-card">
+            <span class="step-marker">3</span>
+            <h3 class="step-title">Inspect 2.5D Fit</h3>
+            <p class="step-copy">
+              Switch smoothly between Front and Back views on our photographic model with anatomical landmark alignment.
+            </p>
+          </article>
+
+          <article class="workflow-step-card">
+            <span class="step-marker">4</span>
+            <h3 class="step-title">Generate Tech Pack</h3>
+            <p class="step-copy">
+              Inspect technical CAD flats, garment specifications, itemized pricing, and export production-ready documentation.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================
+         5. DESIGN-TO-TECH-PACK SPOTLIGHT
+         ======================================================================== -->
+    <section class="home-techpack-spotlight" id="tech-pack" aria-labelledby="spotlight-title">
+      <div class="container">
+        <div class="spotlight-card">
+          <div class="spotlight-copy">
+            <p class="eyebrow">Production Ready</p>
+            <h2 id="spotlight-title">Bridging creative studio and garment manufacturing.</h2>
+            <p>
+              Traditional fashion design tools isolate sketching from manufacturing. FashionForge synchronizes your visual design choices with automated Bill of Materials (BOM), seam tolerances, and vector CAD drawings in real time.
+            </p>
+            <div style="display: flex; gap: var(--space-4);">
+              <a class="btn-primary" href="design.html">
+                <span>Try the Studio</span>
+              </a>
+              <a class="btn-secondary" href="design.html?mode=tech-pack">
+                <span>View Tech Pack</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="spotlight-preview-frame">
+            <div class="preview-cad-header">
+              <span>TECHNICAL SPECIFICATION PREVIEW</span>
+              <span class="status-indicator-circle"></span>
+            </div>
+            <div style="display: flex; gap: var(--space-4); align-items: center; justify-content: center; height: 180px;">
+              <svg viewBox="215 270 340 660" style="height: 100%; width: auto;" aria-hidden="true">
+                <path d="M 306 490 Q 385 495 462 490 C 472 540, 488 600, 498 660 C 510 740, 536 820, 542 906 Q 385 918 228 906 C 234 820, 260 740, 272 660 C 282 600, 298 540, 306 490 Z" fill="#ffffff" stroke="#1e1c1b" stroke-width="6"/>
+                <path d="M 343 282 Q 385 314 427 282 C 445 292, 475 302, 510 323 C 492 362, 479 403, 475 418 C 461 440, 464 468, 462 490 Q 385 495 306 490 C 304 468, 309 440, 295 418 C 291 403, 278 362, 260 323 C 295 302, 325 292, 343 282 Z" fill="#ffffff" stroke="#1e1c1b" stroke-width="6"/>
+                <path d="M 260 323 C 255 345, 254 370, 256 398 C 260 408, 280 418, 295 416 C 291 398, 278 362, 260 323 Z" fill="#ffffff" stroke="#1e1c1b" stroke-width="5"/>
+                <path d="M 510 323 C 515 345, 516 370, 514 398 C 510 408, 490 418, 475 416 C 479 398, 492 362, 510 323 Z" fill="#ffffff" stroke="#1e1c1b" stroke-width="5"/>
+              </svg>
+            </div>
           </div>
         </div>
       </div>
-      <div class="hero-visual" aria-label="Abstract preview of layered costume design" role="img">
-        <div class="visual-label">Your design space</div>
-        <div class="visual-garment visual-garment-top"></div>
-        <div class="visual-garment visual-garment-bottom"></div>
-        <span class="visual-note visual-note-one">01 / components</span>
-        <span class="visual-note visual-note-two">02 / expression</span>
+    </section>
+
+    <!-- ========================================================================
+         6. FINAL CALL TO ACTION
+         ======================================================================== -->
+    <section class="home-final-cta" aria-labelledby="cta-title">
+      <div class="container final-cta-content">
+        <p class="eyebrow">Begin Your Collection</p>
+        <h2 class="final-cta-title" id="cta-title">
+          Make room for your point of view.
+        </h2>
+        <p class="final-cta-description">
+          The FashionForge Design Studio is ready for your creative exploration. Compose your first silhouette in seconds.
+        </p>
+        <a class="btn-primary" href="design.html" style="font-size: var(--text-md); height: 3rem; padding: 0 var(--space-8);">
+          <span>Enter the Design Studio</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </a>
       </div>
     </section>
 
-    <section class="section-placeholder" id="design-studio" aria-labelledby="studio-title">
-      <div class="container placeholder-content">
-        <div>
-          <p class="eyebrow">Your next creative step</p>
-          <h2 id="studio-title">The Design Studio is taking shape.</h2>
-          <p>
-            Soon you will be able to choose components, explore combinations, and
-            see your costume concept come together in one workspace.
-          </p>
-        </div>
-        <a class="secondary-button" href="#capabilities">Explore the foundation</a>
-      </div>
-    </section>
-
-    <section class="features-section" id="capabilities" aria-labelledby="features-title">
-      <div class="container">
-        <div class="section-heading">
-          <p class="eyebrow">What you will be able to explore</p>
-          <h2 id="features-title">One workspace for the whole design idea.</h2>
-          <p>
-            Each part of FashionForge is designed to keep experimentation clear,
-            visual, and easy to understand.
-          </p>
-        </div>
-        <div class="feature-grid">
-          <article class="feature-card">
-            <span class="feature-number">01</span>
-            <h3>Build with components</h3>
-            <p>Combine tops, bottoms, sleeves, and necklines into one costume concept.</p>
-          </article>
-          <article class="feature-card">
-            <span class="feature-number">02</span>
-            <h3>Find the right expression</h3>
-            <p>Explore colour, fabric, and pattern choices to shape the mood of your design.</p>
-          </article>
-          <article class="feature-card">
-            <span class="feature-number">03</span>
-            <h3>Preview every angle</h3>
-            <p>Move between front and back views, with a technical sketch for closer study.</p>
-          </article>
-          <article class="feature-card">
-            <span class="feature-number">04</span>
-            <h3>Read the details</h3>
-            <p>Keep specifications, recommendations, and estimated price close to the design.</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="process-section" id="how-it-works" aria-labelledby="process-title">
-      <div class="container process-layout">
-        <div class="section-heading">
-          <p class="eyebrow">A simple creative flow</p>
-          <h2 id="process-title">How it works</h2>
-          <p>
-            Start with a shape, make it yours, and review the result before moving
-            on to the next idea.
-          </p>
-        </div>
-        <ol class="process-list">
-          <li class="process-step">
-            <span class="step-number">1</span>
-            <div>
-              <h3>Choose components</h3>
-              <p>Begin with the garment pieces that define your silhouette.</p>
-            </div>
-          </li>
-          <li class="process-step">
-            <span class="step-number">2</span>
-            <div>
-              <h3>Set the mood</h3>
-              <p>Select a colour, fabric, and pattern to express your direction.</p>
-            </div>
-          </li>
-          <li class="process-step">
-            <span class="step-number">3</span>
-            <div>
-              <h3>Review the design</h3>
-              <p>View the front and back, specifications, and technical details.</p>
-            </div>
-          </li>
-          <li class="process-step">
-            <span class="step-number">4</span>
-            <div>
-              <h3>Refine the idea</h3>
-              <p>Use the design information to make the next thoughtful choice.</p>
-            </div>
-          </li>
-        </ol>
-      </div>
-    </section>
-
-    <section class="studio-cta" aria-labelledby="cta-title">
-      <div class="container studio-cta-content">
-        <div>
-          <p class="eyebrow">The next chapter</p>
-          <h2 id="cta-title">Make room for your point of view.</h2>
-          <p>The FashionForge Design Studio will be ready for your first combination soon.</p>
-        </div>
-        <a class="primary-button" href="design.html">Enter the future Studio</a>
-      </div>
-    </section>
   </main>
 
-  <footer class="site-footer">
-    <div class="container footer-content">
-      <p>&copy; 2026 FashionForge</p>
-      <p id="frontend-status">Loading frontend...</p>
+  <!-- ========================================================================
+       7. FOOTER
+       ======================================================================== -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="container footer-inner">
+      <div class="footer-copy">
+        &copy; 2026 FashionForge Atelier. All rights reserved. Interactive Digital Fashion Design Studio.
+      </div>
+      <nav class="footer-nav" aria-label="Footer navigation">
+        <a href="#home">Home</a>
+        <a href="design.html">Studio</a>
+        <a href="#capabilities">Capabilities</a>
+        <a href="#how-it-works">Workflow</a>
+        <a href="#tech-pack">Tech Pack</a>
+      </nav>
     </div>
   </footer>
+
 </body>
 </html>
