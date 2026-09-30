@@ -44,6 +44,10 @@ import {
   getFemaleCroquisTarget
 } from './body-profiles.js';
 
+import {
+  renderCalibrationOverlay
+} from './croquis-calibration.js';
+
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
 /**
@@ -144,6 +148,11 @@ export function renderDesign(designState, svgElement) {
     if (designState.figureVisible !== false && !isBack) {
       renderForegroundHands(svgElement, isBack, size);
     }
+  }
+
+  // Stage 3: Development Calibration Overlay Debugger (Requirement 14)
+  if (designState.debugCalibration || (typeof window !== 'undefined' && window.__FF_DEBUG_CALIBRATION)) {
+    renderCalibrationOverlay(svgElement, size, isBack, LM);
   }
 }
 

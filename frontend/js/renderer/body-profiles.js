@@ -92,39 +92,17 @@ export function getFemaleCroquisTarget(size = 'M', view = 'front') {
   return `assets/models/female-model-${normSize.toLowerCase()}-${normView}.png`;
 }
 
+import { getCalibratedHandClips } from './croquis-calibration.js';
+
 export const SIZE_HAND_CLIPS = {
-  XS: {
-    left: 'M 234 610 L 266 610 L 266 745 L 234 745 Z',
-    right: 'M 504 610 L 536 610 L 536 745 L 504 745 Z'
-  },
-  S: {
-    left: 'M 234 610 L 266 610 L 266 745 L 234 745 Z',
-    right: 'M 504 610 L 536 610 L 536 745 L 504 745 Z'
-  },
-  M: {
-    left: 'M 238 580 L 275 580 L 275 750 L 238 750 Z',
-    right: 'M 495 580 L 535 580 L 535 750 L 495 750 Z'
-  },
-  L: {
-    left: 'M 224 610 L 254 610 L 254 745 L 224 745 Z',
-    right: 'M 516 610 L 546 610 L 546 745 L 516 745 Z'
-  },
-  XL: {
-    left: 'M 216 610 L 246 610 L 246 745 L 216 745 Z',
-    right: 'M 524 610 L 554 610 L 554 745 L 524 745 Z'
-  },
-  XXL: {
-    left: 'M 218 610 L 248 610 L 248 745 L 218 745 Z',
-    right: 'M 522 610 L 552 610 L 552 745 L 522 745 Z'
-  },
-  '3XL': {
-    left: 'M 218 610 L 248 610 L 248 745 L 218 745 Z',
-    right: 'M 522 610 L 552 610 L 552 745 L 522 745 Z'
-  },
-  '4XL': {
-    left: 'M 208 610 L 238 610 L 238 745 L 208 745 Z',
-    right: 'M 532 610 L 562 610 L 562 745 L 532 745 Z'
-  }
+  XS: getCalibratedHandClips('XS'),
+  S: getCalibratedHandClips('S'),
+  M: getCalibratedHandClips('M'),
+  L: getCalibratedHandClips('L'),
+  XL: getCalibratedHandClips('XL'),
+  XXL: getCalibratedHandClips('XXL'),
+  '3XL': getCalibratedHandClips('3XL'),
+  '4XL': getCalibratedHandClips('4XL')
 };
 
 /**
