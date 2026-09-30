@@ -176,6 +176,8 @@ export function resetDesign() {
   designState.zoom = 100;
   designState.figureVisible = true;
   designState.detailsVisible = true;
+  designState.name = 'Fitted Bodice Dress';
+  designState.notes = 'Fitted bodice with natural waist connection and structured A-line drape.';
 
   syncUIFromState();
   updatePreview();
@@ -204,6 +206,33 @@ export function calculatePrice(state) {
  * Deterministic Style Recommendation matching reference fashion intelligence
  */
 export function getRecommendation(state) {
+  const isMale = (state.figure === 'male' || state.croquis === 'male');
+
+  if (state.bottom === 'trousers' || state.bottom === 'wide') {
+    if (isMale) return 'Tailored trousers with a structured bodice create a sharp, contemporary menswear silhouette. Ideal for modern bespoke tailoring.';
+    return 'Palazzo trousers add dramatic length and movement. Pair with a fitted bodice or wrap top for a balanced, sophisticated look.';
+  }
+  if (state.top === 'peplum') {
+    return 'The peplum tier adds structured volume at the hip, creating a defined hourglass silhouette with couture drama.';
+  }
+  if (state.top === 'wrap') {
+    return 'The wrap construction is universally flattering — adjustable, fluid, and versatile across all body types and occasions.';
+  }
+  if (state.sleeves === 'flare') {
+    return 'Bell sleeves add a bohemian romanticism to the design. Works beautifully with both fitted bodices and flowing skirts.';
+  }
+  if (state.sleeves === 'long') {
+    return 'Long sleeves provide elegant coverage and structural refinement. Ideal for formal, office, or seasonal bespoke wear.';
+  }
+  if (state.collar === 'vneck') {
+    return 'The V-neck elongates the neckline and adds a sophisticated décolletage. A timeless neckline that complements all body types.';
+  }
+  if (state.collar === 'square') {
+    return 'The square neckline frames the shoulders with clean architectural lines — a fashion-forward cut with strong visual impact.';
+  }
+  if (state.bottom === 'straight') {
+    return 'The pencil skirt creates a sleek, body-conscious column silhouette. Ideal for formal and office bespoke tailoring.';
+  }
   if (state.fabric === 'cotton' && state.top === 'basic' && state.bottom === 'skirt') {
     return 'A classic and versatile design that works well for both casual and semi-formal occasions. The A-line skirt flatters most body types and offers comfortable movement.';
   }
@@ -1014,7 +1043,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnCloseSelectors) btnCloseSelectors.addEventListener('click', closeSelectorsModal);
   if (btnDoneSelectors) btnDoneSelectors.addEventListener('click', closeSelectorsModal);
 
-  // 18. Croquis Model Switcher
+  // 18. Croquis Model Switcher (with gender-aware garment defaults)
   const btnCroquisFemale = document.querySelector('#btn-croquis-female');
   const btnCroquisMale = document.querySelector('#btn-croquis-male');
   if (btnCroquisFemale) {
@@ -1023,6 +1052,10 @@ document.addEventListener('DOMContentLoaded', () => {
       pushStateSnapshot();
       designState.figure = 'female';
       designState.croquis = 'female';
+      // Female garment defaults: skirt-family bottom if currently wearing trousers or wide
+      if (designState.bottom === 'trousers' || designState.bottom === 'wide') {
+        designState.bottom = 'skirt';
+      }
       syncUIFromState();
       updatePreview();
       showToast('Female Model active');
@@ -1034,6 +1067,10 @@ document.addEventListener('DOMContentLoaded', () => {
       pushStateSnapshot();
       designState.figure = 'male';
       designState.croquis = 'male';
+      // Male garment defaults: switch from A-line skirt/straight skirt to trousers
+      if (designState.bottom === 'skirt' || designState.bottom === 'straight') {
+        designState.bottom = 'trousers';
+      }
       syncUIFromState();
       updatePreview();
       showToast('Male Model active');

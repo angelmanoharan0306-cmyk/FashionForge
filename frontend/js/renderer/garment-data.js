@@ -1,8 +1,8 @@
 /**
  * FashionForge — 2.5D Centralized Renderer: Garment Component Registry
  *
- * Defines the component catalog, metadata, pricing, and active status
- * for the Phase 3 vertical slice.
+ * Phase 5: All garment components are now active and fully rendered.
+ * Components map directly to geometry functions in geometry.js.
  */
 
 export const GARMENT_CATALOG = {
@@ -18,20 +18,26 @@ export const GARMENT_CATALOG = {
     crop: {
       id: 'crop',
       category: 'top',
-      name: 'Crop Top (Phase 4)',
-      status: 'reserved',
-      disabled: true,
-      price: 350,
-      description: 'Reserved for Phase 4 library expansion.'
+      name: 'Relaxed Fit',
+      status: 'active',
+      price: 380,
+      description: 'Boxy, relaxed silhouette with dropped shoulders and straight hip-length hem. No waist suppression.'
     },
-    tunic: {
-      id: 'tunic',
+    wrap: {
+      id: 'wrap',
       category: 'top',
-      name: 'Tunic Top (Phase 4)',
-      status: 'reserved',
-      disabled: true,
-      price: 500,
-      description: 'Reserved for Phase 4 library expansion.'
+      name: 'Wrap Top',
+      status: 'active',
+      price: 420,
+      description: 'Diagonal V-lapel wrap with crossed centre-front. Adjustable and universally flattering.'
+    },
+    peplum: {
+      id: 'peplum',
+      category: 'top',
+      name: 'Peplum Bodice',
+      status: 'active',
+      price: 490,
+      description: 'Fitted bodice with a structured flounced peplum tier at the waist for a feminine silhouette.'
     }
   },
   bottoms: {
@@ -43,23 +49,29 @@ export const GARMENT_CATALOG = {
       price: 550,
       description: 'Balanced A-line flare skirt contouring natural waist and hips with soft drape volume.'
     },
-    trousers: {
-      id: 'trousers',
+    straight: {
+      id: 'straight',
       category: 'bottom',
-      name: 'Trousers (Phase 4)',
-      status: 'reserved',
-      disabled: true,
-      price: 600,
-      description: 'Reserved for Phase 4 library expansion.'
+      name: 'Straight Skirt',
+      status: 'active',
+      price: 520,
+      description: 'Slim pencil silhouette from waist to knee with minimal taper. Clean and architectural.'
     },
     wide: {
       id: 'wide',
       category: 'bottom',
-      name: 'Wide Bottom (Phase 4)',
-      status: 'reserved',
-      disabled: true,
-      price: 650,
-      description: 'Reserved for Phase 4 library expansion.'
+      name: 'Wide Leg',
+      status: 'active',
+      price: 640,
+      description: 'Dramatic palazzo wide-leg trousers with full flare from the hip to ankle length.'
+    },
+    trousers: {
+      id: 'trousers',
+      category: 'bottom',
+      name: 'Slim Trousers',
+      status: 'active',
+      price: 600,
+      description: 'Tailored slim-leg trousers tapered from hip to ankle with a clean straight break.'
     }
   },
   sleeves: {
@@ -74,20 +86,18 @@ export const GARMENT_CATALOG = {
     long: {
       id: 'long',
       category: 'sleeves',
-      name: 'Long Sleeve (Phase 4)',
-      status: 'reserved',
-      disabled: true,
+      name: 'Long Sleeve',
+      status: 'active',
       price: 220,
-      description: 'Reserved for Phase 4 library expansion.'
+      description: 'Full-length sleeve tapering from bicep to wrist with a clean finished cuff.'
     },
     flare: {
       id: 'flare',
       category: 'sleeves',
-      name: 'Flare Sleeve (Phase 4)',
-      status: 'reserved',
-      disabled: true,
+      name: 'Flare / Bell Sleeve',
+      status: 'active',
       price: 200,
-      description: 'Reserved for Phase 4 library expansion.'
+      description: 'Fitted at the cap with a dramatically flared bell hem at mid-forearm level.'
     }
   },
   collars: {
@@ -102,20 +112,18 @@ export const GARMENT_CATALOG = {
     vneck: {
       id: 'vneck',
       category: 'collar',
-      name: 'V-Neck (Phase 4)',
-      status: 'reserved',
-      disabled: true,
+      name: 'V-Neck',
+      status: 'active',
       price: 90,
-      description: 'Reserved for Phase 4 library expansion.'
+      description: 'Pointed V-neckline with a deep sternum dip. Elongates and defines the décolletage.'
     },
     square: {
       id: 'square',
       category: 'collar',
-      name: 'Square Neck (Phase 4)',
-      status: 'reserved',
-      disabled: true,
+      name: 'Square Neck',
+      status: 'active',
       price: 95,
-      description: 'Reserved for Phase 4 library expansion.'
+      description: 'Structured horizontal chest-level neckline with clean right-angle corners.'
     }
   },
   fabrics: {

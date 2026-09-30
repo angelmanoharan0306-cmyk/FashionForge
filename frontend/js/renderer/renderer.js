@@ -26,7 +26,28 @@ import {
   getLeftSleevePath,
   getRightSleevePath,
   getNecklineBindingPath,
-  getConstructionLines
+  getConstructionLines,
+  // Phase 5 — Additional Component Geometry
+  getRelaxedBodiceFrontPath,
+  getRelaxedBodiceBackPath,
+  getWrapTopFrontPath,
+  getWrapTopBackPath,
+  getPeplumFrontPath,
+  getPeplumBackPath,
+  getPeplumFlareFrontPath,
+  getPeplumFlareBackPath,
+  getStraightSkirtFrontPath,
+  getStraightSkirtBackPath,
+  getWideLegFrontPath,
+  getWideLegBackPath,
+  getTrouserFrontPath,
+  getTrouserBackPath,
+  getLeftLongSleevePath,
+  getRightLongSleevePath,
+  getLeftFlareSleevePath,
+  getRightFlareSleevePath,
+  getVNeckBindingPath,
+  getSquareNeckBindingPath
 } from './geometry.js';
 
 import {
@@ -151,16 +172,20 @@ export function renderGarment(garmentGroup, designState, palette, isBack, LM) {
   renderBottom(garmentGroup, designState, palette, isBack, LM);
 
   // 3. Waist Interface Connection & Contact Shadow
-  renderWaistInterface(garmentGroup, palette, isBack, LM);
+  const bottom = designState.bottom || 'skirt';
+  // Show waist seam only for skirt-family bottoms (not trousers)
+  if (bottom === 'skirt' || bottom === 'straight') {
+    renderWaistInterface(garmentGroup, palette, isBack, LM);
+  }
 
   // 4. Bodice (Fitted Torso with princess seams & bust fullness)
   renderTop(garmentGroup, designState, palette, isBack, LM);
 
-  // 5. Sleeves (Set-In Short Sleeves with cylindrical volume)
+  // 5. Sleeves with cylindrical volume (dispatched by designState.sleeves)
   renderSleeves(garmentGroup, designState, palette, isBack, LM);
 
-  // 6. Neckline / Collar Finished Binding
-  renderNeckline(garmentGroup, palette, isBack, LM);
+  // 6. Neckline / Collar Finished Binding (dispatched by designState.collar)
+  renderNeckline(garmentGroup, palette, isBack, LM, designState.collar || 'round');
 
   // 7. Construction Seams, Topstitching & Flutes
   applyConstructionDetails(garmentGroup, palette, isBack, LM);
@@ -271,11 +296,24 @@ function renderBackDepth(container, palette, LM = MODEL_GEOMETRY.landmarks) {
 }
 
 /**
- * 3. Lower Garment (A-Line Skirt)
+ * Helper: resolve the bottom path based on designState.bottom
+ */
+function getBottomPath(bottom, isBack, LM) {
+  switch (bottom) {
+    case 'straight': return isBack ? getStraightSkirtBackPath(LM) : getStraightSkirtFrontPath(LM);
+    case 'wide':     return isBack ? getWideLegBackPath(LM)         : getWideLegFrontPath(LM);
+    case 'trousers': return isBack ? getTrouserBackPath(LM)          : getTrouserFrontPath(LM);
+    default:         return isBack ? getSkirtBackPath(LM)            : getSkirtFrontPath(LM);
+  }
+}
+
+/**
+ * 3. Lower Garment (Dispatched by designState.bottom)
  */
 function renderBottom(container, designState, palette, isBack, LM = MODEL_GEOMETRY.landmarks) {
   const skirtGroup = createSvgElement('g', { class: 'garment-region bottom-region', 'data-region': 'bottom' });
-  const skirtPathData = isBack ? getSkirtBackPath(LM) : getSkirtFrontPath(LM);
+  const bottom = designState.bottom || 'skirt';
+  const skirtPathData = getBottomPath(bottom, isBack, LM);
   const fabricId = designState.fabric || 'cotton';
 
   // 3a. Base structural fabric fill with soft shadow filter
@@ -388,7 +426,17 @@ function renderWaistInterface(container, palette, isBack, LM = MODEL_GEOMETRY.la
  */
 function renderTop(container, designState, palette, isBack, LM = MODEL_GEOMETRY.landmarks) {
   const topGroup = createSvgElement('g', { class: 'garment-region top-region', 'data-region': 'top' });
-  const bodicePathData = isBack ? getBodiceBackPath(LM) : getBodiceFrontPath(LM);
+  const top = designState.top || 'basic';
+  let bodicePathData;
+  if (top === 'crop') {
+    bodicePathData = isBack ? getRelaxedBodiceBackPath(LM) : getRelaxedBodiceFrontPath(LM);
+  } else if (top === 'wrap') {
+    bodicePathData = isBack ? getWrapTopBackPath(LM) : getWrapTopFrontPath(LM);
+  } else if (top === 'peplum') {
+    bodicePathData = isBack ? getPeplumBackPath(LM) : getPeplumFrontPath(LM);
+  } else {
+    bodicePathData = isBack ? getBodiceBackPath(LM) : getBodiceFrontPath(LM);
+  }
   const fabricId = designState.fabric || 'cotton';
 
   // 5a. Base structural fabric fill
@@ -473,16 +521,50 @@ function renderTop(container, designState, palette, isBack, LM = MODEL_GEOMETRY.
     topGroup.appendChild(patternOverlay);
   }
 
+  // 5f. Peplum flounce tier (rendered in addition to fitted bodice)
+  if (top === 'peplum') {
+    const peplumPath = isBack ? getPeplumFlareBackPath(LM) : getPeplumFlareFrontPath(LM);
+    const peplumBase = createSvgElement('path', {
+      d: peplumPath,
+      fill: palette.base,
+      stroke: palette.seamColor,
+      'stroke-width': '0.9'
+    });
+    const peplumLight = createSvgElement('path', {
+      d: peplumPath,
+      fill: isBack ? 'url(#ff-light-skirt-back)' : 'url(#ff-light-skirt-front)',
+      style: 'mix-blend-mode: multiply; opacity: 0.60;'
+    });
+    const peplumWeave = createSvgElement('path', {
+      d: peplumPath,
+      fill: `url(#ff-fabric-weave-${fabricId})`,
+      style: 'mix-blend-mode: overlay; opacity: 0.30;'
+    });
+    topGroup.appendChild(peplumBase);
+    topGroup.appendChild(peplumLight);
+    topGroup.appendChild(peplumWeave);
+  }
+
   container.appendChild(topGroup);
 }
 
 /**
- * 6. Sleeves (Set-In Short Sleeves)
+ * 6. Sleeves (Dispatched by designState.sleeves)
  */
 function renderSleeves(container, designState, palette, isBack, LM = MODEL_GEOMETRY.landmarks) {
   const sleevesGroup = createSvgElement('g', { class: 'garment-region sleeves-region', 'data-region': 'sleeves' });
-  const leftPathData = getLeftSleevePath(isBack, LM);
-  const rightPathData = getRightSleevePath(isBack, LM);
+  const sleevesStyle = designState.sleeves || 'short';
+  let leftPathData, rightPathData;
+  if (sleevesStyle === 'long') {
+    leftPathData  = getLeftLongSleevePath(isBack, LM);
+    rightPathData = getRightLongSleevePath(isBack, LM);
+  } else if (sleevesStyle === 'flare') {
+    leftPathData  = getLeftFlareSleevePath(isBack, LM);
+    rightPathData = getRightFlareSleevePath(isBack, LM);
+  } else {
+    leftPathData  = getLeftSleevePath(isBack, LM);
+    rightPathData = getRightSleevePath(isBack, LM);
+  }
   const fabricId = designState.fabric || 'cotton';
   const weavePatternId = `ff-fabric-weave-${fabricId}`;
 
@@ -586,14 +668,23 @@ function renderSleeves(container, designState, palette, isBack, LM = MODEL_GEOME
 }
 
 /**
- * 7. Neckline / Collar
+ * 7. Neckline / Collar (Dispatched by designState.collar)
  */
-function renderNeckline(container, palette, isBack, LM = MODEL_GEOMETRY.landmarks) {
+function renderNeckline(container, palette, isBack, LM = MODEL_GEOMETRY.landmarks, collar = 'round') {
   const neckGroup = createSvgElement('g', { class: 'garment-region neckline-region', 'data-region': 'collar' });
+
+  let neckBindingPath;
+  if (collar === 'vneck') {
+    neckBindingPath = getVNeckBindingPath(isBack, LM);
+  } else if (collar === 'square') {
+    neckBindingPath = getSquareNeckBindingPath(isBack, LM);
+  } else {
+    neckBindingPath = getNecklineBindingPath(isBack, LM);
+  }
 
   // Finished slender neck binding strip
   const binding = createSvgElement('path', {
-    d: getNecklineBindingPath(isBack, LM),
+    d: neckBindingPath,
     fill: palette.base,
     stroke: palette.seamColor,
     'stroke-width': '0.9',
@@ -845,12 +936,48 @@ function buildTechnicalFlatSvg(containerSvg, isBack = false, designState = null)
     'stroke-linejoin': 'round'
   });
 
-  // Base garment pieces
-  const skirtPath = createSvgElement('path', { d: isBack ? getSkirtBackPath(LM) : getSkirtFrontPath(LM) });
-  const bodicePath = createSvgElement('path', { d: isBack ? getBodiceBackPath(LM) : getBodiceFrontPath(LM) });
-  const leftSleeve = createSvgElement('path', { d: getLeftSleevePath(isBack, LM) });
-  const rightSleeve = createSvgElement('path', { d: getRightSleevePath(isBack, LM) });
-  const neckBinding = createSvgElement('path', { d: getNecklineBindingPath(isBack, LM), fill: '#f6f4f2' });
+  // Base garment pieces (dispatched by designState component selectors)
+  const top = designState?.top || 'basic';
+  const bottom = designState?.bottom || 'skirt';
+  const sleevesStyle = designState?.sleeves || 'short';
+  const collar = designState?.collar || 'round';
+
+  let bodicePathD;
+  if (top === 'crop') bodicePathD = isBack ? getRelaxedBodiceBackPath(LM) : getRelaxedBodiceFrontPath(LM);
+  else if (top === 'wrap') bodicePathD = isBack ? getWrapTopBackPath(LM) : getWrapTopFrontPath(LM);
+  else if (top === 'peplum') bodicePathD = isBack ? getPeplumBackPath(LM) : getPeplumFrontPath(LM);
+  else bodicePathD = isBack ? getBodiceBackPath(LM) : getBodiceFrontPath(LM);
+
+  let bottomPathD = getBottomPath(bottom, isBack, LM);
+
+  let leftSleeveD, rightSleeveD;
+  if (sleevesStyle === 'long') {
+    leftSleeveD  = getLeftLongSleevePath(isBack, LM);
+    rightSleeveD = getRightLongSleevePath(isBack, LM);
+  } else if (sleevesStyle === 'flare') {
+    leftSleeveD  = getLeftFlareSleevePath(isBack, LM);
+    rightSleeveD = getRightFlareSleevePath(isBack, LM);
+  } else {
+    leftSleeveD  = getLeftSleevePath(isBack, LM);
+    rightSleeveD = getRightSleevePath(isBack, LM);
+  }
+
+  let neckD;
+  if (collar === 'vneck') neckD = getVNeckBindingPath(isBack, LM);
+  else if (collar === 'square') neckD = getSquareNeckBindingPath(isBack, LM);
+  else neckD = getNecklineBindingPath(isBack, LM);
+
+  const skirtPath = createSvgElement('path', { d: bottomPathD });
+  const bodicePath = createSvgElement('path', { d: bodicePathD });
+  const leftSleeve = createSvgElement('path', { d: leftSleeveD });
+  const rightSleeve = createSvgElement('path', { d: rightSleeveD });
+  const neckBinding = createSvgElement('path', { d: neckD, fill: '#f6f4f2' });
+
+  // Peplum flounce in technical flat
+  if (top === 'peplum') {
+    const peplumFlat = createSvgElement('path', { d: isBack ? getPeplumFlareBackPath(LM) : getPeplumFlareFrontPath(LM) });
+    g.appendChild(peplumFlat);
+  }
 
   g.appendChild(skirtPath);
   g.appendChild(bodicePath);
