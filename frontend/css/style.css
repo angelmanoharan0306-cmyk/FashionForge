@@ -3562,7 +3562,7 @@ img, svg {
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.1em;
-  text-transform uppercase;
+  text-transform: uppercase;
   padding: 2px 8px;
   border-radius: 4px;
   margin-bottom: 6px;
