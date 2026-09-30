@@ -22,11 +22,20 @@ import {
   COMPATIBILITY_RULES
 } from './recommendation.js';
 
+import {
+  saveDesign,
+  updateDesign,
+  getDesignById,
+  getSavedDesigns,
+  saveDesignToCart
+} from './services/design-storage.js';
+
 /* ==========================================================================
    1. CENTRALIZED APPLICATION STATE (SINGLE SOURCE OF TRUTH)
    ========================================================================== */
 
 export const designState = {
+  id: null,
   styleId: 'FF-1024',
   name: 'Fitted Bodice Dress',
   version: '1.0',
@@ -596,6 +605,14 @@ if (typeof window !== 'undefined') {
   window.getDetailedRecommendation = getDetailedRecommendation;
   window.checkCompatibility = checkCompatibility;
   window.enforceCompatibility = enforceCompatibility;
+  window.saveDesign = saveDesign;
+  window.updateDesign = updateDesign;
+  window.getDesignById = getDesignById;
+  window.getSavedDesigns = getSavedDesigns;
+  window.loadDesignIntoState = loadDesignIntoState;
+  window.openSaveModal = openSaveModal;
+  window.closeSaveModal = closeSaveModal;
+  window.handleConfirmSave = handleConfirmSave;
 }
 
 /**
@@ -713,21 +730,114 @@ export function showToast(message) {
 }
 
 /**
- * Saves design to localStorage
+ * Loads a saved design configuration into active designState and triggers full re-render
+ *
+ * @param {object} savedDesign
+ * @returns {boolean} Success
+ */
+export function loadDesignIntoState(savedDesign) {
+  if (!savedDesign) return false;
+
+  pushStateSnapshot();
+
+  designState.id = savedDesign.id;
+  designState.styleId = savedDesign.styleId || savedDesign.id;
+  designState.name = savedDesign.name || 'Untitled Design';
+  designState.figure = savedDesign.figure || savedDesign.gender || 'female';
+  designState.croquis = savedDesign.croquis || savedDesign.figure || savedDesign.gender || 'female';
+  designState.size = savedDesign.size || 'M';
+  designState.top = savedDesign.top || 'basic';
+  designState.bottom = savedDesign.bottom || 'skirt';
+  designState.sleeves = savedDesign.sleeves || 'short';
+  designState.collar = savedDesign.collar || savedDesign.neckline || 'round';
+  designState.colour = savedDesign.colour || '#b96b61';
+  designState.fabric = savedDesign.fabric || 'cotton';
+  designState.pattern = savedDesign.pattern || 'solid';
+  designState.view = savedDesign.view || 'front';
+  designState.notes = savedDesign.notes || '';
+  if (typeof savedDesign.figureVisible === 'boolean') designState.figureVisible = savedDesign.figureVisible;
+  if (typeof savedDesign.garmentVisible === 'boolean') designState.garmentVisible = savedDesign.garmentVisible;
+  if (typeof savedDesign.detailsVisible === 'boolean') designState.detailsVisible = savedDesign.detailsVisible;
+  if (savedDesign.zoom) designState.zoom = savedDesign.zoom;
+  designState.lastChanged = null;
+
+  // Enforce compatibility in case of any legacy or edge-case saved state
+  enforceCompatibility(designState);
+
+  // Recalculate authoritative price and synchronize UI
+  const priceResult = calculateDesignPrice(designState);
+  designState.pricing = priceResult.total;
+
+  syncUIFromState();
+  updatePreview();
+  showToast(`Restored "${designState.name}"`);
+  return true;
+}
+
+/**
+ * Opens the Save Design modal with current configuration
+ */
+export function openSaveModal() {
+  const modalSave = document.querySelector('#modal-save');
+  const inputName = document.querySelector('#save-design-name');
+  const priceLabel = document.querySelector('#save-design-price');
+  const summaryLabel = document.querySelector('#save-design-summary');
+
+  const topName = GARMENT_CATALOG.tops[designState.top]?.name || 'Top';
+  const bottomName = GARMENT_CATALOG.bottoms[designState.bottom]?.name || 'Bottom';
+  const fabricName = GARMENT_CATALOG.fabrics[designState.fabric]?.name || 'Fabric';
+  const pricingResult = calculateDesignPrice(designState);
+
+  if (inputName) {
+    inputName.value = designState.name || 'Fitted Bodice Dress';
+  }
+  if (priceLabel) {
+    priceLabel.textContent = `₹${pricingResult.total.toLocaleString('en-IN')}`;
+  }
+  if (summaryLabel) {
+    const isMale = (designState.figure === 'male' || designState.croquis === 'male');
+    summaryLabel.textContent = `${topName} • ${bottomName} • ${fabricName} • Size ${designState.size} • ${isMale ? 'Male' : 'Female'}`;
+  }
+
+  modalSave?.classList.add('is-open');
+  setTimeout(() => {
+    inputName?.focus();
+    inputName?.select();
+  }, 50);
+}
+
+/**
+ * Closes the Save Design modal
+ */
+export function closeSaveModal() {
+  const modalSave = document.querySelector('#modal-save');
+  modalSave?.classList.remove('is-open');
+}
+
+/**
+ * Confirms saving the current design via the modular persistence layer
+ */
+export function handleConfirmSave() {
+  const inputName = document.querySelector('#save-design-name');
+  const enteredName = inputName?.value.trim() || designState.name || 'Bespoke Atelier Design';
+  designState.name = enteredName;
+
+  // Save through design-storage persistence service
+  const saved = saveDesign(designState);
+  designState.id = saved.id;
+  designState.styleId = saved.styleId;
+
+  closeSaveModal();
+  syncUIFromState();
+  showToast(`Design "${saved.name}" saved to atelier workspace`);
+  return saved;
+}
+
+/**
+ * Legacy alias for save action
  */
 export function saveDesignToStorage() {
-  try {
-    const savedDesigns = JSON.parse(localStorage.getItem('fashionforge_saved_designs') || '[]');
-    const newEntry = {
-      ...designState,
-      savedAt: new Date().toISOString()
-    };
-    savedDesigns.unshift(newEntry);
-    localStorage.setItem('fashionforge_saved_designs', JSON.stringify(savedDesigns.slice(0, 20)));
-    showToast(`Design "${designState.name}" saved to atelier workspace`);
-  } catch (err) {
-    showToast('Design saved to session');
-  }
+  openSaveModal();
 }
 
 /**
@@ -1012,8 +1122,20 @@ document.addEventListener('DOMContentLoaded', () => {
   // 14. Save Design Actions
   const btnHeaderSave = document.querySelector('#btn-save');
   const btnInspectorSave = document.querySelector('#btn-save-design');
-  if (btnHeaderSave) btnHeaderSave.addEventListener('click', saveDesignToStorage);
-  if (btnInspectorSave) btnInspectorSave.addEventListener('click', saveDesignToStorage);
+  const btnCloseSave = document.querySelector('#btn-close-save');
+  const btnCancelSave = document.querySelector('#btn-cancel-save');
+  const formSave = document.querySelector('#form-save-design');
+
+  if (btnHeaderSave) btnHeaderSave.addEventListener('click', openSaveModal);
+  if (btnInspectorSave) btnInspectorSave.addEventListener('click', openSaveModal);
+  if (btnCloseSave) btnCloseSave.addEventListener('click', closeSaveModal);
+  if (btnCancelSave) btnCancelSave.addEventListener('click', closeSaveModal);
+  if (formSave) {
+    formSave.addEventListener('submit', (e) => {
+      e.preventDefault();
+      handleConfirmSave();
+    });
+  }
 
   // 15. Export Modal Controls
   const btnExport = document.querySelector('#btn-export');
@@ -1074,6 +1196,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnCancelCart) btnCancelCart.addEventListener('click', closeCartModal);
   if (btnConfirmCart) {
     btnConfirmCart.addEventListener('click', () => {
+      saveDesignToCart(designState);
       closeCartModal();
       showToast(`Added "${designState.name}" to Atelier Cart (₹${designState.pricing.toLocaleString('en-IN')})`);
     });
@@ -1176,12 +1299,22 @@ document.addEventListener('DOMContentLoaded', () => {
     btnPrintTechPack.addEventListener('click', () => window.print());
   }
 
-  // Check URL query parameters (e.g. ?mode=tech-pack)
+  // Check URL query parameters (e.g. ?id=FF-D... or ?mode=tech-pack)
   const urlParams = new URLSearchParams(window.location.search);
+  const designId = urlParams.get('id') || urlParams.get('load');
+  let loadedFromUrl = false;
+  if (designId) {
+    const saved = getDesignById(designId);
+    if (saved) {
+      loadDesignIntoState(saved);
+      loadedFromUrl = true;
+    }
+  }
+
   const initialMode = urlParams.get('mode');
   if (initialMode && ['design', 'technical-flat', 'tech-pack'].includes(initialMode)) {
     setStudioMode(initialMode);
-  } else {
+  } else if (!loadedFromUrl) {
     // Initial Render
     updatePreview();
   }

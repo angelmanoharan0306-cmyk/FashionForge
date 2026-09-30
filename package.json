@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "node backend/server.js",
     "start": "node backend/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node tests/test_phase7.js"
   },
   "keywords": [],
   "author": "",

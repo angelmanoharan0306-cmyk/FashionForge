@@ -84,7 +84,7 @@
         <span>Export</span>
       </button>
 
-      <button class="header-action-btn btn-save-prominent" id="btn-save" type="button" title="Save design to local workspace" aria-label="Save design">
+      <button class="header-action-btn btn-save-prominent" id="btn-save" type="button" title="Save design to atelier workspace" aria-label="Save design">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
           <polyline points="17 21 17 13 7 13 7 21"/>
@@ -92,6 +92,13 @@
         </svg>
         <span>Save</span>
       </button>
+
+      <a class="header-action-btn" id="btn-header-mydesigns" href="my-designs.html" title="View all saved atelier designs" aria-label="My Designs">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+        </svg>
+        <span>My Designs</span>
+      </a>
     </div>
   </header>
 
@@ -128,6 +135,13 @@
           </svg>
           <span class="rail-label">Tech Pack</span>
         </button>
+
+        <a class="rail-item" id="rail-btn-mydesigns" href="my-designs.html" title="My Saved Atelier Designs">
+          <svg class="rail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+          </svg>
+          <span class="rail-label">My Designs</span>
+        </a>
 
         <button class="rail-item" id="rail-btn-settings" data-mode="settings" type="button" title="Studio Preferences & Specs">
           <svg class="rail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -1134,6 +1148,38 @@
       <div style="display: flex; justify-content: flex-end;">
         <button class="btn-primary" id="btn-done-size-chart" type="button" style="padding: 0 var(--space-6);">Close Chart</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Save Design Modal Dialog -->
+  <div class="modal-backdrop" id="modal-save" role="dialog" aria-modal="true" aria-labelledby="modal-save-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-save-title">Save to Atelier Portfolio</h3>
+        <button class="modal-close-btn" id="btn-close-save" type="button" aria-label="Close dialog">&times;</button>
+      </div>
+
+      <form id="form-save-design" onsubmit="return false;">
+        <div style="margin-bottom: var(--space-4);">
+          <label for="save-design-name" style="display: block; font-size: var(--text-xs); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-secondary); margin-bottom: var(--space-2);">
+            Design Name
+          </label>
+          <input type="text" id="save-design-name" class="designer-text-input" style="width: 100%; padding: 0.625rem 0.875rem; font-size: var(--text-sm); border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-family: var(--font-sans);" required maxlength="60" placeholder="e.g. Summer Silk Wrap Dress">
+        </div>
+
+        <div style="background: var(--color-surface-subtle); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-sm); padding: var(--space-3); margin-bottom: var(--space-5);">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+            <span style="font-size: var(--text-xs); color: var(--color-text-muted);">Current Configuration:</span>
+            <span style="font-size: var(--text-xs); font-weight: 700; color: var(--color-brand);" id="save-design-price">₹1,480</span>
+          </div>
+          <p class="component-sub" id="save-design-summary" style="font-size: 0.75rem; line-height: 1.4;">Fitted Bodice • A-Line Skirt • Organic Cotton • Size M</p>
+        </div>
+
+        <div style="display: flex; gap: var(--space-3);">
+          <button class="btn-secondary" style="flex: 1;" id="btn-cancel-save" type="button">Cancel</button>
+          <button class="btn-primary" style="flex: 1;" id="btn-confirm-save" type="submit">Save Design</button>
+        </div>
+      </form>
     </div>
   </div>
 
