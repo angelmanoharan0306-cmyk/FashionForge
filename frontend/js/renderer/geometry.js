@@ -117,14 +117,17 @@ export function getBodiceFrontPath(landmarks = DEFAULT_LM) {
   const cp2Lx = Math.round(LM.neck.left.x + shDxL * 0.80);
   const cp2Ly = Math.round(LM.neck.left.y + shDyL * 0.65);
 
+  const cpPitRx = Math.max(LM.armscye.rightPit.x, LM.waist.right.x);
+  const cpPitLx = Math.min(LM.armscye.leftPit.x, LM.waist.left.x);
+
   return [
     `M ${LM.neck.left.x} ${LM.neck.left.y}`,
     `Q ${LM.neck.frontJewelDip.x} ${LM.neck.frontJewelDip.y} ${LM.neck.right.x} ${LM.neck.right.y}`,
     `C ${cp1Rx} ${cp1Ry}, ${cp2Rx} ${cp2Ry}, ${LM.shoulders.rightTip.x} ${LM.shoulders.rightTip.y}`,
     `C ${LM.armscye.rightMid.x} ${LM.armscye.rightMid.y}, ${LM.armscye.rightPit.x + 2} ${LM.armscye.rightPit.y - 12}, ${LM.armscye.rightPit.x} ${LM.armscye.rightPit.y}`,
-    `C ${LM.armscye.rightPit.x - 2} 445, ${LM.waist.right.x + 2} 470, ${LM.waist.right.x} ${LM.waist.right.y}`,
+    `C ${cpPitRx} 445, ${LM.waist.right.x + 1} 470, ${LM.waist.right.x} ${LM.waist.right.y}`,
     `Q ${LM.waist.centerFront.x} ${LM.waist.centerFront.y} ${LM.waist.left.x} ${LM.waist.left.y}`,
-    `C ${LM.waist.left.x - 2} 470, ${LM.armscye.leftPit.x + 2} 445, ${LM.armscye.leftPit.x} ${LM.armscye.leftPit.y}`,
+    `C ${LM.waist.left.x - 1} 470, ${cpPitLx} 445, ${LM.armscye.leftPit.x} ${LM.armscye.leftPit.y}`,
     `C ${LM.armscye.leftPit.x - 2} ${LM.armscye.leftPit.y - 12}, ${LM.armscye.leftMid.x} ${LM.armscye.leftMid.y}, ${LM.shoulders.leftTip.x} ${LM.shoulders.leftTip.y}`,
     `C ${cp2Lx} ${cp2Ly}, ${cp1Lx} ${cp1Ly}, ${LM.neck.left.x} ${LM.neck.left.y}`,
     'Z'
@@ -152,14 +155,17 @@ export function getBodiceBackPath(landmarks = DEFAULT_LM) {
   const cp2Lx = Math.round(LM.neck.left.x + shDxL * 0.80);
   const cp2Ly = Math.round(LM.neck.left.y + shDyL * 0.65);
 
+  const cpPitRx = Math.max(LM.armscye.rightPit.x, LM.waist.right.x);
+  const cpPitLx = Math.min(LM.armscye.leftPit.x, LM.waist.left.x);
+
   return [
     `M ${LM.neck.left.x} ${LM.neck.left.y}`,
     `Q ${LM.neck.backCervicaleDip.x} ${LM.neck.backCervicaleDip.y} ${LM.neck.right.x} ${LM.neck.right.y}`,
     `C ${cp1Rx} ${cp1Ry}, ${cp2Rx} ${cp2Ry}, ${LM.shoulders.rightTip.x} ${LM.shoulders.rightTip.y}`,
     `C ${LM.armscye.rightMid.x} ${LM.armscye.rightMid.y}, ${LM.armscye.rightPit.x + 2} ${LM.armscye.rightPit.y - 12}, ${LM.armscye.rightPit.x} ${LM.armscye.rightPit.y}`,
-    `C ${LM.armscye.rightPit.x - 2} 445, ${LM.waist.right.x + 2} 470, ${LM.waist.right.x} ${LM.waist.right.y}`,
+    `C ${cpPitRx} 445, ${LM.waist.right.x + 1} 470, ${LM.waist.right.x} ${LM.waist.right.y}`,
     `Q ${LM.waist.centerBack.x} ${LM.waist.centerBack.y} ${LM.waist.left.x} ${LM.waist.left.y}`,
-    `C ${LM.waist.left.x - 2} 470, ${LM.armscye.leftPit.x + 2} 445, ${LM.armscye.leftPit.x} ${LM.armscye.leftPit.y}`,
+    `C ${LM.waist.left.x - 1} 470, ${cpPitLx} 445, ${LM.armscye.leftPit.x} ${LM.armscye.leftPit.y}`,
     `C ${LM.armscye.leftPit.x - 2} ${LM.armscye.leftPit.y - 12}, ${LM.armscye.leftMid.x} ${LM.armscye.leftMid.y}, ${LM.shoulders.leftTip.x} ${LM.shoulders.leftTip.y}`,
     `C ${cp2Lx} ${cp2Ly}, ${cp1Lx} ${cp1Ly}, ${LM.neck.left.x} ${LM.neck.left.y}`,
     'Z'

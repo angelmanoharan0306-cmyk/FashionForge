@@ -41,7 +41,9 @@ import {
 import {
   getBodyLandmarks,
   getFemaleCroquis,
-  getFemaleCroquisTarget
+  getFemaleCroquisTarget,
+  getMaleCroquis,
+  getMaleCroquisTarget
 } from './body-profiles.js';
 
 import {
@@ -73,6 +75,7 @@ export function renderDesign(designState, svgElement) {
 
   const isBack = designState.view === 'back';
   const size = designState?.size || 'M';
+  const gender = (designState?.figure === 'male' || designState?.croquis === 'male') ? 'male' : 'female';
   const palette = getHarmonizedPalette(
     designState.material?.colour || designState.colour || '#b96b61',
     designState.material?.fabric || designState.fabric || 'cotton'
@@ -86,8 +89,8 @@ export function renderDesign(designState, svgElement) {
   // Clear previous dynamic layers
   svgElement.replaceChildren();
 
-  // Retrieve calibrated anatomical landmarks for active garment size
-  const LM = getBodyLandmarks(size);
+  // Retrieve calibrated anatomical landmarks for active garment size and gender
+  const LM = getBodyLandmarks(size, gender);
 
   // 2. Defs Layer (Dynamic Materials, Lighting, Patterns, Depth Filters, Clip Paths)
   const defsElement = createSvgElement('defs');
@@ -107,7 +110,7 @@ export function renderDesign(designState, svgElement) {
 
   // 3. Stage 1: Realistic Human Model Foundation
   if (designState.figureVisible !== false) {
-    renderHumanModel(svgElement, isBack, size);
+    renderHumanModel(svgElement, isBack, size, gender, LM);
   }
 
   // 4. Stage 2: 2.5D Editable Garment Composition
@@ -147,7 +150,7 @@ export function renderDesign(designState, svgElement) {
 
   // Stage 3: Development Calibration Overlay Debugger (Requirement 14)
   if (designState.debugCalibration || (typeof window !== 'undefined' && window.__FF_DEBUG_CALIBRATION)) {
-    renderCalibrationOverlay(svgElement, size, isBack, LM);
+    renderCalibrationOverlay(svgElement, size, isBack, LM, gender);
   }
 }
 
@@ -155,11 +158,14 @@ export function renderDesign(designState, svgElement) {
  * 1. Human Model Base Layer
  * Seamless blend onto studio backdrop using photographic alpha PNG
  */
-function renderHumanModel(svgElement, isBack, size = 'M') {
+function renderHumanModel(svgElement, isBack, size = 'M', gender = 'female', landmarks = null) {
+  const LM = landmarks || getBodyLandmarks(size, gender);
+  const groundY = LM?.feet?.groundY || MODEL_GEOMETRY.landmarks.feet.groundY;
+
   // Ground ambient shadow under shoes
   const groundShadow = createSvgElement('ellipse', {
     cx: String(MODEL_GEOMETRY.centerX),
-    cy: String(MODEL_GEOMETRY.landmarks.feet.groundY),
+    cy: String(groundY),
     rx: '130',
     ry: '11',
     fill: '#2a1f1b',
@@ -175,8 +181,9 @@ function renderHumanModel(svgElement, isBack, size = 'M') {
   });
 
   const viewName = isBack ? 'back' : 'front';
-  const modelImageSrc = getFemaleCroquis(size, viewName);
-  const targetImageSrc = getFemaleCroquisTarget(size, viewName);
+  const isMale = (gender === 'male');
+  const modelImageSrc = isMale ? getMaleCroquis(size, viewName) : getFemaleCroquis(size, viewName);
+  const targetImageSrc = isMale ? getMaleCroquisTarget(size, viewName) : getFemaleCroquisTarget(size, viewName);
 
   const modelImage = createSvgElement('image', {
     id: 'model-base-photo',
@@ -184,6 +191,7 @@ function renderHumanModel(svgElement, isBack, size = 'M') {
     href: modelImageSrc,
     'data-size': String(size).toUpperCase(),
     'data-view': viewName,
+    'data-gender': gender,
     'data-target-croquis': targetImageSrc,
     x: '0',
     y: '0',
@@ -200,7 +208,7 @@ function renderHumanModel(svgElement, isBack, size = 'M') {
  * Foreground Hands Layer:
  * Preserves the model's actual hands and wrists resting naturally in front of the flared skirt
  */
-function renderForegroundHands(svgElement, isBack, size = 'M') {
+function renderForegroundHands(svgElement, isBack, size = 'M', gender = 'female') {
   const fgGroup = createSvgElement('g', {
     id: 'foreground-hands-group',
     class: 'foreground-hands-group',
@@ -208,14 +216,16 @@ function renderForegroundHands(svgElement, isBack, size = 'M') {
   });
 
   const viewName = isBack ? 'back' : 'front';
-  const modelImageSrc = getFemaleCroquis(size, viewName);
-  const targetImageSrc = getFemaleCroquisTarget(size, viewName);
+  const isMale = (gender === 'male');
+  const modelImageSrc = isMale ? getMaleCroquis(size, viewName) : getFemaleCroquis(size, viewName);
+  const targetImageSrc = isMale ? getMaleCroquisTarget(size, viewName) : getFemaleCroquisTarget(size, viewName);
 
   const fgImage = createSvgElement('image', {
     class: 'foreground-hands-photo',
     href: modelImageSrc,
     'data-size': String(size).toUpperCase(),
     'data-view': viewName,
+    'data-gender': gender,
     'data-target-croquis': targetImageSrc,
     x: '0',
     y: '0',
@@ -781,7 +791,8 @@ function buildTechnicalFlatSvg(containerSvg, isBack = false, designState = null)
   if (!containerSvg) return;
   const isMainCanvas = containerSvg.id === 'main-flat-svg';
   const size = designState?.size || 'M';
-  const LM = getBodyLandmarks(size);
+  const gender = (designState?.figure === 'male' || designState?.croquis === 'male') ? 'male' : 'female';
+  const LM = getBodyLandmarks(size, gender);
 
   // Frame focused tightly on the garment silhouette: X 215..555, Y 270..930
   containerSvg.setAttribute('viewBox', '215 270 340 660');

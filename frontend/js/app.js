@@ -73,6 +73,7 @@ function pushStateSnapshot() {
     fabric: designState.fabric,
     pattern: designState.pattern,
     figure: designState.figure,
+    croquis: designState.croquis,
     name: designState.name,
     notes: designState.notes
   };
@@ -99,6 +100,7 @@ export function undo() {
     fabric: designState.fabric,
     pattern: designState.pattern,
     figure: designState.figure,
+    croquis: designState.croquis,
     name: designState.name,
     notes: designState.notes
   };
@@ -129,6 +131,7 @@ export function redo() {
     fabric: designState.fabric,
     pattern: designState.pattern,
     figure: designState.figure,
+    croquis: designState.croquis,
     name: designState.name,
     notes: designState.notes
   };
@@ -168,6 +171,8 @@ export function resetDesign() {
   designState.fabric = 'cotton';
   designState.pattern = 'solid';
   designState.view = 'front';
+  designState.figure = 'female';
+  designState.croquis = 'female';
   designState.zoom = 100;
   designState.figureVisible = true;
   designState.detailsVisible = true;
@@ -263,6 +268,19 @@ export function syncUIFromState() {
   if (valFabric) valFabric.textContent = `${fabricName} (Polished)`;
   if (valPattern) valPattern.textContent = patternName;
   if (valActiveSize) valActiveSize.textContent = `Size ${state.size}`;
+
+  // 2a. Croquis Template Selection Synchronization
+  const isMale = (state.figure === 'male' || state.croquis === 'male');
+  const btnCroquisFemale = document.querySelector('#btn-croquis-female');
+  const btnCroquisMale = document.querySelector('#btn-croquis-male');
+  if (btnCroquisFemale) {
+    btnCroquisFemale.classList.toggle('is-active', !isMale);
+    btnCroquisFemale.setAttribute('aria-checked', !isMale ? 'true' : 'false');
+  }
+  if (btnCroquisMale) {
+    btnCroquisMale.classList.toggle('is-active', isMale);
+    btnCroquisMale.setAttribute('aria-checked', isMale ? 'true' : 'false');
+  }
 
   // 2b. Size & Fit System Synchronization
   const sizeData = getSizeData(state.size);
@@ -998,21 +1016,24 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnCroquisMale = document.querySelector('#btn-croquis-male');
   if (btnCroquisFemale) {
     btnCroquisFemale.addEventListener('click', () => {
+      if (designState.figure === 'female' && designState.croquis === 'female') return;
       pushStateSnapshot();
       designState.figure = 'female';
-      btnCroquisFemale.classList.add('is-active');
-      btnCroquisFemale.setAttribute('aria-checked', 'true');
-      if (btnCroquisMale) {
-        btnCroquisMale.classList.remove('is-active');
-        btnCroquisMale.setAttribute('aria-checked', 'false');
-      }
+      designState.croquis = 'female';
+      syncUIFromState();
       updatePreview();
       showToast('Female Model active');
     });
   }
   if (btnCroquisMale) {
     btnCroquisMale.addEventListener('click', () => {
-      showToast('Male tailoring templates scheduled for Phase 4 expansion');
+      if (designState.figure === 'male' && designState.croquis === 'male') return;
+      pushStateSnapshot();
+      designState.figure = 'male';
+      designState.croquis = 'male';
+      syncUIFromState();
+      updatePreview();
+      showToast('Male Model active');
     });
   }
 

@@ -100,7 +100,72 @@ function buildSizeCalibration(sizeId) {
 }
 
 /**
- * Centralized Calibration Registry for all 8 sizes
+ * Builds calibrated landmark coordinates for a specific male size
+ */
+function buildMaleSizeCalibration(sizeId) {
+  const size = getSizeData(sizeId);
+  const waistAvg = (size.waistMin + size.waistMax) / 2;
+  const lengthAvg = (size.lengthMin + size.lengthMax) / 2;
+
+  const shoulderScale = size.shoulder / 14.5;
+  const chestScale = size.chest / 36.0;
+  const neckScale = 1.0 + (chestScale - 1.0) * 0.45;
+  const armholeScale = size.armhole / 15.0;
+  const armpitScale = 1.0 + (chestScale - 1.0) * 0.98;
+  const waistScale = waistAvg / 33.0;
+  const hipScale = size.hip / 40.0;
+  const lengthDeltaPx = (lengthAvg - 42.0) * 3.5;
+
+  const hemY = Math.round(906 + lengthDeltaPx);
+
+  // Front anatomical landmarks for male
+  const front = {
+    neckLeft: { x: scaleX(338, neckScale), y: 275 },
+    neckRight: { x: scaleX(432, neckScale), y: 275 },
+    shoulderLeft: { x: scaleX(248, shoulderScale), y: Math.round(318 + (shoulderScale - 1.0) * 3) },
+    shoulderRight: { x: scaleX(522, shoulderScale), y: Math.round(318 + (shoulderScale - 1.0) * 3) },
+    bustLeft: { x: scaleX(335, chestScale), y: Math.round(395 + (chestScale - 1.0) * 4) },
+    bustRight: { x: scaleX(435, chestScale), y: Math.round(395 + (chestScale - 1.0) * 4) },
+    waistLeft: { x: scaleX(287, waistScale), y: 500 },
+    waistRight: { x: scaleX(483, waistScale), y: 500 },
+    hipLeft: { x: scaleX(277, hipScale), y: 640 },
+    hipRight: { x: scaleX(493, hipScale), y: 640 },
+    armholeLeft: { x: scaleX(288, armpitScale), y: Math.round(435 + (armholeScale - 1.0) * 10) },
+    armholeRight: { x: scaleX(482, armpitScale), y: Math.round(435 + (armholeScale - 1.0) * 10) },
+    wristLeft: { x: scaleX(241, hipScale), y: 660 },
+    wristRight: { x: scaleX(529, hipScale), y: 660 },
+    handLeft: { x: scaleX(244, hipScale), y: 700 },
+    handRight: { x: scaleX(526, hipScale), y: 700 },
+    hemY: hemY,
+    footBaseline: 1315
+  };
+
+  const back = {
+    neckLeft: { x: front.neckLeft.x, y: 275 },
+    neckRight: { x: front.neckRight.x, y: 275 },
+    shoulderLeft: { x: front.shoulderLeft.x, y: front.shoulderLeft.y },
+    shoulderRight: { x: front.shoulderRight.x, y: front.shoulderRight.y },
+    bustLeft: { x: front.bustLeft.x, y: front.bustLeft.y },
+    bustRight: { x: front.bustRight.x, y: front.bustRight.y },
+    waistLeft: { x: front.waistLeft.x, y: 500 },
+    waistRight: { x: front.waistRight.x, y: 500 },
+    hipLeft: { x: front.hipLeft.x, y: 640 },
+    hipRight: { x: front.hipRight.x, y: 640 },
+    armholeLeft: { x: front.armholeLeft.x, y: front.armholeLeft.y },
+    armholeRight: { x: front.armholeRight.x, y: front.armholeRight.y },
+    wristLeft: { x: front.wristLeft.x, y: 660 },
+    wristRight: { x: front.wristRight.x, y: 660 },
+    handLeft: { x: front.handLeft.x, y: 700 },
+    handRight: { x: front.handRight.x, y: 700 },
+    hemY: hemY,
+    footBaseline: 1315
+  };
+
+  return { front, back, scales: { shoulderScale, neckScale, chestScale, bustScale: chestScale, waistScale, hipScale, armholeScale } };
+}
+
+/**
+ * Centralized Calibration Registry for all 8 sizes (Female)
  */
 export const femaleCroquisCalibration = {
   XS: buildSizeCalibration('XS'),
@@ -114,7 +179,21 @@ export const femaleCroquisCalibration = {
 };
 
 /**
- * Returns the calibration object for a given size and view
+ * Centralized Calibration Registry for all 8 sizes (Male)
+ */
+export const maleCroquisCalibration = {
+  XS: buildMaleSizeCalibration('XS'),
+  S: buildMaleSizeCalibration('S'),
+  M: buildMaleSizeCalibration('M'),
+  L: buildMaleSizeCalibration('L'),
+  XL: buildMaleSizeCalibration('XL'),
+  XXL: buildMaleSizeCalibration('XXL'),
+  '3XL': buildMaleSizeCalibration('3XL'),
+  '4XL': buildMaleSizeCalibration('4XL')
+};
+
+/**
+ * Returns the female calibration object for a given size and view
  */
 export function getFemaleCroquisCalibration(size = 'M', view = 'front') {
   const normSize = String(size || 'M').toUpperCase();
@@ -124,7 +203,17 @@ export function getFemaleCroquisCalibration(size = 'M', view = 'front') {
 }
 
 /**
- * Computes calibrated foreground hand clips for each size.
+ * Returns the male calibration object for a given size and view
+ */
+export function getMaleCroquisCalibration(size = 'M', view = 'front') {
+  const normSize = String(size || 'M').toUpperCase();
+  const normView = String(view || 'front').toLowerCase() === 'back' ? 'back' : 'front';
+  const entry = maleCroquisCalibration[normSize] || maleCroquisCalibration.M;
+  return entry[normView];
+}
+
+/**
+ * Computes calibrated foreground hand clips for female sizes.
  * Strictly encloses the bare hands and wrists (Y=660 to 745) resting in front of the skirt flare.
  * Bounded cleanly so undergarment shorts and thighs are NEVER clipped over the skirt.
  */
@@ -147,11 +236,34 @@ export function getCalibratedHandClips(size = 'M') {
 }
 
 /**
+ * Computes calibrated foreground hand clips for male sizes.
+ * Strictly encloses bare hands and wrists (Y=675 to 750) resting naturally beside thighs.
+ */
+export function getCalibratedMaleHandClips(size = 'M') {
+  const normSize = String(size || 'M').toUpperCase();
+  const entry = maleCroquisCalibration[normSize] || maleCroquisCalibration.M;
+  const hipScale = entry.scales.hipScale;
+
+  const leftMinX = Math.round(scaleX(220, hipScale));
+  const leftMaxX = Math.round(scaleX(266, hipScale));
+  const rightMinX = Math.round(scaleX(504, hipScale));
+  const rightMaxX = Math.round(scaleX(550, hipScale));
+
+  return {
+    left: `M ${leftMinX} 670 L ${leftMaxX} 670 L ${leftMaxX} 755 L ${leftMinX} 755 Z`,
+    right: `M ${rightMinX} 670 L ${rightMaxX} 670 L ${rightMaxX} 755 L ${rightMinX} 755 Z`
+  };
+}
+
+/**
  * Development Calibration Overlay Debugger
  * Toggled via designState.debugCalibration === true or window.__FF_DEBUG_CALIBRATION === true
  */
-export function renderCalibrationOverlay(containerSvg, size = 'M', isBack = false, garmentLM = null) {
-  const cal = getFemaleCroquisCalibration(size, isBack ? 'back' : 'front');
+export function renderCalibrationOverlay(containerSvg, size = 'M', isBack = false, garmentLM = null, gender = 'female') {
+  const isMale = String(gender).toLowerCase() === 'male';
+  const cal = isMale
+    ? getMaleCroquisCalibration(size, isBack ? 'back' : 'front')
+    : getFemaleCroquisCalibration(size, isBack ? 'back' : 'front');
   const overlay = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   overlay.setAttribute('id', 'calibration-debug-overlay');
   overlay.setAttribute('class', 'calibration-debug-overlay');
