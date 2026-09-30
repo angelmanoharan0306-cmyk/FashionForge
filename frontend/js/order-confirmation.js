@@ -50,7 +50,7 @@ function showAlert(msg) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  setupNavigationAuth('.header-right');
+  setupNavigationAuth();
 
   // 1. Auth check
   if (!authService.isAuthenticated()) {

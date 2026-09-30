@@ -5,9 +5,21 @@
 
 import { isAuthenticated, getCurrentUser, logout } from './auth-service.js';
 
-export function setupNavigationAuth(mountSelector = '.header-right, .studio-header-right') {
-  const mountEl = document.querySelector(mountSelector);
+export function setupNavigationAuth(mountSelector) {
+  let mountEl = null;
+  if (mountSelector) {
+    mountEl = document.querySelector(mountSelector);
+  }
+  if (!mountEl) {
+    mountEl = document.querySelector('.header-right, .studio-header-right, .home-nav-actions');
+  }
   if (!mountEl) return;
+
+  // If mounting into .home-nav-actions on index.html, remove stale static login link
+  const staticLogin = mountEl.querySelector('a.home-nav-link[href="login.html"], a[href="login.html"]');
+  if (staticLogin && mountEl.classList.contains('home-nav-actions')) {
+    staticLogin.remove();
+  }
 
   // Check if auth container already exists, or create one
   let authWidget = mountEl.querySelector('#nav-auth-widget');
@@ -17,14 +29,23 @@ export function setupNavigationAuth(mountSelector = '.header-right, .studio-head
     authWidget.style.display = 'inline-flex';
     authWidget.style.alignItems = 'center';
     authWidget.style.gap = '8px';
-    mountEl.appendChild(authWidget);
+
+    // In .home-nav-actions, place before the primary "Start Designing" CTA button
+    const startDesigningBtn = mountEl.querySelector('a.btn-primary[href="design.html"]');
+    if (startDesigningBtn) {
+      mountEl.insertBefore(authWidget, startDesigningBtn);
+    } else {
+      mountEl.appendChild(authWidget);
+    }
   }
 
   const authenticated = isAuthenticated();
-  const user = getCurrentUser();
+  const user = getCurrentUser() || { name: 'Account' };
 
-  if (authenticated && user) {
-    const initials = (user.name || 'U').charAt(0).toUpperCase();
+  if (authenticated) {
+    const displayName = user.name || 'Account';
+    const initials = displayName.charAt(0).toUpperCase();
+
     authWidget.innerHTML = `
       <a class="header-action-btn btn-header-orders" href="orders.html" title="My Orders & Tracking" aria-label="My Orders" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; padding: 4px 10px; font-size: var(--text-xs); color: inherit;">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -42,9 +63,10 @@ export function setupNavigationAuth(mountSelector = '.header-right, .studio-head
         </svg>
         <span>Bag</span>
       </a>
-      <div class="user-account-badge" title="Signed in as ${user.email || user.name}">
+      <div class="user-account-badge" id="nav-user-account" title="Signed in as ${user.email || displayName}" aria-label="Account">
         <span class="user-avatar-circle" aria-hidden="true">${initials}</span>
-        <span class="user-name">${user.name}</span>
+        <span class="user-account-label" style="font-weight: 600;">Account</span>
+        <span class="user-name" style="color: var(--color-text-secondary); font-size: var(--text-xs); margin-left: 2px;">(${displayName})</span>
         <button class="btn-auth-logout" id="btn-header-logout" type="button" title="Sign out of atelier">Sign Out</button>
       </div>
     `;

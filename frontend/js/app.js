@@ -1378,7 +1378,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // 21. Initialize Navigation Auth State
-  setupNavigationAuth('.header-right');
+  setupNavigationAuth();
 
   // 22. Check for Pending Guest Design from previous login redirect
   try {

@@ -380,7 +380,7 @@ function escapeHtml(str) {
 
 document.addEventListener('DOMContentLoaded', () => {
   // 0. Setup User Navigation Auth Widget
-  setupNavigationAuth('.header-right');
+  setupNavigationAuth();
 
   // 1. Initial Render
   renderDesignsGrid();

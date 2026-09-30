@@ -226,7 +226,7 @@ function createCartItemElement(item) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  setupNavigationAuth('.header-right');
+  setupNavigationAuth();
   loadAndRenderCart();
 
   const btnClear = document.querySelector('#btn-clear-cart');

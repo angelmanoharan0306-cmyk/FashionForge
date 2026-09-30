@@ -5,6 +5,7 @@
 
 import { cartService } from './services/cart-service.js';
 import { authService } from './services/auth-service.js';
+import { setupNavigationAuth } from './services/auth-nav.js';
 
 function showToast(message, type = 'info') {
   const container = document.getElementById('toast-container');
@@ -38,6 +39,8 @@ function formatCurrency(val) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  setupNavigationAuth();
+
   // 1. Authentication check
   if (!authService.isAuthenticated()) {
     window.location.href = 'login.html?redirect=checkout.html';
