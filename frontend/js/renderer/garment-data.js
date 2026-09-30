@@ -146,6 +146,13 @@ export const GARMENT_CATALOG = {
       status: 'active',
       price: 320,
       description: 'Unbleached European Flax with breathable textured slub.'
+    },
+    chiffon: {
+      id: 'chiffon',
+      name: 'Sheer Chiffon',
+      status: 'active',
+      price: 290,
+      description: 'Ethereal sheer silk-blend chiffon with translucent weave and fluid drape.'
     }
   },
   patterns: {

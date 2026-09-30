@@ -53,6 +53,18 @@ export const MATERIAL_PROFILES = {
     foldStrength: 0.36,
     specular: 'crisp',
     description: 'Subtle slub texture with natural dry hand, crisp airy drape, and visible weave.'
+  },
+  chiffon: {
+    id: 'chiffon',
+    name: 'Sheer Chiffon',
+    roughness: 0.35,
+    textureScale: 14,
+    highlightOpacity: 0.24,
+    shadowOpacity: 0.22,
+    edgeStrength: 0.16,
+    foldStrength: 0.30,
+    specular: 'airy',
+    description: 'Lightweight sheer weave with delicate translucent shimmer and fluid floating drape.'
   }
 };
 
@@ -157,6 +169,16 @@ export function generateMaterialDefs(designState) {
       <rect x="2" y="10" width="4.5" height="1.8" rx="0.5" fill="${palette.shadowDeep}" opacity="0.45" />
       <rect x="10" y="2" width="2" height="4.5" rx="0.5" fill="${palette.shadowDeep}" opacity="0.45" />
       <rect x="9" y="11" width="3" height="1.5" rx="0.5" fill="${palette.highlightCrisp}" opacity="0.35" />
+    </pattern>
+  `);
+
+  // Chiffon (Delicate airy sheer weave with soft micro-filament grid)
+  defs.push(`
+    <pattern id="ff-fabric-weave-chiffon" width="8" height="8" patternUnits="userSpaceOnUse">
+      <rect width="8" height="8" fill="none" />
+      <path d="M0 4 H8" stroke="${palette.highlightSoft}" stroke-width="0.5" opacity="0.30" />
+      <path d="M4 0 V8" stroke="${palette.shadowSoft}" stroke-width="0.5" opacity="0.22" />
+      <circle cx="4" cy="4" r="0.4" fill="${palette.highlightCrisp}" opacity="0.35" />
     </pattern>
   `);
 

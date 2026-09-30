@@ -108,12 +108,12 @@ export function renderDesign(designState, svgElement) {
   `;
   svgElement.appendChild(defsElement);
 
-  // 3. Stage 1: Realistic Human Model Foundation
+  // 3. Stage 1: Render Photographic Croquis Foundation (renderCroquis)
   if (designState.figureVisible !== false) {
-    renderHumanModel(svgElement, isBack, size, gender, LM);
+    renderCroquis(svgElement, isBack, size, gender, LM);
   }
 
-  // 4. Stage 2: 2.5D Editable Garment Composition
+  // 4. Stage 2: Render 2.5D Garment Composition (renderGarment)
   if (designState.detailsVisible !== false) {
     const garmentGroup = createSvgElement('g', {
       class: 'garment-composition',
@@ -121,37 +121,52 @@ export function renderDesign(designState, svgElement) {
     });
     svgElement.appendChild(garmentGroup);
 
-    // Stage 2a: Back Interior Depth (Visible inside collar scoop & under hem)
-    if (!isBack) {
-      renderBackDepth(garmentGroup, palette, LM);
-    }
-
-    // Stage 2b: Lower Garment (A-Line Skirt with 2.5D drape flutes)
-    renderBottom(garmentGroup, designState, palette, isBack, LM);
-
-    // Stage 2c: Waist Interface Connection
-    renderWaistInterface(garmentGroup, palette, isBack, LM);
-
-    // Stage 2d: Bodice (Fitted Torso with princess seams & bust fullness)
-    renderTop(garmentGroup, designState, palette, isBack, LM);
-
-    // Stage 2e: Sleeves (Set-In Short Sleeves with cylindrical volume)
-    renderSleeves(garmentGroup, designState, palette, isBack, LM);
-
-    // Stage 2f: Neckline / Collar Finished Binding
-    renderNeckline(garmentGroup, palette, isBack, LM);
-
-    // Stage 2g: Construction Seams, Topstitching & Flutes
-    applyConstructionDetails(garmentGroup, palette, isBack, LM);
-
-    // Stage 2h: Final Depth and Contact Shadows
-    renderDepth(garmentGroup, palette, isBack, LM);
+    renderGarment(garmentGroup, designState, palette, isBack, LM);
   }
 
-  // Stage 3: Development Calibration Overlay Debugger (Requirement 14)
+  // Stage 3: Development Calibration Overlay Debugger
   if (designState.debugCalibration || (typeof window !== 'undefined' && window.__FF_DEBUG_CALIBRATION)) {
     renderCalibrationOverlay(svgElement, size, isBack, LM, gender);
   }
+}
+
+/**
+ * Stage 1: Render Photographic Croquis Base Layer
+ */
+export function renderCroquis(svgElement, isBack, size = 'M', gender = 'female', landmarks = null) {
+  renderHumanModel(svgElement, isBack, size, gender, landmarks);
+}
+
+/**
+ * Stage 2: Render 2.5D Garment Composition
+ * Orchestrates silhouette, material, colour, pattern, lighting, construction, and depth
+ */
+export function renderGarment(garmentGroup, designState, palette, isBack, LM) {
+  // 1. Back Interior Depth (Visible inside collar scoop & under hem)
+  if (!isBack) {
+    renderBackDepth(garmentGroup, palette, LM);
+  }
+
+  // 2. Lower Garment (A-Line Skirt with 2.5D drape flutes)
+  renderBottom(garmentGroup, designState, palette, isBack, LM);
+
+  // 3. Waist Interface Connection & Contact Shadow
+  renderWaistInterface(garmentGroup, palette, isBack, LM);
+
+  // 4. Bodice (Fitted Torso with princess seams & bust fullness)
+  renderTop(garmentGroup, designState, palette, isBack, LM);
+
+  // 5. Sleeves (Set-In Short Sleeves with cylindrical volume)
+  renderSleeves(garmentGroup, designState, palette, isBack, LM);
+
+  // 6. Neckline / Collar Finished Binding
+  renderNeckline(garmentGroup, palette, isBack, LM);
+
+  // 7. Construction Seams, Topstitching & Flutes
+  applyConstructionDetails(garmentGroup, palette, isBack, LM);
+
+  // 8. Final Depth and Contact Shadows
+  renderDepth(garmentGroup, palette, isBack, LM);
 }
 
 /**
@@ -317,6 +332,14 @@ function renderBottom(container, designState, palette, isBack, LM = MODEL_GEOMET
       style: 'mix-blend-mode: multiply; opacity: 0.35;'
     });
     skirtGroup.appendChild(denimTwill);
+  } else if (fabricId === 'chiffon') {
+    // Sheer translucent shimmer for chiffon
+    const chiffonGlint = createSvgElement('path', {
+      d: skirtPathData,
+      fill: 'url(#ff-fabric-weave-chiffon)',
+      style: 'mix-blend-mode: screen; opacity: 0.35;'
+    });
+    skirtGroup.appendChild(chiffonGlint);
   }
 
   // 3e. Decorative Surface Pattern (stripes, checks, floral, geometric, dots)
@@ -431,6 +454,13 @@ function renderTop(container, designState, palette, isBack, LM = MODEL_GEOMETRY.
       style: 'mix-blend-mode: multiply; opacity: 0.35;'
     });
     topGroup.appendChild(denimTwill);
+  } else if (fabricId === 'chiffon') {
+    const chiffonGlint = createSvgElement('path', {
+      d: bodicePathData,
+      fill: 'url(#ff-fabric-weave-chiffon)',
+      style: 'mix-blend-mode: screen; opacity: 0.35;'
+    });
+    topGroup.appendChild(chiffonGlint);
   }
 
   // 5e. Decorative Surface Pattern

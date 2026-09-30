@@ -216,6 +216,9 @@ export function getRecommendation(state) {
   if (state.fabric === 'linen') {
     return 'Natural Linen offers breathable texture and relaxed sophistication with classic, airy summer drape.';
   }
+  if (state.fabric === 'chiffon') {
+    return 'Sheer Chiffon provides an ethereal, romantic silhouette with fluid floating drape and delicate translucency.';
+  }
 
   return 'A classic and versatile design that works well for both casual and semi-formal occasions. The A-line skirt flatters most body types and offers comfortable movement.';
 }
