@@ -559,6 +559,13 @@ export function updatePreview() {
   syncUIFromState();
 }
 
+if (typeof window !== 'undefined') {
+  window.designState = designState;
+  window.updatePreview = updatePreview;
+  window.setView = setView;
+  window.setStudioMode = setStudioMode;
+}
+
 /**
  * View Switcher: Front View / Back View
  */
@@ -1043,7 +1050,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnCloseSelectors) btnCloseSelectors.addEventListener('click', closeSelectorsModal);
   if (btnDoneSelectors) btnDoneSelectors.addEventListener('click', closeSelectorsModal);
 
-  // 18. Croquis Model Switcher (with gender-aware garment defaults)
+  // 18. Croquis Model Switcher (with explicit gender compatibility defaults)
   const btnCroquisFemale = document.querySelector('#btn-croquis-female');
   const btnCroquisMale = document.querySelector('#btn-croquis-male');
   if (btnCroquisFemale) {
@@ -1052,13 +1059,26 @@ document.addEventListener('DOMContentLoaded', () => {
       pushStateSnapshot();
       designState.figure = 'female';
       designState.croquis = 'female';
-      // Female garment defaults: skirt-family bottom if currently wearing trousers or wide
+
+      // Female defaults: Fitted Bodice + A-Line Skirt + Short Sleeve + Round Jewel
+      // Preserve colour, fabric, pattern, size, view
+      if (designState.top === 'crop') {
+        designState.top = 'basic';
+      }
       if (designState.bottom === 'trousers' || designState.bottom === 'wide') {
         designState.bottom = 'skirt';
       }
+      if (designState.collar === 'vneck') {
+        designState.collar = 'round';
+      }
+      if (!designState.name || designState.name.includes('Shirt') || designState.name.includes('Menswear')) {
+        designState.name = 'Fitted Bodice Dress';
+        designState.notes = 'Fitted bodice with natural waist connection and structured A-line drape.';
+      }
+
       syncUIFromState();
       updatePreview();
-      showToast('Female Model active');
+      showToast('Female Model active (Fitted Bodice & A-Line)');
     });
   }
   if (btnCroquisMale) {
@@ -1067,13 +1087,27 @@ document.addEventListener('DOMContentLoaded', () => {
       pushStateSnapshot();
       designState.figure = 'male';
       designState.croquis = 'male';
-      // Male garment defaults: switch from A-line skirt/straight skirt to trousers
-      if (designState.bottom === 'skirt' || designState.bottom === 'straight') {
-        designState.bottom = 'trousers';
+
+      // Male defaults: Relaxed Shirt + Straight Trousers + Short Sleeve + V-Neck
+      // Preserve colour, fabric, pattern, size, view
+      // Do not allow Male + A-Line Skirt as default male composition
+      if (designState.top === 'basic' || designState.top === 'peplum' || designState.top === 'wrap') {
+        designState.top = 'crop'; // Relaxed Shirt
       }
+      if (designState.bottom === 'skirt' || designState.bottom === 'straight') {
+        designState.bottom = 'trousers'; // Straight Trousers
+      }
+      if (designState.collar === 'round' || designState.collar === 'square') {
+        designState.collar = 'vneck'; // V-Neck
+      }
+      if (!designState.name || designState.name.includes('Dress') || designState.name.includes('Bodice')) {
+        designState.name = 'Relaxed Shirt & Trousers';
+        designState.notes = 'Relaxed shirt with straight-leg tailored trousers in contemporary menswear fit.';
+      }
+
       syncUIFromState();
       updatePreview();
-      showToast('Male Model active');
+      showToast('Male Model active (Relaxed Shirt & Trousers)');
     });
   }
 
