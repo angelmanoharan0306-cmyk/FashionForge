@@ -6,13 +6,15 @@
   "scripts": {
     "dev": "node backend/server.js",
     "start": "node backend/server.js",
-    "test": "node tests/test_phase7.js"
+    "test": "node tests/test_phase7.js && node tests/test_phase8.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^18.0.5",
     "express": "^5.2.1",
+    "mongoose": "^9.10.3",
     "puppeteer-core": "^25.12.0"
   }
 }

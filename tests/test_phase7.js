@@ -1,6 +1,7 @@
 /**
- * FashionForge — Phase 7 Automated Test Suite
+ * FashionForge — Phase 7 Automated Regression Test Suite
  * Tests Design Persistence, Saved Schema, My Designs Operations, Restoration, and Integrity
+ * against the persistent storage interface.
  */
 
 import {
@@ -30,7 +31,7 @@ import {
 } from '../frontend/js/renderer/geometry.js';
 
 console.log('====================================================');
-console.log('FASHIONFORGE — PHASE 7 AUTOMATED VERIFICATION SUITE');
+console.log('FASHIONFORGE — PHASE 7 REGRESSION VERIFICATION SUITE');
 console.log('====================================================\n');
 
 let passCount = 0;
@@ -47,7 +48,7 @@ function assert(condition, message) {
 }
 
 // Ensure clean test isolation
-clearAllSavedDesigns();
+await clearAllSavedDesigns();
 
 // -----------------------------------------------------------------------------
 // A. SAVE NEW DESIGN
@@ -69,7 +70,7 @@ const sampleDesign1 = {
   notes: 'Fluid wrap eveningwear with palazzo flare.'
 };
 
-const saved1 = saveDesign(sampleDesign1);
+const saved1 = await saveDesign(sampleDesign1);
 assert(typeof saved1.id === 'string' && saved1.id.startsWith('FF-D'), `Assigned collision-safe ID: ${saved1.id}`);
 assert(saved1.name === 'Midnight Silk Gown', `Saved name preserved: ${saved1.name}`);
 assert(typeof saved1.createdAt === 'string', `Creation timestamp generated: ${saved1.createdAt}`);
@@ -83,7 +84,7 @@ assert(saved1.price === (420 + 640 + 200 + 90 + 520 + 0), `Price accurately calc
 // B. RETRIEVE SAVED DESIGN
 // -----------------------------------------------------------------------------
 console.log('\n--- B. Retrieve Saved Design ---');
-const retrieved1 = getDesignById(saved1.id);
+const retrieved1 = await getDesignById(saved1.id);
 assert(retrieved1 !== null, 'Retrieved design by ID is non-null');
 assert(retrieved1.id === saved1.id, `Retrieved ID matches saved ID: ${retrieved1.id}`);
 assert(retrieved1.name === saved1.name, 'Retrieved name matches');
@@ -125,28 +126,28 @@ assert(simulatedStudioState.colour === '#2c3e50', 'Restored colour = #2c3e50');
 // D. DUPLICATE DESIGN
 // -----------------------------------------------------------------------------
 console.log('\n--- D. Duplicate Design ---');
-const duplicate1 = duplicateDesign(saved1.id);
+const duplicate1 = await duplicateDesign(saved1.id);
 assert(duplicate1 !== null, 'Duplicate created successfully');
 assert(duplicate1.id !== saved1.id, `Duplicate has unique ID: ${duplicate1.id}`);
 assert(duplicate1.name === 'Midnight Silk Gown Copy', `Duplicate has copy name: "${duplicate1.name}"`);
 assert(duplicate1.top === saved1.top && duplicate1.bottom === saved1.bottom, 'Duplicate preserves garment configuration');
 
 // Verify original wasn't mutated
-const originalAfterDup = getDesignById(saved1.id);
+const originalAfterDup = await getDesignById(saved1.id);
 assert(originalAfterDup.name === 'Midnight Silk Gown', 'Original design was not mutated by duplicate');
 
 // Subsequent duplicate gets "Copy 2"
-const duplicate2 = duplicateDesign(saved1.id);
+const duplicate2 = await duplicateDesign(saved1.id);
 assert(duplicate2.name === 'Midnight Silk Gown Copy 2', `Subsequent duplicate named: "${duplicate2.name}"`);
 
 // -----------------------------------------------------------------------------
 // E. DELETE DESIGN
 // -----------------------------------------------------------------------------
 console.log('\n--- E. Delete Design ---');
-const deleteSuccess = deleteDesign(duplicate2.id);
+const deleteSuccess = await deleteDesign(duplicate2.id);
 assert(deleteSuccess === true, 'deleteDesign returned true');
-assert(getDesignById(duplicate2.id) === null, 'Deleted design no longer found in storage');
-assert(getDesignById(saved1.id) !== null, 'Original design still exists after deleting duplicate');
+assert(await getDesignById(duplicate2.id) === null, 'Deleted design no longer found in storage');
+assert(await getDesignById(saved1.id) !== null, 'Original design still exists after deleting duplicate');
 
 // -----------------------------------------------------------------------------
 // F. MULTIPLE SAVED DESIGNS
@@ -164,7 +165,7 @@ const sampleDesign2 = {
   pattern: 'stripes',
   size: 'L'
 };
-const saved2 = saveDesign(sampleDesign2);
+const saved2 = await saveDesign(sampleDesign2);
 
 const sampleDesign3 = {
   name: 'Architectural Menswear Shirt',
@@ -179,9 +180,9 @@ const sampleDesign3 = {
   pattern: 'checks',
   size: 'XL'
 };
-const saved3 = saveDesign(sampleDesign3);
+const saved3 = await saveDesign(sampleDesign3);
 
-const allSaved = getSavedDesigns();
+const allSaved = await getSavedDesigns();
 assert(allSaved.length === 4, `All saved designs count = 4 (got ${allSaved.length})`);
 assert(allSaved[0].id === saved3.id, 'Newest design appears first in list');
 
@@ -189,14 +190,14 @@ assert(allSaved[0].id === saved3.id, 'Newest design appears first in list');
 // G. EMPTY STATE
 // -----------------------------------------------------------------------------
 console.log('\n--- G. Empty State ---');
-clearAllSavedDesigns();
-const emptyList = getSavedDesigns();
+await clearAllSavedDesigns();
+const emptyList = await getSavedDesigns();
 assert(Array.isArray(emptyList) && emptyList.length === 0, 'getSavedDesigns() returns empty array after clear');
-assert(getDesignById('nonexistent-id') === null, 'getDesignById on empty storage returns null');
+assert(await getDesignById('nonexistent-id') === null, 'getDesignById on empty storage returns null');
 
 // Re-save saved1 for remaining tests
-saveDesign(sampleDesign1);
-const reSaved = getSavedDesigns()[0];
+await saveDesign(sampleDesign1);
+const reSaved = (await getSavedDesigns())[0];
 
 // -----------------------------------------------------------------------------
 // H. PRICE REMAINS CONSISTENT AFTER SAVE / REOPEN

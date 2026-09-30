@@ -817,20 +817,27 @@ export function closeSaveModal() {
 /**
  * Confirms saving the current design via the modular persistence layer
  */
-export function handleConfirmSave() {
+export async function handleConfirmSave() {
   const inputName = document.querySelector('#save-design-name');
   const enteredName = inputName?.value.trim() || designState.name || 'Bespoke Atelier Design';
   designState.name = enteredName;
 
-  // Save through design-storage persistence service
-  const saved = saveDesign(designState);
-  designState.id = saved.id;
-  designState.styleId = saved.styleId;
+  try {
+    // Save through design-storage persistence service (REST API + MongoDB)
+    const saved = await saveDesign(designState);
+    if (saved) {
+      designState.id = saved.id || saved.designId;
+      designState.styleId = saved.styleId;
 
-  closeSaveModal();
-  syncUIFromState();
-  showToast(`Design "${saved.name}" saved to atelier workspace`);
-  return saved;
+      closeSaveModal();
+      syncUIFromState();
+      showToast(`Design "${saved.name}" saved to atelier workspace`);
+      return saved;
+    }
+  } catch (err) {
+    console.error('Failed to save design:', err);
+    showToast(`Error saving design: ${err.message}`);
+  }
 }
 
 /**
@@ -1302,20 +1309,26 @@ document.addEventListener('DOMContentLoaded', () => {
   // Check URL query parameters (e.g. ?id=FF-D... or ?mode=tech-pack)
   const urlParams = new URLSearchParams(window.location.search);
   const designId = urlParams.get('id') || urlParams.get('load');
-  let loadedFromUrl = false;
-  if (designId) {
-    const saved = getDesignById(designId);
-    if (saved) {
-      loadDesignIntoState(saved);
-      loadedFromUrl = true;
-    }
-  }
-
   const initialMode = urlParams.get('mode');
-  if (initialMode && ['design', 'technical-flat', 'tech-pack'].includes(initialMode)) {
-    setStudioMode(initialMode);
-  } else if (!loadedFromUrl) {
-    // Initial Render
+
+  if (designId) {
+    getDesignById(designId).then(saved => {
+      if (saved) {
+        loadDesignIntoState(saved);
+      } else {
+        updatePreview();
+      }
+      if (initialMode && ['design', 'technical-flat', 'tech-pack'].includes(initialMode)) {
+        setStudioMode(initialMode);
+      }
+    }).catch(err => {
+      console.warn('Failed to load design by ID from API:', err);
+      updatePreview();
+    });
+  } else {
+    if (initialMode && ['design', 'technical-flat', 'tech-pack'].includes(initialMode)) {
+      setStudioMode(initialMode);
+    }
     updatePreview();
   }
 });

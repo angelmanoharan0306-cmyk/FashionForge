@@ -78,13 +78,13 @@ function getSummaryText(design) {
 /**
  * Renders all saved designs into the grid
  */
-export function renderDesignsGrid() {
+export async function renderDesignsGrid() {
   const grid = document.querySelector('#designs-grid');
   const emptyState = document.querySelector('#empty-designs-state');
   const countBadge = document.querySelector('#designs-count-badge');
   if (!grid) return;
 
-  const allDesigns = getSavedDesigns();
+  const allDesigns = await getSavedDesigns();
 
   // Apply filters & search
   const filtered = allDesigns.filter(d => {
@@ -237,12 +237,17 @@ function createDesignCardElement(design) {
 /**
  * Duplicate action handler
  */
-export function handleDuplicateDesign(id) {
-  const copy = duplicateDesign(id);
-  if (copy) {
-    renderDesignsGrid();
-    showToast(`Created duplicate "${copy.name}"`);
-  } else {
+export async function handleDuplicateDesign(id) {
+  try {
+    const copy = await duplicateDesign(id);
+    if (copy) {
+      await renderDesignsGrid();
+      showToast(`Created duplicate "${copy.name}"`);
+    } else {
+      showToast('Failed to duplicate design');
+    }
+  } catch (err) {
+    console.error('Duplicate design error:', err);
     showToast('Failed to duplicate design');
   }
 }
@@ -274,19 +279,24 @@ export function closeDeleteModal() {
 /**
  * Confirms deletion of currently selected design
  */
-export function confirmDeleteDesign() {
+export async function confirmDeleteDesign() {
   if (!pendingDeleteId) return;
 
-  const target = getDesignById(pendingDeleteId);
-  const targetName = target?.name || 'Design';
-  const success = deleteDesign(pendingDeleteId);
+  try {
+    const target = await getDesignById(pendingDeleteId);
+    const targetName = target?.name || 'Design';
+    const success = await deleteDesign(pendingDeleteId);
 
-  closeDeleteModal();
+    closeDeleteModal();
 
-  if (success) {
-    renderDesignsGrid();
-    showToast(`Deleted "${targetName}" from atelier portfolio`);
-  } else {
+    if (success) {
+      await renderDesignsGrid();
+      showToast(`Deleted "${targetName}" from atelier portfolio`);
+    } else {
+      showToast('Failed to delete design');
+    }
+  } catch (err) {
+    console.error('Delete design error:', err);
     showToast('Failed to delete design');
   }
 }

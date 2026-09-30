@@ -1,12 +1,11 @@
 /**
  * FashionForge — Design Persistence Layer Service
  *
- * Implements local storage persistence for bespoke garment designs.
- * Provides a modular, cleanly decoupled API designed to be seamlessly
- * upgraded to REST API + MongoDB endpoints in Phase 8.
+ * REST API client backed by MongoDB.
+ * Replaces Phase 7 localStorage persistence while maintaining the clean
+ * decoupled interface for the Design Studio and My Designs.
  *
- * Single Source of Truth for Saved Designs:
- *   Key: 'fashionforge_saved_designs'
+ * Endpoint Base: /api/designs
  */
 
 import { calculateDesignPrice } from '../renderer/garment-data.js';
@@ -14,27 +13,16 @@ import { calculateDesignPrice } from '../renderer/garment-data.js';
 export const STORAGE_KEY = 'fashionforge_saved_designs';
 export const CART_STORAGE_KEY = 'fashionforge_cart';
 
-// In-memory fallback for test runners or non-browser environments
-let memoryStore = {};
-
 /**
- * Accesses local storage safely across browser and test environments
- *
- * @returns {Storage|object}
+ * Resolves the API base URL based on runtime environment (browser vs Node.js test runner)
  */
-function getStorage() {
-  if (typeof window !== 'undefined' && window.localStorage) {
-    return window.localStorage;
+export function getApiBaseUrl() {
+  if (typeof window !== 'undefined' && window.location && window.location.origin) {
+    return '/api/designs';
   }
-  if (typeof localStorage !== 'undefined') {
-    return localStorage;
-  }
-  return {
-    getItem: (key) => (Object.prototype.hasOwnProperty.call(memoryStore, key) ? memoryStore[key] : null),
-    setItem: (key, val) => { memoryStore[key] = String(val); },
-    removeItem: (key) => { delete memoryStore[key]; },
-    clear: () => { memoryStore = {}; }
-  };
+  return (typeof process !== 'undefined' && process.env?.API_BASE_URL)
+    ? process.env.API_BASE_URL
+    : 'http://localhost:5000/api/designs';
 }
 
 /**
@@ -50,93 +38,64 @@ export function generateDesignId() {
 }
 
 /**
- * Retrieves all saved designs from storage, ordered newest first
+ * Normalizes any design payload into the canonical FashionForge schema
  *
- * @returns {Array<object>} Array of saved design objects
- */
-export function getSavedDesigns() {
-  try {
-    const raw = getStorage().getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    // Ensure chronological sort (newest updated first)
-    return parsed.sort((a, b) => {
-      const timeA = new Date(a.updatedAt || a.createdAt || 0).getTime();
-      const timeB = new Date(b.updatedAt || b.createdAt || 0).getTime();
-      return timeB - timeA;
-    });
-  } catch (err) {
-    console.warn('[FashionForge Storage] Failed to read saved designs:', err);
-    return [];
-  }
-}
-
-/**
- * Internal helper to persist an array of designs
- *
- * @param {Array<object>} designs
- * @returns {boolean} Success status
- */
-function persistDesigns(designs) {
-  try {
-    getStorage().setItem(STORAGE_KEY, JSON.stringify(designs));
-    return true;
-  } catch (err) {
-    console.error('[FashionForge Storage] Failed to write designs:', err);
-    return false;
-  }
-}
-
-/**
- * Retrieves a single saved design by its unique ID
- *
- * @param {string} id
- * @returns {object|null} The design object or null if not found
- */
-export function getDesignById(id) {
-  if (!id) return null;
-  const designs = getSavedDesigns();
-  return designs.find(d => d.id === id) || null;
-}
-
-/**
- * Normalizes and validates design state into the canonical saved schema
- *
- * @param {object} designInput - Raw designState or design object
+ * @param {object} raw - Raw input design object
  * @returns {object} Canonical design object
  */
-export function normalizeDesignSchema(designInput) {
-  const gender = designInput.figure || designInput.croquis || designInput.gender || 'female';
-  const top = designInput.top || (gender === 'male' ? 'crop' : 'basic');
-  const bottom = designInput.bottom || (gender === 'male' ? 'trousers' : 'skirt');
-  const sleeves = designInput.sleeves || 'short';
-  const collar = designInput.collar || designInput.neckline || 'round';
-  const size = designInput.size || 'M';
-  const fabric = designInput.fabric || 'cotton';
-  const pattern = designInput.pattern || 'solid';
-  const colour = designInput.colour || '#b96b61';
+export function normalizeDesignSchema(raw) {
+  if (!raw || typeof raw !== 'object') return null;
 
-  // Compute authoritative price using centralized pricing engine
-  const pricingResult = calculateDesignPrice({
-    top,
-    bottom,
-    sleeves,
-    collar,
-    size,
-    fabric,
-    pattern
-  });
+  const id = raw.id || raw.designId || generateDesignId();
+  const name = (raw.name || 'Untitled Atelier Design').trim();
+  const gender = (raw.gender === 'male' || raw.figure === 'male' || raw.croquis === 'male') ? 'male' : 'female';
+  const size = raw.size || 'M';
+  const top = raw.top || 'basic';
+  const bottom = raw.bottom || 'pencil';
+  const sleeves = raw.sleeves || 'none';
+  const collar = raw.collar || raw.neckline || 'crew';
+  const neckline = raw.neckline || collar;
+  const fabric = raw.fabric || 'cotton';
+  const colour = raw.colour || '#ffffff';
+  const pattern = raw.pattern || 'solid';
+  const notes = raw.notes || '';
+  const view = raw.view || 'front';
 
-  const now = new Date().toISOString();
+  let calculatedPrice = 0;
+  try {
+    calculatedPrice = calculateDesignPrice({ top, bottom, sleeves, collar, fabric, pattern }).total;
+  } catch (err) {
+    calculatedPrice = Number(raw.price) || 0;
+  }
+  const price = (typeof raw.price === 'number' && !isNaN(raw.price) && raw.price > 0)
+    ? raw.price
+    : calculatedPrice;
+
+  const configuration = (raw.configuration && typeof raw.configuration === 'object')
+    ? { ...raw.configuration }
+    : {
+        figure: gender,
+        croquis: gender,
+        gender,
+        size,
+        top,
+        bottom,
+        sleeves,
+        collar,
+        neckline,
+        fabric,
+        colour,
+        pattern,
+        notes,
+        view,
+        price
+      };
 
   return {
-    id: designInput.id || generateDesignId(),
-    styleId: designInput.styleId || `FF-${Math.floor(1000 + Math.random() * 9000)}`,
-    name: (designInput.name && designInput.name.trim()) ? designInput.name.trim() : 'Bespoke Atelier Design',
-    createdAt: designInput.createdAt || now,
-    updatedAt: now,
-    // Explicit canonical schema attributes
+    id,
+    designId: id,
+    styleId: raw.styleId || id,
+    name,
     gender,
     figure: gender,
     croquis: gender,
@@ -145,201 +104,295 @@ export function normalizeDesignSchema(designInput) {
     bottom,
     sleeves,
     collar,
-    neckline: collar,
-    colour,
+    neckline,
     fabric,
+    colour,
     pattern,
-    price: pricingResult.total,
-    pricing: pricingResult.total,
-    // Full renderer configuration
-    view: designInput.view || 'front',
-    figureVisible: (typeof designInput.figureVisible === 'boolean') ? designInput.figureVisible : true,
-    garmentVisible: (typeof designInput.garmentVisible === 'boolean') ? designInput.garmentVisible : true,
-    detailsVisible: (typeof designInput.detailsVisible === 'boolean') ? designInput.detailsVisible : true,
-    zoom: designInput.zoom || 100,
-    notes: designInput.notes || '',
-    version: designInput.version || '1.0'
+    notes,
+    price,
+    view,
+    configuration,
+    createdAt: raw.createdAt || new Date().toISOString(),
+    updatedAt: raw.updatedAt || new Date().toISOString()
   };
 }
 
 /**
- * Saves a new design into persistent storage
+ * Retrieves all saved designs from REST API, sorted newest first
  *
- * @param {object} design - The design configuration to save
- * @returns {object} The saved design with assigned ID and timestamps
+ * @returns {Promise<Array<object>>} Array of saved design objects
  */
-export function saveDesign(design) {
-  if (!design) throw new Error('Cannot save empty design configuration');
+export async function getSavedDesigns() {
+  const baseUrl = getApiBaseUrl();
+  try {
+    const res = await fetch(baseUrl, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' }
+    });
 
-  const normalized = normalizeDesignSchema(design);
-  const existingList = getSavedDesigns();
-
-  // If design with this exact ID already exists in storage, update it instead
-  const existingIndex = existingList.findIndex(d => d.id === normalized.id);
-  if (existingIndex >= 0) {
-    normalized.createdAt = existingList[existingIndex].createdAt || normalized.createdAt;
-    existingList[existingIndex] = normalized;
-    persistDesigns(existingList);
-    return normalized;
-  }
-
-  // Prepend so the newest design appears first
-  const updatedList = [normalized, ...existingList];
-  persistDesigns(updatedList);
-  return normalized;
-}
-
-/**
- * Updates an existing design by ID
- *
- * @param {string} id - The design ID to update
- * @param {object} patch - Fields to update
- * @returns {object|null} The updated design or null if not found
- */
-export function updateDesign(id, patch) {
-  if (!id || !patch) return null;
-
-  const existingList = getSavedDesigns();
-  const index = existingList.findIndex(d => d.id === id);
-  if (index === -1) return null;
-
-  const current = existingList[index];
-  const merged = {
-    ...current,
-    ...patch,
-    id: current.id, // Preserve original ID
-    createdAt: current.createdAt, // Preserve original creation date
-    updatedAt: new Date().toISOString()
-  };
-
-  const normalized = normalizeDesignSchema(merged);
-  existingList[index] = normalized;
-  persistDesigns(existingList);
-  return normalized;
-}
-
-/**
- * Deletes a design by ID
- *
- * @param {string} id - The design ID to delete
- * @returns {boolean} True if deleted, false if not found
- */
-export function deleteDesign(id) {
-  if (!id) return false;
-  const existingList = getSavedDesigns();
-  const filtered = existingList.filter(d => d.id !== id);
-
-  if (filtered.length === existingList.length) {
-    return false; // Nothing was removed
-  }
-
-  return persistDesigns(filtered);
-}
-
-/**
- * Duplicates an existing design under a new unique ID
- *
- * @param {string} id - The source design ID to duplicate
- * @returns {object|null} The newly created duplicate design or null
- */
-export function duplicateDesign(id) {
-  const original = getDesignById(id);
-  if (!original) return null;
-
-  // Generate sensible duplicate name, e.g. "Original Copy" or "Original Copy 2"
-  const existingDesigns = getSavedDesigns();
-  const baseName = original.name.replace(/\s+Copy(\s+\d+)?$/i, '').trim();
-
-  // Find existing duplicate numbers
-  const copyRegex = new RegExp(`^${escapeRegex(baseName)} Copy(?: (\\d+))?$`, 'i');
-  let maxCopyNum = 0;
-  let foundAnyCopy = false;
-
-  existingDesigns.forEach(d => {
-    const match = d.name.match(copyRegex);
-    if (match) {
-      foundAnyCopy = true;
-      const num = match[1] ? parseInt(match[1], 10) : 1;
-      if (num > maxCopyNum) maxCopyNum = num;
+    if (!res.ok) {
+      console.warn(`[FashionForge API] GET ${baseUrl} failed with status: ${res.status}`);
+      return [];
     }
+
+    const data = await res.json();
+    if (!Array.isArray(data)) return [];
+
+    return data
+      .map(normalizeDesignSchema)
+      .filter(Boolean)
+      .sort((a, b) => {
+        const timeA = new Date(a.updatedAt || a.createdAt || 0).getTime();
+        const timeB = new Date(b.updatedAt || b.createdAt || 0).getTime();
+        return timeB - timeA;
+      });
+  } catch (err) {
+    console.warn('[FashionForge API] Failed to fetch saved designs:', err.message);
+    return [];
+  }
+}
+
+/**
+ * Retrieves a single saved design by its unique ID
+ *
+ * @param {string} id
+ * @returns {Promise<object|null>} The design object or null if not found
+ */
+export async function getDesignById(id) {
+  if (!id) return null;
+  const baseUrl = getApiBaseUrl();
+  try {
+    const res = await fetch(`${baseUrl}/${encodeURIComponent(id)}`, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' }
+    });
+
+    if (res.status === 404) {
+      return null;
+    }
+
+    if (!res.ok) {
+      console.warn(`[FashionForge API] GET ${baseUrl}/${id} returned status: ${res.status}`);
+      return null;
+    }
+
+    const data = await res.json();
+    return normalizeDesignSchema(data);
+  } catch (err) {
+    console.warn(`[FashionForge API] Failed to fetch design ${id}:`, err.message);
+    return null;
+  }
+}
+
+/**
+ * Saves a new design configuration to MongoDB via POST /api/designs
+ *
+ * @param {object} design - The design configuration object
+ * @returns {Promise<object>} The saved design with canonical ID and timestamps
+ */
+export async function saveDesign(design) {
+  const normalized = normalizeDesignSchema(design);
+  if (!normalized) {
+    throw new Error('Invalid design payload provided to saveDesign.');
+  }
+
+  const baseUrl = getApiBaseUrl();
+  const payload = {
+    designId: normalized.id,
+    styleId: normalized.styleId,
+    name: normalized.name,
+    gender: normalized.gender,
+    figure: normalized.figure,
+    croquis: normalized.croquis,
+    size: normalized.size,
+    top: normalized.top,
+    bottom: normalized.bottom,
+    sleeves: normalized.sleeves,
+    collar: normalized.collar,
+    neckline: normalized.neckline,
+    fabric: normalized.fabric,
+    colour: normalized.colour,
+    pattern: normalized.pattern,
+    notes: normalized.notes,
+    price: normalized.price,
+    view: normalized.view,
+    configuration: normalized.configuration
+  };
+
+  const res = await fetch(baseUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
+    body: JSON.stringify(payload)
   });
 
-  const duplicateName = !foundAnyCopy ? `${baseName} Copy` : `${baseName} Copy ${maxCopyNum + 1}`;
-  const now = new Date().toISOString();
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    const message = errorData.message || `Save failed with status ${res.status}`;
+    throw new Error(message);
+  }
 
-  const duplicate = {
-    ...original,
-    id: generateDesignId(),
-    styleId: `FF-${Math.floor(1000 + Math.random() * 9000)}`,
-    name: duplicateName,
-    createdAt: now,
-    updatedAt: now
-  };
-
-  const normalized = normalizeDesignSchema(duplicate);
-  const updatedList = [normalized, ...existingDesigns];
-  persistDesigns(updatedList);
-  return normalized;
+  const savedData = await res.json();
+  return normalizeDesignSchema(savedData);
 }
 
 /**
- * Clears all saved designs from storage (primarily for testing and reset)
+ * Updates an existing saved design by ID via PUT /api/designs/:id
+ *
+ * @param {string} id - The design identifier to update
+ * @param {object} updates - Properties to update
+ * @returns {Promise<object|null>} Updated design or null on failure
  */
-export function clearAllSavedDesigns() {
+export async function updateDesign(id, updates) {
+  if (!id) return null;
+  const baseUrl = getApiBaseUrl();
+
+  const res = await fetch(`${baseUrl}/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
+    body: JSON.stringify(updates)
+  });
+
+  if (res.status === 404) return null;
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || `Update failed with status ${res.status}`);
+  }
+
+  const data = await res.json();
+  return normalizeDesignSchema(data);
+}
+
+/**
+ * Deletes a design by its unique ID via DELETE /api/designs/:id
+ *
+ * @param {string} id - The design ID to delete
+ * @returns {Promise<boolean>} True if successfully deleted, false otherwise
+ */
+export async function deleteDesign(id) {
+  if (!id) return false;
+  const baseUrl = getApiBaseUrl();
+
   try {
-    getStorage().removeItem(STORAGE_KEY);
-    memoryStore = {};
-    return true;
+    const res = await fetch(`${baseUrl}/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+      headers: { 'Accept': 'application/json' }
+    });
+
+    if (res.status === 404) return false;
+    return res.ok;
   } catch (err) {
+    console.error(`[FashionForge API] Failed to delete design ${id}:`, err);
     return false;
   }
 }
 
 /**
- * Helper to escape regex special characters
+ * Duplicates an existing design under a new unique ID and copy name
+ * Appends "Copy", "Copy 2", etc.
+ *
+ * @param {string} id - The source design ID to duplicate
+ * @returns {Promise<object|null>} The newly created duplicate design or null
  */
-function escapeRegex(string) {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+export async function duplicateDesign(id) {
+  const original = await getDesignById(id);
+  if (!original) {
+    console.warn(`[FashionForge Duplicate] Original design ${id} not found.`);
+    return null;
+  }
+
+  const allDesigns = await getSavedDesigns();
+
+  // Determine duplicate naming sequence
+  const baseName = original.name.replace(/\s+Copy(\s+\d+)?$/i, '').trim();
+  const copyRegex = new RegExp(`^${baseName}\\s+Copy(?:\\s+(\\d+))?$`, 'i');
+
+  let maxCopyIndex = 0;
+  for (const d of allDesigns) {
+    const match = (d.name || '').match(copyRegex);
+    if (match) {
+      const idx = match[1] ? parseInt(match[1], 10) : 1;
+      if (idx > maxCopyIndex) maxCopyIndex = idx;
+    }
+  }
+
+  const newCopyName = maxCopyIndex === 0
+    ? `${baseName} Copy`
+    : `${baseName} Copy ${maxCopyIndex + 1}`;
+
+  const duplicatePayload = {
+    ...original,
+    id: generateDesignId(),
+    name: newCopyName,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+  delete duplicatePayload.styleId;
+
+  return await saveDesign(duplicatePayload);
 }
 
-/* ==========================================================================
-   CART PERSISTENCE COMPATIBILITY (PHASE 7 -> PHASE 10 BRIDGE)
-   ========================================================================== */
+/**
+ * Clears all saved designs (helper for test teardown)
+ *
+ * @returns {Promise<void>}
+ */
+export async function clearAllSavedDesigns() {
+  const designs = await getSavedDesigns();
+  for (const d of designs) {
+    await deleteDesign(d.id || d.designId);
+  }
+}
+
+let memoryCartStore = [];
 
 /**
- * Stores full design configuration into cart storage
+ * Saves design into Cart storage (Phase 10 compatibility)
  *
- * @param {object} designState
- * @returns {object} Cart item
+ * @param {object} design - Active design state to place in cart
+ * @returns {object} Cart entry
  */
-export function saveDesignToCart(designState) {
+export function saveDesignToCart(design) {
+  const normalized = normalizeDesignSchema(design);
   const cartItem = {
     cartItemId: `cart_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-    design: normalizeDesignSchema(designState),
-    addedAt: new Date().toISOString()
+    addedAt: new Date().toISOString(),
+    design: normalized
   };
 
   try {
-    const raw = getStorage().getItem(CART_STORAGE_KEY);
-    const cart = raw ? JSON.parse(raw) : [];
-    cart.unshift(cartItem);
-    getStorage().setItem(CART_STORAGE_KEY, JSON.stringify(cart.slice(0, 50)));
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const raw = window.localStorage.getItem(CART_STORAGE_KEY);
+      const items = raw ? JSON.parse(raw) : [];
+      items.unshift(cartItem);
+      window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+    } else {
+      memoryCartStore.unshift(cartItem);
+    }
   } catch (err) {
-    console.warn('[FashionForge Cart Storage] Failed to add cart item:', err);
+    console.warn('[FashionForge Cart] Failed to persist cart item:', err);
   }
 
   return cartItem;
 }
 
 /**
- * Retrieves items currently in the cart
+ * Retrieves all items currently in cart
  *
  * @returns {Array<object>}
  */
 export function getCartItems() {
   try {
-    const raw = getStorage().getItem(CART_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const raw = window.localStorage.getItem(CART_STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    }
+    return [...memoryCartStore];
   } catch (err) {
     return [];
   }
