@@ -1634,6 +1634,16 @@ img, svg {
   background: var(--color-surface-subtle);
 }
 
+.component-card.is-incompatible {
+  opacity: 0.48;
+  filter: grayscale(0.4);
+}
+
+.component-card.is-incompatible:hover {
+  opacity: 0.8;
+  border-color: #d97706;
+}
+
 .component-thumb-wrap {
   width: 34px;
   height: 34px;

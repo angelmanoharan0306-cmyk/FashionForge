@@ -12,8 +12,15 @@ import {
   renderTechnicalFlatPair
 } from './renderer/renderer.js';
 
-import { GARMENT_CATALOG } from './renderer/garment-data.js';
+import { GARMENT_CATALOG, calculateDesignPrice } from './renderer/garment-data.js';
 import { GARMENT_SIZES, getSizeData } from './renderer/size-data.js';
+import {
+  getRecommendation,
+  getDetailedRecommendation,
+  checkCompatibility,
+  enforceCompatibility,
+  COMPATIBILITY_RULES
+} from './recommendation.js';
 
 /* ==========================================================================
    1. CENTRALIZED APPLICATION STATE (SINGLE SOURCE OF TRUTH)
@@ -48,7 +55,8 @@ export const designState = {
 
   // Metadata & Commercial Pricing
   pricing: 1480,
-  notes: 'Fitted bodice with natural waist connection and structured A-line drape.'
+  notes: 'Fitted bodice with natural waist connection and structured A-line drape.',
+  lastChanged: null
 };
 
 /* ==========================================================================
@@ -75,7 +83,8 @@ function pushStateSnapshot() {
     figure: designState.figure,
     croquis: designState.croquis,
     name: designState.name,
-    notes: designState.notes
+    notes: designState.notes,
+    lastChanged: designState.lastChanged
   };
 
   undoStack.push(snapshot);
@@ -102,7 +111,8 @@ export function undo() {
     figure: designState.figure,
     croquis: designState.croquis,
     name: designState.name,
-    notes: designState.notes
+    notes: designState.notes,
+    lastChanged: designState.lastChanged
   };
   redoStack.push(currentSnapshot);
 
@@ -133,7 +143,8 @@ export function redo() {
     figure: designState.figure,
     croquis: designState.croquis,
     name: designState.name,
-    notes: designState.notes
+    notes: designState.notes,
+    lastChanged: designState.lastChanged
   };
   undoStack.push(currentSnapshot);
 
@@ -178,6 +189,7 @@ export function resetDesign() {
   designState.detailsVisible = true;
   designState.name = 'Fitted Bodice Dress';
   designState.notes = 'Fitted bodice with natural waist connection and structured A-line drape.';
+  designState.lastChanged = null;
 
   syncUIFromState();
   updatePreview();
@@ -185,71 +197,27 @@ export function resetDesign() {
 }
 
 /* ==========================================================================
-   3. PRICING & RECOMMENDATION ENGINE
+   3. PRICING & RECOMMENDATION ENGINE (CENTRALIZED)
    ========================================================================== */
+
+export {
+  calculateDesignPrice,
+  getRecommendation,
+  getDetailedRecommendation,
+  checkCompatibility,
+  enforceCompatibility,
+  COMPATIBILITY_RULES
+};
 
 /**
  * Calculates total estimated price based on active selections
+ * Delegates to the centralized calculateDesignPrice single source of truth
+ *
+ * @param {object} state - Active designState
+ * @returns {number} - Total price in INR
  */
 export function calculatePrice(state) {
-  const topPrice = GARMENT_CATALOG.tops[state.top]?.price || 450;
-  const bottomPrice = GARMENT_CATALOG.bottoms[state.bottom]?.price || 550;
-  const sleevesPrice = GARMENT_CATALOG.sleeves[state.sleeves]?.price || 150;
-  const collarPrice = GARMENT_CATALOG.collars[state.collar]?.price || 80;
-  const fabricPrice = GARMENT_CATALOG.fabrics[state.fabric]?.price || 250;
-  const patternPrice = GARMENT_CATALOG.patterns[state.pattern]?.price || 0;
-
-  return topPrice + bottomPrice + sleevesPrice + collarPrice + fabricPrice + patternPrice;
-}
-
-/**
- * Deterministic Style Recommendation matching reference fashion intelligence
- */
-export function getRecommendation(state) {
-  const isMale = (state.figure === 'male' || state.croquis === 'male');
-
-  if (state.bottom === 'trousers' || state.bottom === 'wide') {
-    if (isMale) return 'Tailored trousers with a structured bodice create a sharp, contemporary menswear silhouette. Ideal for modern bespoke tailoring.';
-    return 'Palazzo trousers add dramatic length and movement. Pair with a fitted bodice or wrap top for a balanced, sophisticated look.';
-  }
-  if (state.top === 'peplum') {
-    return 'The peplum tier adds structured volume at the hip, creating a defined hourglass silhouette with couture drama.';
-  }
-  if (state.top === 'wrap') {
-    return 'The wrap construction is universally flattering — adjustable, fluid, and versatile across all body types and occasions.';
-  }
-  if (state.sleeves === 'flare') {
-    return 'Bell sleeves add a bohemian romanticism to the design. Works beautifully with both fitted bodices and flowing skirts.';
-  }
-  if (state.sleeves === 'long') {
-    return 'Long sleeves provide elegant coverage and structural refinement. Ideal for formal, office, or seasonal bespoke wear.';
-  }
-  if (state.collar === 'vneck') {
-    return 'The V-neck elongates the neckline and adds a sophisticated décolletage. A timeless neckline that complements all body types.';
-  }
-  if (state.collar === 'square') {
-    return 'The square neckline frames the shoulders with clean architectural lines — a fashion-forward cut with strong visual impact.';
-  }
-  if (state.bottom === 'straight') {
-    return 'The pencil skirt creates a sleek, body-conscious column silhouette. Ideal for formal and office bespoke tailoring.';
-  }
-  if (state.fabric === 'cotton' && state.top === 'basic' && state.bottom === 'skirt') {
-    return 'A classic and versatile design that works well for both casual and semi-formal occasions. The A-line skirt flatters most body types and offers comfortable movement.';
-  }
-  if (state.fabric === 'silk') {
-    return 'Mulberry Silk adds fluid grace and lustrous depth to the structured silhouette. Ideal for evening events and refined formal bespoke tailoring.';
-  }
-  if (state.fabric === 'denim') {
-    return 'Structured Denim emphasizes architectural seams and topstitching. Excellent for modern casual bespoke tailoring.';
-  }
-  if (state.fabric === 'linen') {
-    return 'Natural Linen offers breathable texture and relaxed sophistication with classic, airy summer drape.';
-  }
-  if (state.fabric === 'chiffon') {
-    return 'Sheer Chiffon provides an ethereal, romantic silhouette with fluid floating drape and delicate translucency.';
-  }
-
-  return 'A classic and versatile design that works well for both casual and semi-formal occasions. The A-line skirt flatters most body types and offers comfortable movement.';
+  return calculateDesignPrice(state).total;
 }
 
 /* ==========================================================================
@@ -341,13 +309,23 @@ export function syncUIFromState() {
     row.classList.toggle('is-selected-row', isRowActive);
   });
 
-  // 3. Highlight Selected Component Cards
+  // 3. Highlight Selected Component Cards & Compatibility Dimming
   document.querySelectorAll('.component-card[data-component-group]').forEach(card => {
     const group = card.dataset.componentGroup;
     const value = card.dataset.value;
     const isSelected = (state[group] === value);
     card.classList.toggle('is-selected', isSelected);
     card.setAttribute('aria-checked', isSelected ? 'true' : 'false');
+
+    // Compatibility check for active model
+    const gender = isMale ? 'male' : 'female';
+    const compat = checkCompatibility(gender, group, value);
+    card.classList.toggle('is-incompatible', !compat.compatible);
+    if (!compat.compatible) {
+      card.setAttribute('title', compat.message);
+    } else {
+      card.removeAttribute('title');
+    }
   });
 
   // 4. Highlight Selected Colour Swatch
@@ -430,16 +408,29 @@ export function syncUIFromState() {
   }
   if (specPattern) specPattern.textContent = patternName;
 
-  // 9. Style Recommendation
+  // 9. Style Recommendation & Compatibility
+  const rec = getDetailedRecommendation(state);
   const recText = document.querySelector('#recommendation-text');
-  if (recText) recText.textContent = getRecommendation(state);
+  const recTitle = document.querySelector('#rec-title');
+  if (recText) {
+    recText.innerHTML = `<strong>${rec.title}:</strong> ${rec.explanation}`;
+  }
+  if (recTitle) {
+    recTitle.textContent = (rec.category === 'compatibility') ? 'Compatibility Notice' : 'Style Recommendation';
+  }
 
-  // 10. Estimated Price
+  // 10. Centralized Estimated Price (Single Source of Truth)
+  const priceResult = calculateDesignPrice(state);
+  state.pricing = priceResult.total;
+
   const priceDisplay = document.querySelector('#price-display');
-  const total = calculatePrice(state);
-  state.pricing = total;
   if (priceDisplay) {
-    priceDisplay.textContent = `₹${total.toLocaleString('en-IN')}`;
+    priceDisplay.textContent = `₹${priceResult.total.toLocaleString('en-IN')}`;
+  }
+
+  const specPrice = document.querySelector('#spec-price');
+  if (specPrice) {
+    specPrice.textContent = `₹${priceResult.total.toLocaleString('en-IN')}`;
   }
 
   // 11. Notes Textarea
@@ -448,7 +439,7 @@ export function syncUIFromState() {
     notesArea.value = state.notes;
   }
 
-  // 12. Tech Pack Sheet Synchronizer
+  // 12. Tech Pack Sheet Synchronizer (Live BOM & Measurements)
   const tpName = document.querySelector('#tp-design-name');
   const tpStyleId = document.querySelector('#tp-style-id');
   const tpHeaderSize = document.querySelector('#tp-header-size');
@@ -456,6 +447,24 @@ export function syncUIFromState() {
   const tpFabric = document.querySelector('#tp-bom-fabric');
   const tpColor = document.querySelector('#tp-bom-color');
   const tpFabricCost = document.querySelector('#tp-bom-fabric-cost');
+  const tpTopLabel = document.querySelector('#tp-bom-top-label');
+  const tpTopSpec = document.querySelector('#tp-bom-top-spec');
+  const tpTopCost = document.querySelector('#tp-bom-top-cost');
+  const tpBottomLabel = document.querySelector('#tp-bom-bottom-label');
+  const tpBottomSpec = document.querySelector('#tp-bom-bottom-spec');
+  const tpBottomCost = document.querySelector('#tp-bom-bottom-cost');
+  const tpSleevesLabel = document.querySelector('#tp-bom-sleeves-label');
+  const tpSleevesSpec = document.querySelector('#tp-bom-sleeves-spec');
+  const tpSleevesCost = document.querySelector('#tp-bom-sleeves-cost');
+  const tpCollarLabel = document.querySelector('#tp-bom-collar-label');
+  const tpCollarSpec = document.querySelector('#tp-bom-collar-spec');
+  const tpCollarCost = document.querySelector('#tp-bom-collar-cost');
+  const tpPatternLabel = document.querySelector('#tp-bom-pattern-label');
+  const tpPatternSpec = document.querySelector('#tp-bom-pattern-spec');
+  const tpPatternCost = document.querySelector('#tp-bom-pattern-cost');
+  const tpThreadColor = document.querySelector('#tp-bom-thread-color');
+  const tpTotalCost = document.querySelector('#tp-bom-total-cost');
+
   const tpMeasChest = document.querySelector('#tp-meas-chest');
   const tpMeasWaist = document.querySelector('#tp-meas-waist');
   const tpMeasHip = document.querySelector('#tp-meas-hip');
@@ -466,9 +475,26 @@ export function syncUIFromState() {
   if (tpName) tpName.textContent = state.name;
   if (tpStyleId) tpStyleId.innerHTML = `Style ID: ${state.styleId} | Size: <span id="tp-header-size">${state.size}</span> | Season: Bespoke SS26`;
   if (tpSizeLabel) tpSizeLabel.textContent = `Size ${state.size}`;
-  if (tpFabric) tpFabric.textContent = fabricName;
+  if (tpFabric) tpFabric.textContent = `${fabricName} (Polished)`;
   if (tpColor) tpColor.textContent = `${valColour ? valColour.textContent : 'Rose Clay'} (${state.colour})`;
-  if (tpFabricCost) tpFabricCost.textContent = `₹${GARMENT_CATALOG.fabrics[state.fabric]?.price || 250}`;
+  if (tpFabricCost) tpFabricCost.textContent = `₹${priceResult.fabric}`;
+  if (tpTopLabel) tpTopLabel.textContent = (state.top === 'crop' && isMale) ? 'Relaxed Shirt' : 'Bodice Base';
+  if (tpTopSpec) tpTopSpec.textContent = GARMENT_CATALOG.tops[state.top]?.description || 'Bodice';
+  if (tpTopCost) tpTopCost.textContent = `₹${priceResult.breakdown.top}`;
+  if (tpBottomLabel) tpBottomLabel.textContent = (state.bottom === 'trousers' || state.bottom === 'wide') ? 'Lower Garment (Trousers)' : 'Lower Garment (Skirt)';
+  if (tpBottomSpec) tpBottomSpec.textContent = GARMENT_CATALOG.bottoms[state.bottom]?.description || 'Lower Garment';
+  if (tpBottomCost) tpBottomCost.textContent = `₹${priceResult.breakdown.bottom}`;
+  if (tpSleevesLabel) tpSleevesLabel.textContent = 'Sleeves';
+  if (tpSleevesSpec) tpSleevesSpec.textContent = GARMENT_CATALOG.sleeves[state.sleeves]?.name || sleevesName;
+  if (tpSleevesCost) tpSleevesCost.textContent = `₹${priceResult.breakdown.sleeves}`;
+  if (tpCollarLabel) tpCollarLabel.textContent = 'Neckline / Collar';
+  if (tpCollarSpec) tpCollarSpec.textContent = GARMENT_CATALOG.collars[state.collar]?.name || collarName;
+  if (tpCollarCost) tpCollarCost.textContent = `₹${priceResult.breakdown.collar}`;
+  if (tpPatternLabel) tpPatternLabel.textContent = 'Surface Finish';
+  if (tpPatternSpec) tpPatternSpec.textContent = patternName;
+  if (tpPatternCost) tpPatternCost.textContent = priceResult.pattern > 0 ? `₹${priceResult.pattern}` : 'Included';
+  if (tpThreadColor) tpThreadColor.textContent = state.colour;
+  if (tpTotalCost) tpTotalCost.textContent = `₹${priceResult.total.toLocaleString('en-IN')}`;
 
   if (tpMeasChest) tpMeasChest.textContent = `${sizeData.chest}"`;
   if (tpMeasWaist) tpMeasWaist.textContent = `${sizeData.waistMin}–${sizeData.waistMax}"`;
@@ -564,6 +590,12 @@ if (typeof window !== 'undefined') {
   window.updatePreview = updatePreview;
   window.setView = setView;
   window.setStudioMode = setStudioMode;
+  window.calculateDesignPrice = calculateDesignPrice;
+  window.calculatePrice = calculatePrice;
+  window.getRecommendation = getRecommendation;
+  window.getDetailedRecommendation = getDetailedRecommendation;
+  window.checkCompatibility = checkCompatibility;
+  window.enforceCompatibility = enforceCompatibility;
 }
 
 /**
@@ -727,14 +759,24 @@ export function downloadTechnicalFlatSvg() {
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  // 1. Garment Component Card Handlers
+  // 1. Garment Component Card Handlers (with Compatibility Validation)
   document.querySelectorAll('.component-card[data-component-group]').forEach(card => {
     card.addEventListener('click', () => {
       if (card.disabled) return;
       pushStateSnapshot();
       const group = card.dataset.componentGroup;
       const value = card.dataset.value;
-      designState[group] = value;
+      const gender = (designState.figure === 'male' || designState.croquis === 'male') ? 'male' : 'female';
+      const compat = checkCompatibility(gender, group, value);
+
+      if (!compat.compatible) {
+        designState[group] = compat.replaceWith;
+        designState.lastChanged = group;
+        showToast(compat.message);
+      } else {
+        designState[group] = value;
+        designState.lastChanged = group;
+      }
       updatePreview();
     });
   });
@@ -744,6 +786,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => {
       pushStateSnapshot();
       designState.colour = btn.dataset.color;
+      designState.lastChanged = 'colour';
       updatePreview();
     });
   });
@@ -753,6 +796,7 @@ document.addEventListener('DOMContentLoaded', () => {
     card.addEventListener('click', () => {
       pushStateSnapshot();
       designState.fabric = card.dataset.fabric;
+      designState.lastChanged = 'fabric';
       updatePreview();
       const name = GARMENT_CATALOG.fabrics[card.dataset.fabric]?.name || card.dataset.fabric;
       showToast(`Fabric changed to ${name}`);
@@ -764,6 +808,7 @@ document.addEventListener('DOMContentLoaded', () => {
     card.addEventListener('click', () => {
       pushStateSnapshot();
       designState.pattern = card.dataset.pattern;
+      designState.lastChanged = 'pattern';
       updatePreview();
       const name = GARMENT_CATALOG.patterns[card.dataset.pattern]?.name || card.dataset.pattern;
       showToast(`Pattern changed to ${name}`);
@@ -775,6 +820,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => {
       pushStateSnapshot();
       designState.size = btn.dataset.size;
+      designState.lastChanged = 'size';
       updatePreview();
       showToast(`Size ${btn.dataset.size} selected`);
     });
@@ -1059,9 +1105,9 @@ document.addEventListener('DOMContentLoaded', () => {
       pushStateSnapshot();
       designState.figure = 'female';
       designState.croquis = 'female';
+      designState.lastChanged = 'croquis';
 
       // Female defaults: Fitted Bodice + A-Line Skirt + Short Sleeve + Round Jewel
-      // Preserve colour, fabric, pattern, size, view
       if (designState.top === 'crop') {
         designState.top = 'basic';
       }
@@ -1087,16 +1133,11 @@ document.addEventListener('DOMContentLoaded', () => {
       pushStateSnapshot();
       designState.figure = 'male';
       designState.croquis = 'male';
+      designState.lastChanged = 'croquis';
 
-      // Male defaults: Relaxed Shirt + Straight Trousers + Short Sleeve + V-Neck
-      // Preserve colour, fabric, pattern, size, view
-      // Do not allow Male + A-Line Skirt as default male composition
-      if (designState.top === 'basic' || designState.top === 'peplum' || designState.top === 'wrap') {
-        designState.top = 'crop'; // Relaxed Shirt
-      }
-      if (designState.bottom === 'skirt' || designState.bottom === 'straight') {
-        designState.bottom = 'trousers'; // Straight Trousers
-      }
+      // Enforce deterministic compatibility for menswear
+      enforceCompatibility(designState);
+
       if (designState.collar === 'round' || designState.collar === 'square') {
         designState.collar = 'vneck'; // V-Neck
       }

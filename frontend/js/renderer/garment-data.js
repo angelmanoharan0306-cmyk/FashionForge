@@ -1,9 +1,11 @@
 /**
  * FashionForge — 2.5D Centralized Renderer: Garment Component Registry
  *
- * Phase 5: All garment components are now active and fully rendered.
+ * Phase 6: Rule-Based Recommendations + Centralized Pricing.
  * Components map directly to geometry functions in geometry.js.
  */
+
+import { GARMENT_SIZES } from './size-data.js';
 
 export const GARMENT_CATALOG = {
   tops: {
@@ -208,3 +210,66 @@ export const GARMENT_CATALOG = {
     }
   }
 };
+
+/**
+ * FashionForge — Centralized Pricing Engine (Single Source of Truth)
+ *
+ * Calculates deterministic pricing breakdown derived from:
+ * - base garment (atelier base)
+ * - top component
+ * - bottom component
+ * - sleeve component
+ * - neckline / collar component
+ * - fabric selection
+ * - pattern finish
+ * - optional details (size grading modifier, construction)
+ *
+ * @param {object} state - Active designState
+ * @returns {{ base: number, components: number, fabric: number, pattern: number, details: number, total: number, breakdown: object }}
+ */
+export function calculateDesignPrice(state) {
+  if (!state) {
+    return {
+      base: 0,
+      components: 0,
+      fabric: 0,
+      pattern: 0,
+      details: 0,
+      total: 0,
+      breakdown: { top: 0, bottom: 0, sleeves: 0, collar: 0, fabric: 0, pattern: 0, details: 0 }
+    };
+  }
+
+  const topPrice = GARMENT_CATALOG.tops[state.top]?.price ?? 450;
+  const bottomPrice = GARMENT_CATALOG.bottoms[state.bottom]?.price ?? 550;
+  const sleevesPrice = GARMENT_CATALOG.sleeves[state.sleeves]?.price ?? 150;
+  const collarPrice = GARMENT_CATALOG.collars[state.collar]?.price ?? 80;
+  const fabricPrice = GARMENT_CATALOG.fabrics[state.fabric]?.price ?? 250;
+  const patternPrice = GARMENT_CATALOG.patterns[state.pattern]?.price ?? 0;
+  const sizePrice = GARMENT_SIZES?.[state.size]?.priceModifier ?? 0;
+
+  const base = 0; // Baseline atelier framing
+  const components = topPrice + bottomPrice + sleevesPrice + collarPrice;
+  const fabric = fabricPrice;
+  const pattern = patternPrice;
+  const details = sizePrice;
+  const total = base + components + fabric + pattern + details;
+
+  return {
+    base,
+    components,
+    fabric,
+    pattern,
+    details,
+    total,
+    breakdown: {
+      top: topPrice,
+      bottom: bottomPrice,
+      sleeves: sleevesPrice,
+      collar: collarPrice,
+      fabric: fabricPrice,
+      pattern: patternPrice,
+      details: sizePrice
+    }
+  };
+}
