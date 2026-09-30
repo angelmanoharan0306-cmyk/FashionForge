@@ -1,17 +1,36 @@
 /**
  * FashionForge — Design Persistence Layer Service
  *
- * REST API client backed by MongoDB.
- * Replaces Phase 7 localStorage persistence while maintaining the clean
- * decoupled interface for the Design Studio and My Designs.
+ * REST API client backed by MongoDB with JWT session authentication.
+ * Automatically attaches Authorization: Bearer <token> for authenticated endpoints.
  *
  * Endpoint Base: /api/designs
  */
 
 import { calculateDesignPrice } from '../renderer/garment-data.js';
+import { getToken } from './auth-service.js';
 
 export const STORAGE_KEY = 'fashionforge_saved_designs';
 export const CART_STORAGE_KEY = 'fashionforge_cart';
+
+// Optional override token for test runner isolation
+let overrideAuthToken = null;
+
+export function setTestAuthToken(token) {
+  overrideAuthToken = token;
+}
+
+/**
+ * Generates headers with JWT authentication token if available
+ */
+export function getAuthHeaders(extraHeaders = {}) {
+  const headers = { ...extraHeaders };
+  const token = overrideAuthToken || getToken();
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  return headers;
+}
 
 /**
  * Resolves the API base URL based on runtime environment (browser vs Node.js test runner)
@@ -60,6 +79,7 @@ export function normalizeDesignSchema(raw) {
   const pattern = raw.pattern || 'solid';
   const notes = raw.notes || '';
   const view = raw.view || 'front';
+  const userId = raw.userId || null;
 
   let calculatedPrice = 0;
   try {
@@ -94,6 +114,7 @@ export function normalizeDesignSchema(raw) {
   return {
     id,
     designId: id,
+    userId,
     styleId: raw.styleId || id,
     name,
     gender,
@@ -118,7 +139,7 @@ export function normalizeDesignSchema(raw) {
 }
 
 /**
- * Retrieves all saved designs from REST API, sorted newest first
+ * Retrieves all saved designs for the current user from REST API, sorted newest first
  *
  * @returns {Promise<Array<object>>} Array of saved design objects
  */
@@ -127,8 +148,13 @@ export async function getSavedDesigns() {
   try {
     const res = await fetch(baseUrl, {
       method: 'GET',
-      headers: { 'Accept': 'application/json' }
+      headers: getAuthHeaders({ 'Accept': 'application/json' })
     });
+
+    if (res.status === 401) {
+      console.warn('[FashionForge Storage] Unauthenticated access to getSavedDesigns.');
+      return [];
+    }
 
     if (!res.ok) {
       console.warn(`[FashionForge API] GET ${baseUrl} failed with status: ${res.status}`);
@@ -164,10 +190,10 @@ export async function getDesignById(id) {
   try {
     const res = await fetch(`${baseUrl}/${encodeURIComponent(id)}`, {
       method: 'GET',
-      headers: { 'Accept': 'application/json' }
+      headers: getAuthHeaders({ 'Accept': 'application/json' })
     });
 
-    if (res.status === 404) {
+    if (res.status === 404 || res.status === 403 || res.status === 401) {
       return null;
     }
 
@@ -221,17 +247,19 @@ export async function saveDesign(design) {
 
   const res = await fetch(baseUrl, {
     method: 'POST',
-    headers: {
+    headers: getAuthHeaders({
       'Content-Type': 'application/json',
       'Accept': 'application/json'
-    },
+    }),
     body: JSON.stringify(payload)
   });
 
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
     const message = errorData.message || `Save failed with status ${res.status}`;
-    throw new Error(message);
+    const err = new Error(message);
+    err.status = res.status;
+    throw err;
   }
 
   const savedData = await res.json();
@@ -251,14 +279,14 @@ export async function updateDesign(id, updates) {
 
   const res = await fetch(`${baseUrl}/${encodeURIComponent(id)}`, {
     method: 'PUT',
-    headers: {
+    headers: getAuthHeaders({
       'Content-Type': 'application/json',
       'Accept': 'application/json'
-    },
+    }),
     body: JSON.stringify(updates)
   });
 
-  if (res.status === 404) return null;
+  if (res.status === 404 || res.status === 403) return null;
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
     throw new Error(errorData.message || `Update failed with status ${res.status}`);
@@ -281,10 +309,10 @@ export async function deleteDesign(id) {
   try {
     const res = await fetch(`${baseUrl}/${encodeURIComponent(id)}`, {
       method: 'DELETE',
-      headers: { 'Accept': 'application/json' }
+      headers: getAuthHeaders({ 'Accept': 'application/json' })
     });
 
-    if (res.status === 404) return false;
+    if (res.status === 404 || res.status === 403) return false;
     return res.ok;
   } catch (err) {
     console.error(`[FashionForge API] Failed to delete design ${id}:`, err);
@@ -338,7 +366,7 @@ export async function duplicateDesign(id) {
 }
 
 /**
- * Clears all saved designs (helper for test teardown)
+ * Clears all saved designs for current user (helper for test teardown)
  *
  * @returns {Promise<void>}
  */

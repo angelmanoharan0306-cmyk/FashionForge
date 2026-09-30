@@ -1,6 +1,6 @@
 /**
  * FashionForge — Design Controller
- * Handles REST operations for bespoke fashion designs backed by MongoDB.
+ * Handles REST operations for user-owned bespoke fashion designs backed by MongoDB.
  */
 
 const Design = require('../models/Design');
@@ -16,11 +16,19 @@ function generateServerDesignId() {
 
 /**
  * GET /api/designs
- * Retrieves all saved designs, sorted newest first
+ * Retrieves all saved designs belonging to the authenticated user, sorted newest first
  */
 async function getAllDesigns(req, res, next) {
   try {
-    const designs = await Design.find().sort({ updatedAt: -1, createdAt: -1 });
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({
+        error: 'Unauthorized',
+        message: 'Authentication required to view designs.'
+      });
+    }
+
+    const designs = await Design.find({ userId }).sort({ updatedAt: -1, createdAt: -1 });
     return res.status(200).json(designs.map(d => d.toJSON()));
   } catch (error) {
     console.error('[Design Controller] getAllDesigns error:', error.message);
@@ -30,12 +38,13 @@ async function getAllDesigns(req, res, next) {
 
 /**
  * GET /api/designs/:id
- * Retrieves a single design by its designId
+ * Retrieves a single design if owned by the authenticated user
  */
 async function getDesignById(req, res, next) {
   try {
     const id = req.params.id;
-    // Look up by custom designId first, then by MongoDB _id if valid
+    const userId = req.user?.userId;
+
     let design = await Design.findOne({ designId: id });
     if (!design && id.match(/^[0-9a-fA-F]{24}$/)) {
       design = await Design.findById(id);
@@ -48,6 +57,14 @@ async function getDesignById(req, res, next) {
       });
     }
 
+    // Verify ownership
+    if (design.userId && design.userId !== userId) {
+      return res.status(403).json({
+        error: 'Forbidden',
+        message: 'You do not have permission to view this design.'
+      });
+    }
+
     return res.status(200).json(design.toJSON());
   } catch (error) {
     console.error(`[Design Controller] getDesignById error for ${req.params.id}:`, error.message);
@@ -57,11 +74,20 @@ async function getDesignById(req, res, next) {
 
 /**
  * POST /api/designs
- * Creates and persists a new design configuration
+ * Creates and persists a new design configuration owned by the authenticated user
  */
 async function createDesign(req, res, next) {
   try {
     const body = req.body;
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({
+        error: 'Unauthorized',
+        message: 'Authentication required to save designs.'
+      });
+    }
+
     const designId = body.designId || body.id || generateServerDesignId();
 
     // Check for collision
@@ -76,6 +102,7 @@ async function createDesign(req, res, next) {
 
     const newDesign = new Design({
       designId: finalDesignId,
+      userId, // Strictly derived from authenticated session, never client trusted
       styleId: body.styleId || finalDesignId,
       name: body.name.trim(),
       gender,
@@ -122,11 +149,13 @@ async function createDesign(req, res, next) {
 
 /**
  * PUT /api/designs/:id
- * Updates an existing design configuration
+ * Updates an existing design configuration if owned by authenticated user
  */
 async function updateDesign(req, res, next) {
   try {
     const id = req.params.id;
+    const userId = req.user?.userId;
+
     let design = await Design.findOne({ designId: id });
     if (!design && id.match(/^[0-9a-fA-F]{24}$/)) {
       design = await Design.findById(id);
@@ -136,6 +165,14 @@ async function updateDesign(req, res, next) {
       return res.status(404).json({
         error: 'Not Found',
         message: `Design with ID "${id}" was not found.`
+      });
+    }
+
+    // Verify ownership
+    if (design.userId && design.userId !== userId) {
+      return res.status(403).json({
+        error: 'Forbidden',
+        message: 'You do not have permission to modify this design.'
       });
     }
 
@@ -167,6 +204,11 @@ async function updateDesign(req, res, next) {
       design.configuration = { ...design.configuration, ...body.configuration };
     }
 
+    // Ensure design adopts user ownership if it was legacy unowned
+    if (!design.userId && userId) {
+      design.userId = userId;
+    }
+
     const updated = await design.save();
     return res.status(200).json(updated.toJSON());
   } catch (error) {
@@ -177,11 +219,13 @@ async function updateDesign(req, res, next) {
 
 /**
  * DELETE /api/designs/:id
- * Deletes a design by its designId
+ * Deletes a design by its designId if owned by authenticated user
  */
 async function deleteDesign(req, res, next) {
   try {
     const id = req.params.id;
+    const userId = req.user?.userId;
+
     let design = await Design.findOne({ designId: id });
     if (!design && id.match(/^[0-9a-fA-F]{24}$/)) {
       design = await Design.findById(id);
@@ -191,6 +235,14 @@ async function deleteDesign(req, res, next) {
       return res.status(404).json({
         error: 'Not Found',
         message: `Design with ID "${id}" was not found.`
+      });
+    }
+
+    // Verify ownership
+    if (design.userId && design.userId !== userId) {
+      return res.status(403).json({
+        error: 'Forbidden',
+        message: 'You do not have permission to delete this design.'
       });
     }
 

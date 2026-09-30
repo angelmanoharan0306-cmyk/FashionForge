@@ -12,6 +12,8 @@ import {
   duplicateDesign
 } from './services/design-storage.js';
 
+import { isAuthenticated, getCurrentUser } from './services/auth-service.js';
+import { setupNavigationAuth } from './services/auth-nav.js';
 import { renderDesign } from './renderer/renderer.js';
 import { GARMENT_CATALOG } from './renderer/garment-data.js';
 
@@ -83,6 +85,35 @@ export async function renderDesignsGrid() {
   const emptyState = document.querySelector('#empty-designs-state');
   const countBadge = document.querySelector('#designs-count-badge');
   if (!grid) return;
+
+  if (!isAuthenticated()) {
+    grid.style.display = 'none';
+    if (countBadge) countBadge.textContent = 'Sign In Required';
+    if (emptyState) {
+      emptyState.style.display = 'flex';
+      emptyState.innerHTML = `
+        <div class="empty-designs-card">
+          <div class="empty-icon-wrap" style="background: var(--color-brand-tint); color: var(--color-brand);">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          </div>
+          <h3 class="empty-title">Atelier Sign-In Required</h3>
+          <p class="empty-copy">Sign in to your FashionForge account to access your private collection of saved bespoke garments and CAD flats.</p>
+          <div style="display: flex; gap: var(--space-3); margin-top: var(--space-4);">
+            <a class="btn-primary" href="login.html?redirect=my-designs.html">
+              <span>Sign In to Atelier</span>
+            </a>
+            <a class="btn-secondary" href="login.html?tab=register&redirect=my-designs.html">
+              <span>Create Account</span>
+            </a>
+          </div>
+        </div>
+      `;
+    }
+    return;
+  }
 
   const allDesigns = await getSavedDesigns();
 
@@ -319,6 +350,9 @@ function escapeHtml(str) {
    ========================================================================== */
 
 document.addEventListener('DOMContentLoaded', () => {
+  // 0. Setup User Navigation Auth Widget
+  setupNavigationAuth('.header-right');
+
   // 1. Initial Render
   renderDesignsGrid();
 

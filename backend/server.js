@@ -1,12 +1,13 @@
 /**
  * FashionForge — Express Server
- * Core backend entry point providing REST API and static asset hosting.
+ * Core backend entry point providing REST API, authentication, and static asset hosting.
  */
 
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const { connectDB, getDbStatus } = require('./config/db');
+const authRoutes = require('./routes/authRoutes');
 const designRoutes = require('./routes/designRoutes');
 const errorHandler = require('./middleware/errorHandler');
 
@@ -30,6 +31,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // REST API Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/designs', designRoutes);
 
 // HTML Page Route Handlers
@@ -43,6 +45,14 @@ app.get('/design', (req, res) => {
 
 app.get('/my-designs', (req, res) => {
   res.sendFile(path.join(frontendPath, 'my-designs.html'));
+});
+
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(frontendPath, 'login.html'));
+});
+
+app.get('/register', (req, res) => {
+  res.sendFile(path.join(frontendPath, 'login.html'));
 });
 
 // Global Error Handler

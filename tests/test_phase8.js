@@ -10,9 +10,11 @@ import {
   updateDesign,
   deleteDesign,
   duplicateDesign,
-  clearAllSavedDesigns
+  clearAllSavedDesigns,
+  setTestAuthToken
 } from '../frontend/js/services/design-storage.js';
 
+import { register, setSession } from '../frontend/js/services/auth-service.js';
 import { calculateDesignPrice } from '../frontend/js/renderer/garment-data.js';
 
 const API_ROOT = 'http://localhost:5000';
@@ -33,6 +35,23 @@ function assert(condition, message) {
     failCount++;
   }
 }
+
+// -----------------------------------------------------------------------------
+// SETUP AUTHENTICATED SESSION FOR PHASE 8 ENDPOINTS
+// -----------------------------------------------------------------------------
+const testUser = {
+  name: 'Phase 8 Regression Tester',
+  email: `tester_p8_${Date.now()}@atelier.test`,
+  password: 'Password123!'
+};
+const authData = await register(testUser.name, testUser.email, testUser.password);
+const testToken = authData.token;
+setTestAuthToken(testToken);
+setSession(testToken, authData.user);
+
+const authHeaders = {
+  'Authorization': `Bearer ${testToken}`
+};
 
 // -----------------------------------------------------------------------------
 // A. HEALTH ENDPOINT
@@ -69,7 +88,11 @@ const testDesignData = {
 
 const postRes = await fetch(`${API_ROOT}/api/designs`, {
   method: 'POST',
-  headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    ...authHeaders
+  },
   body: JSON.stringify(testDesignData)
 });
 
@@ -86,7 +109,9 @@ const testId = createdDesign.designId;
 // C. GET ALL DESIGNS
 // -----------------------------------------------------------------------------
 console.log('\n--- C. GET All Designs ---');
-const getAllRes = await fetch(`${API_ROOT}/api/designs`);
+const getAllRes = await fetch(`${API_ROOT}/api/designs`, {
+  headers: { ...authHeaders, 'Accept': 'application/json' }
+});
 assert(getAllRes.status === 200, `GET /api/designs returned HTTP 200 (got ${getAllRes.status})`);
 const allDesigns = await getAllRes.json();
 assert(Array.isArray(allDesigns), 'GET /api/designs returns an array');
@@ -96,7 +121,9 @@ assert(allDesigns.some(d => d.designId === testId || d.id === testId), `Created 
 // D. GET DESIGN BY ID
 // -----------------------------------------------------------------------------
 console.log('\n--- D. GET Design by ID ---');
-const getByIdRes = await fetch(`${API_ROOT}/api/designs/${testId}`);
+const getByIdRes = await fetch(`${API_ROOT}/api/designs/${testId}`, {
+  headers: { ...authHeaders, 'Accept': 'application/json' }
+});
 assert(getByIdRes.status === 200, `GET /api/designs/${testId} returned HTTP 200`);
 const fetchedDesign = await getByIdRes.json();
 assert(fetchedDesign.designId === testId, `Fetched design ID matches ${testId}`);
@@ -115,7 +142,11 @@ const updatePayload = {
 
 const putRes = await fetch(`${API_ROOT}/api/designs/${testId}`, {
   method: 'PUT',
-  headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    ...authHeaders
+  },
   body: JSON.stringify(updatePayload)
 });
 
@@ -131,7 +162,7 @@ assert(updatedDesign.price === 1950, 'Design price was updated');
 console.log('\n--- F. DELETE Design ---');
 const deleteRes = await fetch(`${API_ROOT}/api/designs/${testId}`, {
   method: 'DELETE',
-  headers: { 'Accept': 'application/json' }
+  headers: { ...authHeaders, 'Accept': 'application/json' }
 });
 
 assert(deleteRes.status === 200, `DELETE /api/designs/${testId} returned HTTP 200 (got ${deleteRes.status})`);
@@ -139,14 +170,18 @@ const deleteData = await deleteRes.json();
 assert(deleteData.success === true, 'Delete response confirms success');
 
 // Verify it is gone
-const verifyDeletedRes = await fetch(`${API_ROOT}/api/designs/${testId}`);
+const verifyDeletedRes = await fetch(`${API_ROOT}/api/designs/${testId}`, {
+  headers: { ...authHeaders, 'Accept': 'application/json' }
+});
 assert(verifyDeletedRes.status === 404, `Subsequent GET returns HTTP 404 (got ${verifyDeletedRes.status})`);
 
 // -----------------------------------------------------------------------------
 // G. 404 UNKNOWN DESIGN
 // -----------------------------------------------------------------------------
 console.log('\n--- G. 404 Unknown Design ---');
-const notFoundRes = await fetch(`${API_ROOT}/api/designs/UNKNOWN-ID-NONEXISTENT`);
+const notFoundRes = await fetch(`${API_ROOT}/api/designs/UNKNOWN-ID-NONEXISTENT`, {
+  headers: { ...authHeaders, 'Accept': 'application/json' }
+});
 assert(notFoundRes.status === 404, `GET nonexistent design returned HTTP 404 (got ${notFoundRes.status})`);
 const notFoundData = await notFoundRes.json();
 assert(notFoundData.error === 'Not Found', `Response error is 'Not Found' (got '${notFoundData.error}')`);
@@ -166,7 +201,7 @@ const invalidPayloads = [
 for (const { payload, desc } of invalidPayloads) {
   const badRes = await fetch(`${API_ROOT}/api/designs`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...authHeaders },
     body: JSON.stringify(payload)
   });
   assert(badRes.status === 400, `POST with ${desc} rejected with HTTP 400 (got ${badRes.status})`);

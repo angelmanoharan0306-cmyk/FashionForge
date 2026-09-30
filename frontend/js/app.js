@@ -30,6 +30,9 @@ import {
   saveDesignToCart
 } from './services/design-storage.js';
 
+import { isAuthenticated, getCurrentUser } from './services/auth-service.js';
+import { setupNavigationAuth } from './services/auth-nav.js';
+
 /* ==========================================================================
    1. CENTRALIZED APPLICATION STATE (SINGLE SOURCE OF TRUTH)
    ========================================================================== */
@@ -782,6 +785,7 @@ export function openSaveModal() {
   const inputName = document.querySelector('#save-design-name');
   const priceLabel = document.querySelector('#save-design-price');
   const summaryLabel = document.querySelector('#save-design-summary');
+  const btnConfirm = document.querySelector('#btn-confirm-save');
 
   const topName = GARMENT_CATALOG.tops[designState.top]?.name || 'Top';
   const bottomName = GARMENT_CATALOG.bottoms[designState.bottom]?.name || 'Bottom';
@@ -796,7 +800,18 @@ export function openSaveModal() {
   }
   if (summaryLabel) {
     const isMale = (designState.figure === 'male' || designState.croquis === 'male');
-    summaryLabel.textContent = `${topName} • ${bottomName} • ${fabricName} • Size ${designState.size} • ${isMale ? 'Male' : 'Female'}`;
+    const authNote = !isAuthenticated()
+      ? ' • [Guest Mode: Sign in to save]'
+      : '';
+    summaryLabel.textContent = `${topName} • ${bottomName} • ${fabricName} • Size ${designState.size} • ${isMale ? 'Male' : 'Female'}${authNote}`;
+  }
+
+  if (btnConfirm) {
+    if (!isAuthenticated()) {
+      btnConfirm.textContent = 'Sign In to Save';
+    } else {
+      btnConfirm.textContent = 'Save Design';
+    }
   }
 
   modalSave?.classList.add('is-open');
@@ -818,6 +833,20 @@ export function closeSaveModal() {
  * Confirms saving the current design via the modular persistence layer
  */
 export async function handleConfirmSave() {
+  // If guest, preserve current custom configuration and redirect to login
+  if (!isAuthenticated()) {
+    try {
+      sessionStorage.setItem('fashionforge_pending_design', JSON.stringify(designState));
+    } catch (e) {
+      console.warn('Could not store pending design in sessionStorage:', e);
+    }
+    showToast('Redirecting to Atelier sign-in... Your garment is preserved.');
+    setTimeout(() => {
+      window.location.href = 'login.html?redirect=design.html';
+    }, 450);
+    return;
+  }
+
   const inputName = document.querySelector('#save-design-name');
   const enteredName = inputName?.value.trim() || designState.name || 'Bespoke Atelier Design';
   designState.name = enteredName;
@@ -1304,6 +1333,24 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnPrintTechPack = document.querySelector('#btn-print-techpack');
   if (btnPrintTechPack) {
     btnPrintTechPack.addEventListener('click', () => window.print());
+  }
+
+  // 21. Initialize Navigation Auth State
+  setupNavigationAuth('.header-right');
+
+  // 22. Check for Pending Guest Design from previous login redirect
+  try {
+    const pendingJson = sessionStorage.getItem('fashionforge_pending_design');
+    if (pendingJson) {
+      const pendingDesign = JSON.parse(pendingJson);
+      sessionStorage.removeItem('fashionforge_pending_design');
+      if (pendingDesign && typeof pendingDesign === 'object') {
+        loadDesignIntoState(pendingDesign);
+        showToast('Restored your customized garment! Click Save to confirm.');
+      }
+    }
+  } catch (e) {
+    console.warn('Error restoring pending design:', e);
   }
 
   // Check URL query parameters (e.g. ?id=FF-D... or ?mode=tech-pack)

@@ -16,9 +16,11 @@ import {
   generateDesignId,
   normalizeDesignSchema,
   saveDesignToCart,
-  getCartItems
+  getCartItems,
+  setTestAuthToken
 } from '../frontend/js/services/design-storage.js';
 
+import { register, setSession } from '../frontend/js/services/auth-service.js';
 import { calculateDesignPrice, GARMENT_CATALOG } from '../frontend/js/renderer/garment-data.js';
 import { getRecommendation, getDetailedRecommendation } from '../frontend/js/recommendation.js';
 import {
@@ -46,6 +48,16 @@ function assert(condition, message) {
     failCount++;
   }
 }
+
+// Initialize authenticated test artisan session
+const testArtisan = {
+  name: 'Regression Artisan P7',
+  email: `artisan_p7_${Date.now()}@atelier.test`,
+  password: 'TestPassword123!'
+};
+const authData = await register(testArtisan.name, testArtisan.email, testArtisan.password);
+setTestAuthToken(authData.token);
+setSession(authData.token, authData.user);
 
 // Ensure clean test isolation
 await clearAllSavedDesigns();

@@ -14,6 +14,12 @@ const designSchema = new mongoose.Schema(
       index: true,
       trim: true
     },
+    userId: {
+      type: String,
+      index: true,
+      trim: true,
+      default: null
+    },
     name: {
       type: String,
       required: [true, 'Design name is required'],
