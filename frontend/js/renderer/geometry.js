@@ -83,9 +83,9 @@ export const MODEL_GEOMETRY = {
       rightInnerHem: { x: 475, y: 416 }      // Seamless inner arm junction
     },
     armsForeground: {
-      // Foreground clip strictly covering bare wrists and hands resting in front of skirt
-      leftClip: 'M 238 580 L 275 580 L 275 750 L 238 750 Z',
-      rightClip: 'M 495 580 L 535 580 L 535 750 L 495 750 Z'
+      // Foreground clip covering bare wrist and hand resting in front of skirt
+      leftClip: 'M 235 640 L 278 640 L 278 750 L 235 750 Z',
+      rightClip: 'M 492 640 L 535 640 L 535 750 L 492 750 Z'
     },
     feet: {
       groundY: 1325,

@@ -124,21 +124,23 @@ export function getFemaleCroquisCalibration(size = 'M', view = 'front') {
 }
 
 /**
- * Computes calibrated foreground hand clips for each size
+ * Computes calibrated foreground hand clips for each size.
+ * Strictly encloses the bare hands and wrists (Y=640 to 750) resting in front of the skirt flare.
+ * Starts below the shorts (Y > 580) so undergarments never bleed over the garment.
  */
 export function getCalibratedHandClips(size = 'M') {
   const normSize = String(size || 'M').toUpperCase();
   const entry = femaleCroquisCalibration[normSize] || femaleCroquisCalibration.M;
   const hipScale = entry.scales.hipScale;
 
-  const leftMinX = scaleX(238, hipScale);
-  const leftMaxX = scaleX(275, hipScale);
-  const rightMinX = scaleX(495, hipScale);
-  const rightMaxX = scaleX(535, hipScale);
+  const leftMinX = Math.round(scaleX(235, hipScale));
+  const leftMaxX = Math.round(scaleX(278, hipScale));
+  const rightMinX = Math.round(scaleX(492, hipScale));
+  const rightMaxX = Math.round(scaleX(535, hipScale));
 
   return {
-    left: `M ${leftMinX} 580 L ${leftMaxX} 580 L ${leftMaxX} 750 L ${leftMinX} 750 Z`,
-    right: `M ${rightMinX} 580 L ${rightMaxX} 580 L ${rightMaxX} 750 L ${rightMinX} 750 Z`
+    left: `M ${leftMinX} 640 L ${leftMaxX} 640 L ${leftMaxX} 750 L ${leftMinX} 750 Z`,
+    right: `M ${rightMinX} 640 L ${rightMaxX} 640 L ${rightMaxX} 750 L ${rightMinX} 750 Z`
   };
 }
 
