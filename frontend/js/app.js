@@ -32,6 +32,7 @@ import {
 
 import { isAuthenticated, getCurrentUser } from './services/auth-service.js';
 import { setupNavigationAuth } from './services/auth-nav.js';
+import { cartService } from './services/cart-service.js';
 
 /* ==========================================================================
    1. CENTRALIZED APPLICATION STATE (SINGLE SOURCE OF TRUTH)
@@ -1205,6 +1206,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 16. Cart Modal Controls
   const btnAddCart = document.querySelector('#btn-add-cart');
+  const btnAddCartHeader = document.querySelector('#btn-add-cart-header');
   const modalCart = document.querySelector('#modal-cart');
   const btnCloseCart = document.querySelector('#btn-close-cart');
   const btnCancelCart = document.querySelector('#btn-cancel-cart');
@@ -1227,15 +1229,55 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const closeCartModal = () => modalCart?.classList.remove('is-open');
 
+  const handleAddToCartWorkflow = async () => {
+    // 1. If guest, preserve design and prompt login
+    if (!isAuthenticated()) {
+      try {
+        sessionStorage.setItem('fashionforge_pending_design', JSON.stringify(designState));
+      } catch (err) {
+        console.warn('Failed to store pending design:', err);
+      }
+      showToast('Please sign in to add bespoke designs to your shopping bag.');
+      setTimeout(() => {
+        window.location.href = 'login.html?redirect=' + encodeURIComponent('design.html');
+      }, 1200);
+      return;
+    }
+
+    // 2. If authenticated: ensure design is saved first so it has an ID
+    try {
+      let currentDesignId = designState.id;
+      if (!currentDesignId) {
+        const saved = await saveDesign(designState);
+        if (saved && saved.id) {
+          designState.id = saved.id;
+          currentDesignId = saved.id;
+        }
+      }
+
+      if (!currentDesignId) {
+        showToast('Please save your design first before adding to bag.', 'warning');
+        return;
+      }
+
+      const res = await cartService.addToCart(currentDesignId, 1);
+      if (res.success) {
+        showToast(`Added "${designState.name}" to shopping bag! View in Bag or continue designing.`);
+        closeCartModal();
+      } else {
+        showToast(res.message || 'Failed to add to bag', 'error');
+      }
+    } catch (err) {
+      showToast(err.message || 'Failed to add to bag', 'error');
+    }
+  };
+
   if (btnAddCart) btnAddCart.addEventListener('click', openCartModal);
+  if (btnAddCartHeader) btnAddCartHeader.addEventListener('click', openCartModal);
   if (btnCloseCart) btnCloseCart.addEventListener('click', closeCartModal);
   if (btnCancelCart) btnCancelCart.addEventListener('click', closeCartModal);
   if (btnConfirmCart) {
-    btnConfirmCart.addEventListener('click', () => {
-      saveDesignToCart(designState);
-      closeCartModal();
-      showToast(`Added "${designState.name}" to Atelier Cart (₹${designState.pricing.toLocaleString('en-IN')})`);
-    });
+    btnConfirmCart.addEventListener('click', handleAddToCartWorkflow);
   }
 
   // 17. Component Selectors Modal Controls

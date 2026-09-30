@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FashionForge — Payment Simulation</title>
+  <meta name="description" content="Simulated payment testing screen for FashionForge bespoke orders.">
+
+  <!-- Google Fonts: Playfair Display + Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✂️</text></svg>">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="js/payment.js"></script>
+</head>
+<body class="studio-app-body mydesigns-page-body payment-page-body">
+
+  <div class="studio-toast-container" id="toast-container" aria-live="polite"></div>
+
+  <!-- Header -->
+  <header class="studio-top-header" role="banner" aria-label="FashionForge header">
+    <div class="header-left">
+      <a class="brand-logo" href="index.html" aria-label="FashionForge Home">
+        <span class="logo-mark" aria-hidden="true">✂</span>
+        <span class="logo-text">Fashion<span>Forge</span></span>
+      </a>
+      <span class="studio-badge" style="background: rgba(234, 179, 8, 0.15); border-color: rgba(234, 179, 8, 0.35); color: #eab308;">Payment Simulation</span>
+    </div>
+    <div class="header-right">
+      <a class="btn-ghost" href="cart.html" title="Cancel and return to cart">
+        <span>Return to Bag</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="mydesigns-main-container" role="main">
+    <div class="mydesigns-content-wrap" style="max-width: 680px; margin: 0 auto;">
+      
+      <!-- Prominent Simulation Notice -->
+      <div class="payment-simulation-notice" role="note">
+        <div class="simulation-badge">TEST SANDBOX</div>
+        <h3>Simulated Payment Processing</h3>
+        <p>No real payment gateway is integrated. Never enter real card or banking credentials. Select an action below to simulate order payment outcomes.</p>
+      </div>
+
+      <!-- Alert Banner -->
+      <div class="auth-alert-banner" id="payment-alert" style="display: none;" role="alert">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span id="payment-alert-message">Error</span>
+      </div>
+
+      <!-- Order Details Card -->
+      <div class="cart-summary-card payment-card" id="payment-card">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-4);">
+          <div>
+            <span style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-muted);">Bespoke Order</span>
+            <h2 id="order-id-display" style="font-family: var(--font-heading); font-size: var(--text-xl); color: var(--color-text); margin-top: 4px;">Loading Order...</h2>
+          </div>
+          <div id="payment-status-badge" class="badge-status-pending">
+            Pending Payment
+          </div>
+        </div>
+
+        <div class="cart-summary-divider"></div>
+
+        <!-- Order Items -->
+        <div class="payment-order-items" id="payment-order-items">
+          <!-- Populated by JS -->
+        </div>
+
+        <div class="cart-summary-divider"></div>
+
+        <!-- Recipient & Delivery info -->
+        <div class="payment-delivery-summary" id="payment-delivery-summary" style="font-size: var(--text-sm); color: var(--color-text-muted); line-height: 1.6; margin-bottom: var(--space-4);">
+          <!-- Delivery details -->
+        </div>
+
+        <div class="cart-summary-divider"></div>
+
+        <!-- Total row -->
+        <div class="cart-summary-total-row" style="margin-bottom: var(--space-6);">
+          <span>Authoritative Total</span>
+          <span class="cart-summary-total-price" id="payment-total-display">₹0</span>
+        </div>
+
+        <!-- Simulation Action Controls -->
+        <div class="payment-actions-group" id="payment-actions-group">
+          <button class="btn-primary payment-btn-success" id="btn-simulate-success" type="button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>Simulate Successful Payment</span>
+          </button>
+
+          <button class="btn-secondary payment-btn-fail" id="btn-simulate-failure" type="button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="15" y1="9" x2="9" y2="15"></line>
+              <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+            <span>Simulate Failed Payment</span>
+          </button>
+        </div>
+
+        <!-- Outcome Confirmation Section (Hidden Initially) -->
+        <div class="payment-outcome-panel" id="payment-outcome-panel" style="display: none;">
+          <div class="outcome-icon" id="outcome-icon"></div>
+          <h3 id="outcome-title">Outcome Title</h3>
+          <p id="outcome-desc" style="color: var(--color-text-muted); font-size: var(--text-sm); margin-top: 8px; margin-bottom: 24px;">Outcome description</p>
+          <div class="outcome-nav-buttons" id="outcome-nav-buttons" style="display: flex; gap: 12px; justify-content: center;">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+</body>
+</html>

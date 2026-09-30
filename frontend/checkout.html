@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FashionForge — Bespoke Atelier Checkout</title>
+  <meta name="description" content="Provide shipping details and review order totals before proceeding to simulated payment.">
+
+  <!-- Google Fonts: Playfair Display + Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✂️</text></svg>">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="js/checkout.js"></script>
+</head>
+<body class="studio-app-body mydesigns-page-body checkout-page-body">
+
+  <div class="studio-toast-container" id="toast-container" aria-live="polite"></div>
+
+  <!-- Header -->
+  <header class="studio-top-header" role="banner" aria-label="FashionForge header">
+    <div class="header-left">
+      <a class="brand-logo" href="index.html" aria-label="FashionForge Home">
+        <span class="logo-mark" aria-hidden="true">✂</span>
+        <span class="logo-text">Fashion<span>Forge</span></span>
+      </a>
+      <span class="studio-badge">Checkout</span>
+    </div>
+    <div class="header-right">
+      <a class="btn-ghost" href="cart.html" title="Return to Shopping Bag">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        <span>Return to Bag</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="mydesigns-main-container" role="main">
+    <div class="mydesigns-content-wrap">
+      
+      <div class="mydesigns-header-row" style="margin-bottom: var(--space-6);">
+        <div>
+          <h1 class="mydesigns-title">Atelier Bespoke Checkout</h1>
+          <p class="mydesigns-subtitle">Provide your delivery address. Orders are handmade-to-order following CAD flat specifications.</p>
+        </div>
+      </div>
+
+      <!-- Alert Banner -->
+      <div class="auth-alert-banner" id="checkout-alert" style="display: none;" role="alert">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span id="checkout-alert-message">Error</span>
+      </div>
+
+      <div class="checkout-layout-grid">
+        <!-- Left: Customer Information Form -->
+        <section class="checkout-form-section" aria-labelledby="shipping-heading">
+          <form class="checkout-form" id="form-checkout">
+            <h2 class="cart-summary-title" id="shipping-heading" style="margin-bottom: var(--space-4);">Delivery & Artisan Contact</h2>
+
+            <div class="form-group">
+              <label class="form-label" for="cust-name">Full Recipient Name</label>
+              <input class="form-input" id="cust-name" type="text" placeholder="Eleanor Vance" required>
+            </div>
+
+            <div class="form-row-2col">
+              <div class="form-group">
+                <label class="form-label" for="cust-email">Email Address</label>
+                <input class="form-input" id="cust-email" type="email" placeholder="couture@fashionforge.atelier" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="cust-phone">Phone Number</label>
+                <input class="form-input" id="cust-phone" type="tel" placeholder="+91 98765 43210" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="cust-address">Street Shipping Address</label>
+              <input class="form-input" id="cust-address" type="text" placeholder="42 Haute Couture Boulevard, Suite 500" required>
+            </div>
+
+            <div class="form-row-3col">
+              <div class="form-group">
+                <label class="form-label" for="cust-city">City</label>
+                <input class="form-input" id="cust-city" type="text" placeholder="Mumbai" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="cust-state">State / Province</label>
+                <input class="form-input" id="cust-state" type="text" placeholder="Maharashtra" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="cust-postal">Postal Code</label>
+                <input class="form-input" id="cust-postal" type="text" placeholder="400001" required>
+              </div>
+            </div>
+
+            <div style="margin-top: var(--space-6);">
+              <button class="btn-primary auth-submit-btn" id="btn-submit-order" type="submit" style="padding: 14px 20px;">
+                <span>Continue to Payment Simulation</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Right: Order Summary Breakdown -->
+        <aside class="checkout-summary-section" aria-label="Order items summary">
+          <div class="cart-summary-card">
+            <h2 class="cart-summary-title">Order Review</h2>
+            
+            <!-- Items list mini -->
+            <div class="checkout-items-list" id="checkout-items-list">
+              <p style="color: var(--color-text-muted); font-size: var(--text-sm);">Loading items...</p>
+            </div>
+
+            <div class="cart-summary-divider"></div>
+
+            <div class="cart-summary-row">
+              <span>BOM Subtotal</span>
+              <span id="checkout-subtotal" style="font-weight: 600;">₹0</span>
+            </div>
+
+            <div class="cart-summary-row">
+              <span>Bespoke Tailoring Fee</span>
+              <span style="color: var(--color-brand); font-weight: 600;">Included</span>
+            </div>
+
+            <div class="cart-summary-row">
+              <span>Atelier Insured Delivery</span>
+              <span style="color: var(--color-brand); font-weight: 600;">Complimentary</span>
+            </div>
+
+            <div class="cart-summary-divider"></div>
+
+            <div class="cart-summary-total-row">
+              <span>Total Payable</span>
+              <span class="cart-summary-total-price" id="checkout-total">₹0</span>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+    </div>
+  </main>
+
+</body>
+</html>

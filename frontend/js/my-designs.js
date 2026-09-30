@@ -14,6 +14,7 @@ import {
 
 import { isAuthenticated, getCurrentUser } from './services/auth-service.js';
 import { setupNavigationAuth } from './services/auth-nav.js';
+import { cartService } from './services/cart-service.js';
 import { renderDesign } from './renderer/renderer.js';
 import { GARMENT_CATALOG } from './renderer/garment-data.js';
 
@@ -233,6 +234,15 @@ function createDesignCardElement(design) {
           <span>Open / Edit</span>
         </a>
 
+        <button class="btn-secondary mydesigns-action-btn btn-add-cart-card" type="button" data-id="${escapeHtml(design.id)}" title="Add to shopping bag">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="21" r="1"></circle>
+            <circle cx="20" cy="21" r="1"></circle>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+          </svg>
+          <span>Bag</span>
+        </button>
+
         <button class="btn-secondary mydesigns-action-btn btn-duplicate-design" type="button" data-id="${escapeHtml(design.id)}" title="Duplicate this design">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect width="13" height="13" x="9" y="9" rx="2" ry="2"/>
@@ -252,6 +262,25 @@ function createDesignCardElement(design) {
   `;
 
   // Attach event handlers
+  const btnCart = card.querySelector('.btn-add-cart-card');
+  if (btnCart) {
+    btnCart.addEventListener('click', async () => {
+      try {
+        btnCart.disabled = true;
+        const res = await cartService.addToCart(design.id, 1);
+        if (res.success) {
+          showToast(`Added "${design.name}" to shopping bag!`);
+        } else {
+          showToast(res.message || 'Failed to add to bag', 'error');
+        }
+      } catch (err) {
+        showToast(err.message || 'Failed to add to bag', 'error');
+      } finally {
+        btnCart.disabled = false;
+      }
+    });
+  }
+
   const btnDup = card.querySelector('.btn-duplicate-design');
   if (btnDup) {
     btnDup.addEventListener('click', () => handleDuplicateDesign(design.id));

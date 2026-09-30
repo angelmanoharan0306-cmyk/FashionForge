@@ -1,6 +1,6 @@
 /**
  * FashionForge — Express Server
- * Core backend entry point providing REST API, authentication, and static asset hosting.
+ * Core backend entry point providing REST API, authentication, cart, checkout, and static asset hosting.
  */
 
 require('dotenv').config();
@@ -9,6 +9,8 @@ const path = require('path');
 const { connectDB, getDbStatus } = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const designRoutes = require('./routes/designRoutes');
+const cartRoutes = require('./routes/cartRoutes');
+const orderRoutes = require('./routes/orderRoutes');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -33,6 +35,8 @@ app.get('/api/health', (req, res) => {
 // REST API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/designs', designRoutes);
+app.use('/api/cart', cartRoutes);
+app.use('/api/orders', orderRoutes);
 
 // HTML Page Route Handlers
 app.get('/', (req, res) => {
@@ -45,6 +49,18 @@ app.get('/design', (req, res) => {
 
 app.get('/my-designs', (req, res) => {
   res.sendFile(path.join(frontendPath, 'my-designs.html'));
+});
+
+app.get('/cart', (req, res) => {
+  res.sendFile(path.join(frontendPath, 'cart.html'));
+});
+
+app.get('/checkout', (req, res) => {
+  res.sendFile(path.join(frontendPath, 'checkout.html'));
+});
+
+app.get('/payment', (req, res) => {
+  res.sendFile(path.join(frontendPath, 'payment.html'));
 });
 
 app.get('/login', (req, res) => {
