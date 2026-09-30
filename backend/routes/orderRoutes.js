@@ -25,4 +25,8 @@ router.get('/:orderId', orderController.getOrderById);
 // POST /api/orders/:orderId/pay - Simulate payment execution
 router.post('/:orderId/pay', orderController.simulatePayment);
 
+// POST /api/orders/:orderId/advance-status & /status - Simulate lifecycle progression
+router.post('/:orderId/advance-status', orderController.advanceOrderStatus);
+router.post('/:orderId/status', orderController.advanceOrderStatus);
+
 module.exports = router;

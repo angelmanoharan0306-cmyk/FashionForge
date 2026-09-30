@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FashionForge — Order Confirmation</title>
+  <meta name="description" content="Bespoke atelier order confirmation and production summary.">
+
+  <!-- Google Fonts: Playfair Display + Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✂️</text></svg>">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="js/order-confirmation.js"></script>
+</head>
+<body class="studio-app-body mydesigns-page-body order-confirmation-page-body">
+
+  <div class="studio-toast-container" id="toast-container" aria-live="polite"></div>
+
+  <!-- Header -->
+  <header class="studio-top-header" role="banner" aria-label="FashionForge header">
+    <div class="header-left">
+      <a class="brand-logo" href="index.html" aria-label="FashionForge Home">
+        <span class="logo-mark" aria-hidden="true">✂</span>
+        <span class="logo-text">Fashion<span>Forge</span></span>
+      </a>
+      <span class="studio-badge" style="background: rgba(34, 197, 94, 0.15); border-color: rgba(34, 197, 94, 0.35); color: #22c55e;">Confirmed</span>
+    </div>
+    <div class="header-right">
+      <a class="btn-ghost" href="orders.html" title="View all orders">
+        <span>My Orders</span>
+      </a>
+      <a class="btn-ghost" href="design.html" title="Back to Studio">
+        <span>Design Studio</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="mydesigns-main-container" role="main">
+    <div class="mydesigns-content-wrap" style="max-width: 840px; margin: 0 auto;">
+
+      <!-- Alert Banner -->
+      <div class="auth-alert-banner" id="confirmation-alert" style="display: none;" role="alert">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span id="confirmation-alert-message">Error</span>
+      </div>
+
+      <!-- Confirmation Header Hero Card -->
+      <div class="confirmation-hero-card" id="confirmation-hero">
+        <div class="confirmation-success-icon" aria-hidden="true">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+        <h1 class="confirmation-headline">Bespoke Order Confirmed</h1>
+        <p class="confirmation-subline">
+          Thank you for commissioning your garments with the FashionForge Atelier. Your bespoke designs are queued for CAD pattern drafting and artisan cutting.
+        </p>
+
+        <div class="confirmation-meta-bar">
+          <div class="meta-pill">
+            <span class="meta-label">Order Ref</span>
+            <strong class="meta-val" id="conf-order-id">Loading...</strong>
+          </div>
+          <div class="meta-pill">
+            <span class="meta-label">Order Date</span>
+            <strong class="meta-val" id="conf-order-date">—</strong>
+          </div>
+          <div class="meta-pill">
+            <span class="meta-label">Payment</span>
+            <span class="badge-status-paid" id="conf-payment-badge">Paid</span>
+          </div>
+          <div class="meta-pill">
+            <span class="meta-label">Status</span>
+            <span class="badge-status-placed" id="conf-order-badge">Placed</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Breakdown Grid -->
+      <div class="confirmation-details-grid">
+        
+        <!-- Left: Garments Commissioned -->
+        <section class="confirmation-items-panel" aria-labelledby="garments-heading">
+          <h2 class="cart-summary-title" id="garments-heading" style="margin-bottom: var(--space-4);">Commissioned Garments</h2>
+          
+          <div class="confirmation-items-list" id="conf-items-list">
+            <p style="color: var(--color-text-muted); font-size: var(--text-sm);">Loading bespoke garments...</p>
+          </div>
+        </section>
+
+        <!-- Right: Delivery & Totals -->
+        <aside class="confirmation-sidebar" aria-label="Customer and total details">
+          
+          <!-- Recipient details card -->
+          <div class="cart-summary-card" style="margin-bottom: var(--space-4); position: static;">
+            <h3 class="cart-summary-title" style="font-size: var(--text-md); margin-bottom: var(--space-3);">Atelier Delivery</h3>
+            <div class="conf-delivery-info" id="conf-delivery-info">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <!-- Total breakdown card -->
+          <div class="cart-summary-card" style="position: static;">
+            <h3 class="cart-summary-title" style="font-size: var(--text-md); margin-bottom: var(--space-3);">Payment Summary</h3>
+
+            <div class="cart-summary-row">
+              <span>BOM Subtotal</span>
+              <span id="conf-subtotal" style="font-weight: 600;">₹0</span>
+            </div>
+            <div class="cart-summary-row">
+              <span>Bespoke Tailoring Fee</span>
+              <span style="color: var(--color-brand); font-weight: 600;">Included</span>
+            </div>
+            <div class="cart-summary-row">
+              <span>Atelier Insured Delivery</span>
+              <span style="color: var(--color-brand); font-weight: 600;">Complimentary</span>
+            </div>
+
+            <div class="cart-summary-divider"></div>
+
+            <div class="cart-summary-total-row">
+              <span>Total Paid</span>
+              <span class="cart-summary-total-price" id="conf-total">₹0</span>
+            </div>
+
+            <!-- Action buttons -->
+            <div style="display: flex; flex-direction: column; gap: var(--space-2); margin-top: var(--space-4);">
+              <a class="btn-primary" id="btn-track-order" href="#" style="justify-content: center; padding: 12px 16px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <span>View Order Details & Tracking</span>
+              </a>
+              <a class="btn-secondary" href="orders.html" style="justify-content: center; padding: 10px 16px;">
+                <span>View All Orders</span>
+              </a>
+              <a class="btn-ghost" href="design.html" style="justify-content: center; padding: 10px 16px;">
+                <span>Continue Designing</span>
+              </a>
+            </div>
+          </div>
+
+        </aside>
+
+      </div>
+
+    </div>
+  </main>
+
+</body>
+</html>

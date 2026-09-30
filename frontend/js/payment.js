@@ -138,7 +138,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const payRes = await cartService.simulatePayment(order.orderId, 'success');
         if (payRes.success && payRes.order) {
           updateStatusBadge('paid');
-          showToast('Payment Simulation Succeeded!', 'success');
+          showToast('Payment Simulation Succeeded! Redirecting to confirmation...', 'success');
+          setTimeout(() => {
+            window.location.href = `order-confirmation.html?orderId=${encodeURIComponent(payRes.order.orderId)}`;
+          }, 1200);
           showOutcome(true, payRes.order);
         } else {
           showAlert(payRes.message || 'Payment simulation failed.');
@@ -220,11 +223,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         if (navButtons) {
           navButtons.innerHTML = `
-            <a class="btn-primary" href="index.html" style="padding: 10px 18px;">
-              <span>Design Another Garment</span>
+            <a class="btn-primary" href="order-confirmation.html?orderId=${encodeURIComponent(updatedOrder.orderId)}" style="padding: 10px 18px;">
+              <span>View Order Confirmation</span>
             </a>
-            <a class="btn-secondary" href="my-designs.html" style="padding: 10px 18px;">
-              <span>Go to My Designs</span>
+            <a class="btn-secondary" href="orders.html" style="padding: 10px 18px;">
+              <span>My Orders</span>
+            </a>
+            <a class="btn-ghost" href="design.html" style="padding: 10px 18px;">
+              <span>Continue Designing</span>
             </a>
           `;
         }

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FashionForge — Order Details & Tracking</title>
+  <meta name="description" content="Inspect bespoke order configuration, delivery details, and simulated atelier tailoring milestones.">
+
+  <!-- Google Fonts: Playfair Display + Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✂️</text></svg>">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="js/order-details.js"></script>
+</head>
+<body class="studio-app-body mydesigns-page-body order-details-page-body">
+
+  <div class="studio-toast-container" id="toast-container" aria-live="polite"></div>
+
+  <!-- Header -->
+  <header class="studio-top-header" role="banner" aria-label="FashionForge header">
+    <div class="header-left">
+      <a class="brand-logo" href="index.html" aria-label="FashionForge Home">
+        <span class="logo-mark" aria-hidden="true">✂</span>
+        <span class="logo-text">Fashion<span>Forge</span></span>
+      </a>
+      <span class="studio-badge">Order Details</span>
+    </div>
+    <div class="header-right">
+      <a class="btn-ghost" href="orders.html" title="Return to My Orders">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        <span>Back to My Orders</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="mydesigns-main-container" role="main">
+    <div class="mydesigns-content-wrap" style="max-width: 960px; margin: 0 auto;">
+
+      <!-- Alert Banner -->
+      <div class="auth-alert-banner" id="order-details-alert" style="display: none;" role="alert">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span id="order-details-alert-message">Error</span>
+      </div>
+
+      <!-- Top Header Row -->
+      <div class="mydesigns-header-row" style="margin-bottom: var(--space-5);">
+        <div>
+          <span style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-muted);">Bespoke Atelier Commission</span>
+          <h1 class="mydesigns-title" id="det-order-title">Order Loading...</h1>
+          <p class="mydesigns-subtitle" id="det-order-subtitle">Commission details and live artisan progress tracking.</p>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <span class="badge-status-pending" id="det-pay-badge">Pending</span>
+          <span class="badge-status-placed" id="det-ord-badge">Placed</span>
+        </div>
+      </div>
+
+      <!-- Simulated Tracking Timeline Card -->
+      <section class="tracking-card" aria-labelledby="tracking-heading">
+        <div class="tracking-header">
+          <div>
+            <div class="simulation-badge">DEMO SIMULATION</div>
+            <h2 class="tracking-title" id="tracking-heading">Atelier Production & Fulfillment Tracking</h2>
+            <p class="tracking-notice">Simulated milestone lifecycle. Demonstrates progressive bespoke tailoring states.</p>
+          </div>
+          <!-- Simulation Advance Button -->
+          <div id="advance-simulation-wrap">
+            <button class="btn-primary" id="btn-advance-status" type="button" style="font-size: var(--text-xs); padding: 8px 16px;">
+              <span>Advance Status (Demo)</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- 5-Step Visual Timeline -->
+        <div class="tracking-timeline" id="tracking-timeline" role="region" aria-label="Order progress timeline">
+          <!-- Step 1: Placed -->
+          <div class="timeline-step" data-status="placed">
+            <div class="step-dot">
+              <span class="dot-check">✓</span>
+              <span class="dot-number">1</span>
+            </div>
+            <div class="step-content">
+              <div class="step-label">Placed</div>
+              <div class="step-desc">Order Registered</div>
+            </div>
+          </div>
+
+          <div class="timeline-connector"></div>
+
+          <!-- Step 2: Processing -->
+          <div class="timeline-step" data-status="processing">
+            <div class="step-dot">
+              <span class="dot-check">✓</span>
+              <span class="dot-number">2</span>
+            </div>
+            <div class="step-content">
+              <div class="step-label">Processing</div>
+              <div class="step-desc">Pattern Drafting & Cutting</div>
+            </div>
+          </div>
+
+          <div class="timeline-connector"></div>
+
+          <!-- Step 3: Ready -->
+          <div class="timeline-step" data-status="ready">
+            <div class="step-dot">
+              <span class="dot-check">✓</span>
+              <span class="dot-number">3</span>
+            </div>
+            <div class="step-content">
+              <div class="step-label">Ready</div>
+              <div class="step-desc">Quality Passed</div>
+            </div>
+          </div>
+
+          <div class="timeline-connector"></div>
+
+          <!-- Step 4: Shipped -->
+          <div class="timeline-step" data-status="shipped">
+            <div class="step-dot">
+              <span class="dot-check">✓</span>
+              <span class="dot-number">4</span>
+            </div>
+            <div class="step-content">
+              <div class="step-label">Shipped</div>
+              <div class="step-desc">Courier Dispatched</div>
+            </div>
+          </div>
+
+          <div class="timeline-connector"></div>
+
+          <!-- Step 5: Delivered -->
+          <div class="timeline-step" data-status="delivered">
+            <div class="step-dot">
+              <span class="dot-check">✓</span>
+              <span class="dot-number">5</span>
+            </div>
+            <div class="step-content">
+              <div class="step-label">Delivered</div>
+              <div class="step-desc">Received by Client</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Latest Event Banner -->
+        <div class="tracking-latest-event" id="tracking-latest-event">
+          <span class="event-time" id="tracking-event-time">—</span>
+          <span class="event-text" id="tracking-event-text">Order placed and registered in atelier queue.</span>
+        </div>
+      </section>
+
+      <!-- Layout Grid: Garments Left + Customer & Pricing Right -->
+      <div class="order-details-grid">
+        
+        <!-- Left: Commissioned Garments List -->
+        <section class="order-items-section" aria-labelledby="order-items-heading">
+          <h2 class="cart-summary-title" id="order-items-heading" style="margin-bottom: var(--space-4);">Commissioned Garments</h2>
+          
+          <div class="order-items-container" id="det-items-list">
+            <p style="color: var(--color-text-muted); font-size: var(--text-sm);">Loading garments...</p>
+          </div>
+        </section>
+
+        <!-- Right: Information & Delivery Sidebar -->
+        <aside class="order-info-sidebar" aria-label="Customer and total details">
+          
+          <!-- Recipient & Shipping Address -->
+          <div class="cart-summary-card" style="margin-bottom: var(--space-4); position: static;">
+            <h3 class="cart-summary-title" style="font-size: var(--text-md); margin-bottom: var(--space-3);">Atelier Delivery</h3>
+            <div class="det-customer-block" id="det-customer-block">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <!-- Total Breakdown Card -->
+          <div class="cart-summary-card" style="position: static;">
+            <h3 class="cart-summary-title" style="font-size: var(--text-md); margin-bottom: var(--space-3);">Financial Breakdown</h3>
+
+            <div class="cart-summary-row">
+              <span>BOM Subtotal</span>
+              <span id="det-subtotal" style="font-weight: 600;">₹0</span>
+            </div>
+            <div class="cart-summary-row">
+              <span>Bespoke Tailoring Fee</span>
+              <span style="color: var(--color-brand); font-weight: 600;">Included</span>
+            </div>
+            <div class="cart-summary-row">
+              <span>Atelier Insured Delivery</span>
+              <span style="color: var(--color-brand); font-weight: 600;">Complimentary</span>
+            </div>
+
+            <div class="cart-summary-divider"></div>
+
+            <div class="cart-summary-total-row">
+              <span>Total Amount</span>
+              <span class="cart-summary-total-price" id="det-total">₹0</span>
+            </div>
+
+            <!-- Back navigation -->
+            <div style="margin-top: var(--space-4); display: flex; flex-direction: column; gap: var(--space-2);">
+              <a class="btn-secondary" href="orders.html" style="justify-content: center; padding: 10px 16px;">
+                <span>Back to My Orders</span>
+              </a>
+              <a class="btn-ghost" href="design.html" style="justify-content: center; padding: 10px 16px;">
+                <span>Design New Garment</span>
+              </a>
+            </div>
+          </div>
+
+        </aside>
+
+      </div>
+
+    </div>
+  </main>
+
+</body>
+</html>

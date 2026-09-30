@@ -141,10 +141,26 @@ const orderSchema = new mongoose.Schema(
     },
     orderStatus: {
       type: String,
-      enum: ['placed', 'processing', 'completed', 'cancelled'],
+      enum: ['placed', 'processing', 'ready', 'shipped', 'delivered', 'completed', 'cancelled'],
       default: 'placed',
       index: true
-    }
+    },
+    tracking: [
+      {
+        status: {
+          type: String,
+          required: true
+        },
+        label: {
+          type: String,
+          required: true
+        },
+        timestamp: {
+          type: Date,
+          default: Date.now
+        }
+      }
+    ]
   },
   {
     timestamps: true,

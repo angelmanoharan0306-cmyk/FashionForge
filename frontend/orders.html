@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FashionForge — My Bespoke Orders</title>
+  <meta name="description" content="View your commissioned bespoke garment order history and tailoring progress.">
+
+  <!-- Google Fonts: Playfair Display + Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✂️</text></svg>">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="js/orders.js"></script>
+</head>
+<body class="studio-app-body mydesigns-page-body orders-page-body">
+
+  <div class="studio-toast-container" id="toast-container" aria-live="polite"></div>
+
+  <!-- Header -->
+  <header class="studio-top-header" role="banner" aria-label="FashionForge header">
+    <div class="header-left">
+      <a class="brand-logo" href="index.html" aria-label="FashionForge Home">
+        <span class="logo-mark" aria-hidden="true">✂</span>
+        <span class="logo-text">Fashion<span>Forge</span></span>
+      </a>
+      <span class="studio-badge">My Orders</span>
+    </div>
+    <div class="header-right">
+      <a class="btn-ghost" href="my-designs.html" title="View saved designs">
+        <span>My Designs</span>
+      </a>
+      <a class="btn-ghost" href="cart.html" title="Shopping Bag">
+        <span>Bag</span>
+      </a>
+      <a class="btn-primary" href="design.html" style="font-size: var(--text-xs); padding: 6px 14px;">
+        <span>+ New Design</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="mydesigns-main-container" role="main">
+    <div class="mydesigns-content-wrap" style="max-width: 900px; margin: 0 auto;">
+      
+      <div class="mydesigns-header-row" style="margin-bottom: var(--space-6);">
+        <div>
+          <h1 class="mydesigns-title">Commissioned Bespoke Orders</h1>
+          <p class="mydesigns-subtitle">Review active tailoring milestones, inspect order summaries, and track delivery progress.</p>
+        </div>
+      </div>
+
+      <!-- Alert Banner -->
+      <div class="auth-alert-banner" id="orders-alert" style="display: none;" role="alert">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span id="orders-alert-message">Error</span>
+      </div>
+
+      <!-- Orders List Container -->
+      <div class="orders-list-container" id="orders-list">
+        <div style="text-align: center; padding: 40px 0; color: var(--color-text-muted);">
+          Loading your order history...
+        </div>
+      </div>
+
+      <!-- Empty State Panel (Hidden by default) -->
+      <div class="cart-empty-panel" id="orders-empty-state" style="display: none; margin-top: var(--space-6);">
+        <div class="cart-empty-icon">✂️</div>
+        <h2 class="cart-empty-title">No Orders Commissioned Yet</h2>
+        <p class="cart-empty-desc">
+          You haven't placed any bespoke tailoring orders yet. Design your signature garment in our 2.5D Studio, save it to your portfolio, and proceed to checkout.
+        </p>
+        <a class="btn-primary" href="design.html" style="padding: 12px 24px;">
+          <span>Open Design Studio</span>
+        </a>
+      </div>
+
+    </div>
+  </main>
+
+</body>
+</html>

@@ -7,6 +7,16 @@
 const Order = require('../models/Order');
 const Cart = require('../models/Cart');
 
+const ORDER_LIFECYCLE = ['placed', 'processing', 'ready', 'shipped', 'delivered'];
+
+const STATUS_LABELS = {
+  placed: 'Bespoke Order Placed',
+  processing: 'Artisan Workshop Cutting & Assembly',
+  ready: 'Garment Finishing & Quality Inspection',
+  shipped: 'Dispatched via Insured Atelier Courier',
+  delivered: 'Delivered to Recipient'
+};
+
 /**
  * Validates customer checkout payload fields
  */
@@ -108,7 +118,14 @@ async function checkout(req, res, next) {
         postalCode: customer.postalCode.trim()
       },
       paymentStatus: 'pending',
-      orderStatus: 'placed'
+      orderStatus: 'placed',
+      tracking: [
+        {
+          status: 'placed',
+          label: STATUS_LABELS.placed,
+          timestamp: new Date()
+        }
+      ]
     });
 
     const savedOrder = await newOrder.save();
@@ -222,6 +239,16 @@ async function simulatePayment(req, res, next) {
       order.paymentStatus = 'paid';
       order.orderStatus = 'placed';
 
+      if (!Array.isArray(order.tracking) || order.tracking.length === 0) {
+        order.tracking = [
+          {
+            status: 'placed',
+            label: STATUS_LABELS.placed,
+            timestamp: new Date()
+          }
+        ];
+      }
+
       // Clear user's cart on successful payment simulation
       await Cart.findOneAndUpdate({ userId }, { $set: { items: [] } });
     } else {
@@ -244,9 +271,102 @@ async function simulatePayment(req, res, next) {
   }
 }
 
+/**
+ * POST /api/orders/:orderId/advance-status
+ * Advances order lifecycle state to next valid phase (Simulation mechanism)
+ */
+async function advanceOrderStatus(req, res, next) {
+  try {
+    const userId = req.user.userId;
+    const { orderId } = req.params;
+    const { nextStatus, status } = req.body || {};
+    const requestedTarget = nextStatus || status;
+
+    let order = await Order.findOne({ orderId });
+    if (!order && orderId.match(/^[0-9a-fA-F]{24}$/)) {
+      order = await Order.findById(orderId);
+    }
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        error: 'Not Found',
+        message: `Order "${orderId}" was not found.`
+      });
+    }
+
+    // Strict ownership verification
+    if (order.userId !== userId) {
+      return res.status(403).json({
+        success: false,
+        error: 'Forbidden',
+        message: "You do not have permission to advance another customer's order status."
+      });
+    }
+
+    const currentStatus = order.orderStatus || 'placed';
+    const currentIndex = ORDER_LIFECYCLE.indexOf(currentStatus);
+
+    // If order is at terminal state 'delivered'
+    if (currentStatus === 'delivered') {
+      return res.status(400).json({
+        success: false,
+        error: 'Terminal State',
+        message: 'Order has already been delivered and cannot be advanced further or regressed.'
+      });
+    }
+
+    if (currentIndex === -1) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid State',
+        message: `Order status "${currentStatus}" cannot be advanced.`
+      });
+    }
+
+    const expectedNext = ORDER_LIFECYCLE[currentIndex + 1];
+
+    // If client supplied a target status, verify it matches expectedNext exactly
+    if (requestedTarget && requestedTarget !== expectedNext) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid State Transition',
+        message: `Invalid status transition from "${currentStatus}" to "${requestedTarget}". The next allowed state is "${expectedNext}".`
+      });
+    }
+
+    // Advance order
+    order.orderStatus = expectedNext;
+
+    if (!Array.isArray(order.tracking)) {
+      order.tracking = [];
+    }
+
+    order.tracking.push({
+      status: expectedNext,
+      label: STATUS_LABELS[expectedNext] || expectedNext,
+      timestamp: new Date()
+    });
+
+    const updated = await order.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `Order status advanced to "${expectedNext}".`,
+      order: updated.toJSON()
+    });
+  } catch (error) {
+    console.error(`[Order Controller] advanceOrderStatus error for ${req.params.orderId}:`, error.message);
+    next(error);
+  }
+}
+
 module.exports = {
   checkout,
   getOrderById,
   getUserOrders,
-  simulatePayment
+  simulatePayment,
+  advanceOrderStatus,
+  ORDER_LIFECYCLE,
+  STATUS_LABELS
 };

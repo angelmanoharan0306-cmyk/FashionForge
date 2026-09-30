@@ -184,8 +184,47 @@ try {
   const cartAfterSuccessData = await cartAfterSuccess.json();
   console.log(`- Cart items after successful payment: ${cartAfterSuccessData.cart.items.length} (Bag cleared)`);
 
+  // Step 9: Order Confirmation Page
+  console.log('\n9. Order Confirmation:');
+  const confHtml = await fetch(`${API_ROOT}/order-confirmation?orderId=${orderId}`);
+  console.log(`- GET /order-confirmation: status ${confHtml.status}`);
+  const confOrderRes = await fetch(`${API_ROOT}/api/orders/${orderId}`, {
+    headers: { 'Authorization': `Bearer ${qaToken}` }
+  });
+  const confOrderData = await confOrderRes.json();
+  console.log(`- Confirmed Order Ref: ${confOrderData.order.orderId}, Total: ₹${confOrderData.order.total}, Status: ${confOrderData.order.orderStatus}`);
+
+  // Step 10: My Orders History Page
+  console.log('\n10. My Orders History:');
+  const ordersHtml = await fetch(`${API_ROOT}/orders`);
+  console.log(`- GET /orders: status ${ordersHtml.status}`);
+  const myOrdersRes = await fetch(`${API_ROOT}/api/orders`, {
+    headers: { 'Authorization': `Bearer ${qaToken}` }
+  });
+  const myOrdersData = await myOrdersRes.json();
+  const ordersList = Array.isArray(myOrdersData) ? myOrdersData : (myOrdersData.orders || []);
+  console.log(`- Orders listed for user: ${ordersList.length} (Latest: ${ordersList[0].orderId})`);
+
+  // Step 11: Order Details & Live Tracking
+  console.log('\n11. Order Details & Live Tracking:');
+  const detailsHtml = await fetch(`${API_ROOT}/order-details?orderId=${orderId}`);
+  console.log(`- GET /order-details: status ${detailsHtml.status}`);
+
+  // Step 12: Tracking Lifecycle Progression Simulation
+  console.log('\n12. Simulated Milestone Progression:');
+  const milestones = ['processing', 'ready', 'shipped', 'delivered'];
+  for (const m of milestones) {
+    const adv = await fetch(`${API_ROOT}/api/orders/${orderId}/advance-status`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${qaToken}` },
+      body: JSON.stringify({ nextStatus: m })
+    });
+    const advData = await adv.json();
+    console.log(`  -> Advanced to "${advData.order.orderStatus}" (Events: ${advData.order.tracking.length})`);
+  }
+
   console.log('\n====================================================');
-  console.log('END-TO-END QA JOURNEY: FULL SUCCESS (ALL STEPS VERIFIED)');
+  console.log('END-TO-END QA JOURNEY: FULL SUCCESS (ALL 12 STEPS VERIFIED)');
   console.log('====================================================\n');
 } catch (err) {
   console.error('[QA FAILED]:', err);

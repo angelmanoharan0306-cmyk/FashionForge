@@ -63,6 +63,18 @@ app.get('/payment', (req, res) => {
   res.sendFile(path.join(frontendPath, 'payment.html'));
 });
 
+app.get('/order-confirmation', (req, res) => {
+  res.sendFile(path.join(frontendPath, 'order-confirmation.html'));
+});
+
+app.get('/orders', (req, res) => {
+  res.sendFile(path.join(frontendPath, 'orders.html'));
+});
+
+app.get('/order-details', (req, res) => {
+  res.sendFile(path.join(frontendPath, 'order-details.html'));
+});
+
 app.get('/login', (req, res) => {
   res.sendFile(path.join(frontendPath, 'login.html'));
 });

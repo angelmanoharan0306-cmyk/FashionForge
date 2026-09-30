@@ -214,3 +214,65 @@ export async function simulatePayment(orderId, result = 'success') {
 
   return data;
 }
+
+/**
+ * Retrieves all orders belonging to authenticated user
+ */
+export async function getUserOrders() {
+  const baseUrl = getOrderApiBaseUrl();
+  const res = await fetch(baseUrl, {
+    method: 'GET',
+    headers: getHeaders({ 'Accept': 'application/json' })
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    const err = new Error(data.message || `Failed to fetch orders (${res.status})`);
+    err.status = res.status;
+    throw err;
+  }
+
+  const data = await res.json();
+  return Array.isArray(data) ? data : (data.orders || []);
+}
+
+/**
+ * Advances order lifecycle state to next valid phase (Simulation mechanism)
+ */
+export async function advanceOrderStatus(orderId, nextStatus = null) {
+  const baseUrl = getOrderApiBaseUrl();
+  const payload = nextStatus ? { nextStatus } : {};
+  const res = await fetch(`${baseUrl}/${encodeURIComponent(orderId)}/advance-status`, {
+    method: 'POST',
+    headers: getHeaders({
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    }),
+    body: JSON.stringify(payload)
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    const err = new Error(data.message || `Failed to advance order status (${res.status})`);
+    err.status = res.status;
+    throw err;
+  }
+
+  return data;
+}
+
+export const cartService = {
+  getCart,
+  addToCart,
+  updateCartItemQuantity,
+  removeCartItem,
+  clearCart,
+  checkout,
+  getOrder,
+  getUserOrders,
+  simulatePayment,
+  advanceOrderStatus
+};
+
+export const orderService = cartService;
