@@ -143,11 +143,6 @@ export function renderDesign(designState, svgElement) {
 
     // Stage 2h: Final Depth and Contact Shadows
     renderDepth(garmentGroup, palette, isBack, LM);
-
-    // Stage 2i: Foreground Bare Hands Layer (Natural front occlusion over skirt flare)
-    if (designState.figureVisible !== false && !isBack) {
-      renderForegroundHands(svgElement, isBack, size);
-    }
   }
 
   // Stage 3: Development Calibration Overlay Debugger (Requirement 14)
@@ -522,12 +517,26 @@ function renderSleeves(container, designState, palette, isBack, LM = MODEL_GEOME
   sleevesGroup.appendChild(rightArmscyeSeam);
 
   // Cast shadow from sleeve hem onto bare arms
+  const lOuter = LM.sleeveShort.leftOuterHem;
+  const lInner = LM.sleeveShort.leftInnerHem;
+  const lc1x = Math.round(lOuter.x + (lInner.x - lOuter.x) * 0.35);
+  const lc1y = Math.round(lOuter.y + (lInner.y - lOuter.y) * 0.35 + 5);
+  const lc2x = Math.round(lOuter.x + (lInner.x - lOuter.x) * 0.70);
+  const lc2y = Math.round(lOuter.y + (lInner.y - lOuter.y) * 0.70 + 4);
+
+  const rInner = LM.sleeveShort.rightInnerHem;
+  const rOuter = LM.sleeveShort.rightOuterHem;
+  const rc1x = Math.round(rInner.x + (rOuter.x - rInner.x) * 0.30);
+  const rc1y = Math.round(rInner.y + (rOuter.y - rInner.y) * 0.30 + 4);
+  const rc2x = Math.round(rInner.x + (rOuter.x - rInner.x) * 0.65);
+  const rc2y = Math.round(rInner.y + (rOuter.y - rInner.y) * 0.65 + 5);
+
   const leftSleeveShadow = createSvgElement('path', {
-    d: `M ${LM.sleeveShort.leftOuterHem.x} ${LM.sleeveShort.leftOuterHem.y} C 260 408, 280 418, ${LM.sleeveShort.leftInnerHem.x} ${LM.sleeveShort.leftInnerHem.y} L ${LM.sleeveShort.leftInnerHem.x} ${LM.sleeveShort.leftInnerHem.y + 6} C 280 424, 260 414, ${LM.sleeveShort.leftOuterHem.x} ${LM.sleeveShort.leftOuterHem.y + 6} Z`,
+    d: `M ${lOuter.x} ${lOuter.y} C ${lc1x} ${lc1y}, ${lc2x} ${lc2y}, ${lInner.x} ${lInner.y} L ${lInner.x} ${lInner.y + 6} C ${lc2x} ${lc2y + 6}, ${lc1x} ${lc1y + 6}, ${lOuter.x} ${lOuter.y + 6} Z`,
     fill: 'url(#ff-sleeve-cast-shadow-left)'
   });
   const rightSleeveShadow = createSvgElement('path', {
-    d: `M ${LM.sleeveShort.rightInnerHem.x} ${LM.sleeveShort.rightInnerHem.y} C 490 418, 510 408, ${LM.sleeveShort.rightOuterHem.x} ${LM.sleeveShort.rightOuterHem.y} L ${LM.sleeveShort.rightOuterHem.x} ${LM.sleeveShort.rightOuterHem.y + 6} C 510 414, 490 424, ${LM.sleeveShort.rightInnerHem.x} ${LM.sleeveShort.rightInnerHem.y + 6} Z`,
+    d: `M ${rInner.x} ${rInner.y} C ${rc1x} ${rc1y}, ${rc2x} ${rc2y}, ${rOuter.x} ${rOuter.y} L ${rOuter.x} ${rOuter.y + 6} C ${rc2x} ${rc2y + 6}, ${rc1x} ${rc1y + 6}, ${rInner.x} ${rInner.y + 6} Z`,
     fill: 'url(#ff-sleeve-cast-shadow-right)'
   });
   sleevesGroup.appendChild(leftSleeveShadow);

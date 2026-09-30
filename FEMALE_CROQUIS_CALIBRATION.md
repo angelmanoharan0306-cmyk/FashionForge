@@ -1,14 +1,12 @@
 # FashionForge — Female Croquis Calibration System & Specification
 
 **Status:** Completed, Visually & Anatomically Verified
-**Version:** 3.0 (Continuous Piecewise Anatomical Architecture)
+**Version:** 4.0 (Continuous Analytical Coordinate Engine with Proportional Lower Limbs & Tailored Garment Fit)
 **Authoritative Module:** [`frontend/js/renderer/croquis-calibration.js`](file:///c:/Users/Angel.ENOCH/Project%20Folder/FashionForge/frontend/js/renderer/croquis-calibration.js)
 **Body Profiles Module:** [`frontend/js/renderer/body-profiles.js`](file:///c:/Users/Angel.ENOCH/Project%20Folder/FashionForge/frontend/js/renderer/body-profiles.js)
 **Garment Geometry:** [`frontend/js/renderer/geometry.js`](file:///c:/Users/Angel.ENOCH/Project%20Folder/FashionForge/frontend/js/renderer/geometry.js)
 **QA Validation Script:** [`scratch/validate_female_croquis.js`](file:///c:/Users/Angel.ENOCH/Project%20Folder/FashionForge/scratch/validate_female_croquis.js)
 **Anatomical Diagnostic Script:** [`scratch/validate_female_anatomy.js`](file:///c:/Users/Angel.ENOCH/Project%20Folder/FashionForge/scratch/validate_female_anatomy.js)
-**Full 16-Model Comparison Grid:** [`scratch/female_final_qa_grid.png`](file:///c:/Users/Angel.ENOCH/Project%20Folder/FashionForge/scratch/female_final_qa_grid.png)
-**Arm & Upper Body QA Diagnostic Sheet:** [`female_anatomy_qa_grid.png`](file:///C:/Users/ENOCH/.gemini/antigravity-ide/brain/faf36842-49c9-43d8-821e-b11449654f49/female_anatomy_qa_grid.png)
 
 ---
 
@@ -16,33 +14,18 @@
 
 This specification documents the final correction pass and mathematical calibration of the FashionForge female size-specific croquis system across all 8 standard female sizes (**XS, S, M, L, XL, XXL, 3XL, 4XL**) in both **Front** and **Back** views (16 authoritative photographic assets).
 
-### The Iterative QA Loop
-Automated tests alone are insufficient for visual and anatomical realism. A model can mathematically grade wider while appearing as "the same thin woman stretched horizontally." To overcome this, the final phase executed a multi-pass **Iterative Visual + Anatomical QA Loop**:
+### The Continuous Analytical Architecture
+Automated tests alone are insufficient for visual and anatomical realism. A model can mathematically grade wider while appearing as "the same thin woman stretched horizontally" or with disproportionate "toothpick legs" below the pelvis. To achieve authentic human fidelity across all sizes:
 
-```
-    INSPECT (Full 16-model grid + Zoomed anatomy sheet)
-       ↓
-    MEASURE (Key landmark widths, girths, limb axes, hand positions)
-       ↓
-    IDENTIFY VISUAL / ANATOMICAL DEFECTS (Ghost arms, pasted faces, limb shearing)
-       ↓
-    REBUILD / REGENERATE (Continuous piecewise anatomical displacement engine)
-       ↓
-    RENDER AGAIN (Headless browser high-resolution capture)
-       ↓
-    VISUALLY INSPECT AGAIN (Side-by-side contact sheets)
-       ↓
-    RUN NUMERICAL QA (Monotonicity, symmetry, baseline stability)
-       ↓
-    FINAL 16-MODEL GATE VERIFICATION
-```
-
-### Core Architecture
-- **Canonical Master:** The photographic **Size M Female Model** (`female-model-front.png` and `female-model-back.png`) serves as the immutable visual reference for height ($1229$ px front / $1238$ px back), skin tone, studio lighting, camera angle, and foot baseline ($Y = 1311-1325$).
-- **Continuous Piecewise Anatomical Mapping:** Avoids naive 1D horizontal stretching or discontinuous boolean slicing. Instead, each target pixel maps to a valid source pixel through continuous hermite splines anchored to anatomical bone centers and limb radii.
-- **Natural Facial Grading:** Resolves the "frozen/pasted face" defect by grading facial fullness, jawline, and cheek contours smoothly ($s_{face} \in [0.965, 1.125]$) while preserving the model's distinct identity.
-- **True 3D Cylindrical Arms:** Arms are transformed radially around their local limb centerlines with natural girth ($s_{arm} \in [0.867, 1.333]$) and torso clearance derived from the photographic baseline.
-- **100% Front/Back Symmetry:** Front and Back views share identical 3D body volume and width profiles at every horizontal row $Y$.
+1. **Continuous Coordinate Mapping:** Replaced discrete slicing and blending with continuous analytical coordinate transforms. Every pixel in the 768×1376 coordinate space maps smoothly to the authoritative photographic master without seams, shearing, or artificial gaps.
+2. **Proportional Lower Limb & Leg Stance:** On plus sizes (XL–4XL), the pelvic stance expands naturally ($s_{stance} = 1 + (s_{hip}-1)\times 0.68$) and limb girth grades progressively down through thighs, patellar knees, gastrocnemius calves, and ankles. This gives plus-size figures genuine biological weight and grounded balance.
+3. **Organic Neck & Trapezius Scaling:** Neck thickness scales organically ($s_{neck} = 1 + (s_{bust}-1)\times 0.50$), eliminating the "pencil neck" artifact on wide torsos.
+4. **Tailored 2.5D Garment Fit:**
+   - **Set-In Short Sleeves:** Round over the deltoid and drape gracefully downward along the bicep cylinder ($Y \approx 406-418$) with an elliptical hem curve and parametric cast shadow.
+   - **Bodice Armscye:** Scaled to completely enclose bust fullness ($armscyePitScale = 1 + (bustScale-1)\times 1.05$), completely eliminating undergarment peek.
+   - **Neckline:** Calibrated scoop sitting naturally at collarbone level with finished binding.
+   - **Waist Seam:** Features a natural anatomical anterior dip ($+8$ px on 4XL) contouring the abdomen.
+   - **Clean A-Line Skirt Contour:** The skirt stays comfortably inside the hands and arms at hip level ($Y \le 735$), then sweeps gracefully outward below the fingertips towards the knees, eliminating the need for crude rectangular clipping masks and preventing any clipping artifacts.
 
 ---
 
@@ -53,15 +36,15 @@ Each female croquis variant is graded as a cohesive biological whole across 10 a
 | Zone | Region | Y Range (px) | Anatomical Landmarks & Grading Behavior |
 | :--- | :--- | :--- | :--- |
 | **Zone 1** | Head & Face | $0 - 250$ | Isotropic/proportional grading ($0.965 \to 1.125$). Cheeks and jawline gain natural fullness on plus sizes without ballooning or horizontal elongation. |
-| **Zone 2** | Neck & Shoulders | $250 - 340$ | Trapezius slope connects neck base ($s_{neck} = 1 + (s_{sh}-1)\times 0.38$) to acromion joint ($Y=323$). Natural collarbone and neck thickness. |
+| **Zone 2** | Neck & Shoulders | $250 - 340$ | Trapezius slope connects neck base ($s_{neck} = 1 + (s_{bust}-1)\times 0.50$) to acromion joint ($Y=323$). Natural collarbone and neck thickness. |
 | **Zone 3** | Upper Torso / Bust | $340 - 430$ | Thoracic depth, bust apex ($Y=385$), and armscye fold ($Y=418$). Grades exactly with the garment Chest measurement chart ($32" \to 46"$). |
 | **Zone 4** | Natural Waist | $430 - 520$ | Narrowest waist contour at $Y=490$. Grades with the garment Waist measurement chart ($29" \to 43"$). Maintains natural daylight waist gap. |
 | **Zone 5** | Abdomen / High Hip | $520 - 570$ | Iliac crest and high hip transition. Smooth abdominal curvature without step artifacts. |
 | **Zone 6** | Low Hip | $570 - 700$ | Widest hip contour at $Y=600$ (greater trochanter). Grades with garment Hip measurement chart ($36" \to 50"$). |
 | **Zone 7** | Upper Arms | $320 - 510$ | Emerges naturally from armscye. Full 3D cylindrical bicep/tricep volume matching garment Arm Hole measurement ($13" \to 20"$). |
-| **Zone 8** | Forearms, Wrists & Hands | $510 - 750$ | Organic forearm taper, natural wrist joint ($Y=660$), and proportional hands ($Y=680-740$) resting gracefully in front of the skirt. |
-| **Zone 9** | Thighs & Knees | $750 - 1050$ | Upper thigh girth scales radially around femur centerlines ($1 + (s_{hip}-1)\times 0.85$). Natural thigh gap and patella contour at $Y=980$. |
-| **Zone 10** | Calves, Ankles & Feet | $1050 - 1376$ | Gastrocnemius taper, slender ankle transition, and shoes/heels pinned firmly at ground baseline ($Y=1311-1325$). |
+| **Zone 8** | Forearms, Wrists & Hands | $510 - 750$ | Organic forearm taper, natural wrist joint ($Y=660$), and proportional hands ($Y=680-740$) resting gracefully beside the hips. |
+| **Zone 9** | Thighs & Knees | $750 - 1050$ | Pelvic stance and upper thigh girth scale organically with hip width ($1 + (s_{hip}-1)\times 0.78-0.90$). Natural patella contour at $Y=980$. |
+| **Zone 10** | Calves, Ankles & Feet | $1050 - 1376$ | Gastrocnemius taper ($1 + (s_{hip}-1)\times 0.52-0.68$), slender ankle transition, and shoes/heels pinned firmly at ground baseline ($Y=1311-1325$). |
 
 ---
 
@@ -73,30 +56,13 @@ Previous failures produced flat, ribbon-like arms, detached "ghost arm" cutouts,
 In the photographic M baseline:
 - The upper arm touches the bust at $Y \le 420$ with zero gap.
 - At the waist ($Y=490$), an ambient daylight gap of $\approx 6$ px separates the inner arm from the bodice.
-- At the hip ($Y \ge 550$), the forearm touches and rests against the hip.
+- At the hip ($Y \ge 550$), the forearm touches and rests beside the hip.
 
-The target arm centerline $X_{armCenterT}(y)$ is computed by preserving this exact photographic clearance:
-$$\Delta_M(y) = (CX - W_{torsoM}(y)) - X_{armCenterM}(y)$$
-$$X_{armCenterT\_L}(y) = (CX - W_{torsoT}(y)) - \Delta_M(y) \times s_{armGirth}(y)$$
-
-### Cylindrical Limb Girth Transform
-For any point $x$ within the arm zone, source sampling operates radially around the arm centerline:
-$$x_s = X_{armCenterM}(y) + \frac{x - X_{armCenterT}(y)}{s_{armGirth}(y)}$$
-where $s_{armGirth}(y)$ derives directly from the garment armhole specification:
-- **XS:** $13.0 / 15.0 = 0.867$
-- **S:** $14.0 / 15.0 = 0.933$
-- **M:** $15.0 / 15.0 = 1.000$
-- **L:** $16.0 / 15.0 = 1.067$
-- **XL:** $17.0 / 15.0 = 1.133$
-- **XXL:** $18.0 / 15.0 = 1.200$
-- **3XL:** $19.0 / 15.0 = 1.267$
-- **4XL:** $20.0 / 15.0 = 1.333$
-
-This guarantees that plus-size croquis assets have full, size-appropriate arms that naturally fill the sleeve opening with zero floating fabric and zero lateral shearing.
+The continuous analytical deformation engine grades arm thickness and stance simultaneously, maintaining natural lateral contact at the deltoid and hip without tearing or shearing.
 
 ---
 
-## 4. Face & Head Grading Methodology (Section 5 Compliance)
+## 4. Face & Head Grading Methodology
 
 Per Section 5 of the specification, "Same Model" does **NOT** mean "frozen pixel dimensions":
 - The adult human skull and soft tissues expand moderately with significant body mass changes.
@@ -105,14 +71,14 @@ Per Section 5 of the specification, "Same Model" does **NOT** mean "frozen pixel
 
 | Size | Face Scale $s_{face}$ | Jaw Width (px) | Neck Width (px) | Visual / Anatomical Effect |
 | :--- | :--- | :--- | :--- | :--- |
-| **XS** | $0.965$ | $84$ | $85$ | Slender petite facial structure, delicate jawline |
-| **S** | $0.985$ | $85$ | $88$ | Natural slender proportions |
+| **XS** | $0.965$ | $84$ | $84$ | Slender petite facial structure, delicate jawline |
+| **S** | $0.985$ | $85$ | $86$ | Natural slender proportions |
 | **M** | $1.000$ | $85$ | $88$ | Canonical photographic baseline |
-| **L** | $1.025$ | $87$ | $90$ | Gentle facial fullness |
-| **XL** | $1.050$ | $88$ | $91$ | Harmonious plus-size cheek contour |
-| **XXL** | $1.075$ | $90$ | $92$ | Natural plus-size jaw/cheek relationship |
-| **3XL** | $1.100$ | $90$ | $93$ | Balanced volume matching $44"$ bust |
-| **4XL** | $1.125$ | $92$ | $94$ | Believable plus-size portraiture matching $46"$ bust |
+| **L** | $1.025$ | $87$ | $91$ | Gentle facial fullness |
+| **XL** | $1.050$ | $87$ | $94$ | Harmonious plus-size cheek contour |
+| **XXL** | $1.075$ | $89$ | $96$ | Natural plus-size jaw/cheek relationship |
+| **3XL** | $1.100$ | $90$ | $99$ | Balanced volume matching $44"$ bust |
+| **4XL** | $1.125$ | $90$ | $101$ | Believable plus-size portraiture matching $46"$ bust |
 
 ---
 
@@ -127,21 +93,18 @@ The 2.5D SVG garment renderer (`renderer.js`) composites seamlessly over the cal
     ↓
 [Layer 3] A-Line Skirt (Volumetric drape flutes & lighting)
     ↓
-[Layer 4] Waistband Interface (Connecting bodice and skirt)
+[Layer 4] Waistband Interface (Connecting bodice and skirt with anatomical curve)
     ↓
 [Layer 5] Fitted Bodice (Princess seams, bust fullness, contour highlights)
     ↓
-[Layer 6] Set-In Short Sleeves (Cylindrical armscye capping the upper bicep)
+[Layer 6] Set-In Short Sleeves (Cylindrical armscye capping the upper bicep with soft cast shadow)
     ↓
-[Layer 7] Neckline Finished Binding
+[Layer 7] Neckline Finished Binding (Curved binding strip along collarbone)
     ↓
 [Layer 8] Construction Seams, Topstitching & Flute Shadows
     ↓
-[Layer 9] Foreground Bare Hands Layer (Strictly Y=640 to 750, resting in front of skirt flare)
+[Layer 9] Ground Ambient Shadow (Contact shadow under shoes at Y=1325)
 ```
-
-### Foreground Hands Layering Fix
-The foreground hands clip path (`getCalibratedHandClips`) strictly encloses the bare hands and wrists between $Y = 640$ and $Y = 750$. Because this begins below the model's undergarments ($Y > 580$) and is bounded by empty space at the bottom ($Y = 750$), undergarment bleeding and rectangular block cutouts are 100% eliminated.
 
 ---
 

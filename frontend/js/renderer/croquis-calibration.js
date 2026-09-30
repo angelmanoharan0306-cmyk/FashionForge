@@ -42,10 +42,10 @@ function buildSizeCalibration(sizeId) {
   const lengthAvg = (size.lengthMin + size.lengthMax) / 2;
 
   const shoulderScale = size.shoulder / 14.5;
-  const neckScale = 1 + (shoulderScale - 1) * 0.35;
+  const neckScale = 1.0 + (size.chest / 36.0 - 1.0) * 0.48;
   const bustScale = size.chest / 36.0;
   const armholeScale = size.armhole / 15.0;
-  const armpitScale = 1 + (bustScale - 1) * 0.8;
+  const armpitScale = 1.0 + (bustScale - 1.0) * 1.05;
   const waistScale = waistAvg / 33.0;
   const hipScale = size.hip / 40.0;
   const lengthDeltaPx = (lengthAvg - 42.0) * 3.5;
@@ -56,16 +56,16 @@ function buildSizeCalibration(sizeId) {
   const front = {
     neckLeft: { x: scaleX(343, neckScale), y: 282 },
     neckRight: { x: scaleX(427, neckScale), y: 282 },
-    shoulderLeft: { x: scaleX(260, shoulderScale), y: 323 },
-    shoulderRight: { x: scaleX(510, shoulderScale), y: 323 },
-    bustLeft: { x: scaleX(345, bustScale), y: Math.round(385 + (bustScale - 1) * 4) },
-    bustRight: { x: scaleX(425, bustScale), y: Math.round(385 + (bustScale - 1) * 4) },
+    shoulderLeft: { x: scaleX(260, shoulderScale), y: Math.round(323 + (shoulderScale - 1.0) * 3) },
+    shoulderRight: { x: scaleX(510, shoulderScale), y: Math.round(323 + (shoulderScale - 1.0) * 3) },
+    bustLeft: { x: scaleX(345, bustScale), y: Math.round(385 + (bustScale - 1.0) * 4) },
+    bustRight: { x: scaleX(425, bustScale), y: Math.round(385 + (bustScale - 1.0) * 4) },
     waistLeft: { x: scaleX(306, waistScale), y: 490 },
     waistRight: { x: scaleX(462, waistScale), y: 490 },
     hipLeft: { x: scaleX(282, hipScale), y: 600 },
     hipRight: { x: scaleX(488, hipScale), y: 600 },
-    armholeLeft: { x: scaleX(295, armpitScale), y: Math.round(418 + (armholeScale - 1) * 12) },
-    armholeRight: { x: scaleX(475, armpitScale), y: Math.round(418 + (armholeScale - 1) * 12) },
+    armholeLeft: { x: scaleX(295, armpitScale), y: Math.round(418 + (armholeScale - 1.0) * 10) },
+    armholeRight: { x: scaleX(475, armpitScale), y: Math.round(418 + (armholeScale - 1.0) * 10) },
     wristLeft: { x: scaleX(260, hipScale), y: 660 },
     wristRight: { x: scaleX(510, hipScale), y: 660 },
     handLeft: { x: scaleX(255, hipScale), y: 680 },
@@ -78,8 +78,8 @@ function buildSizeCalibration(sizeId) {
   const back = {
     neckLeft: { x: front.neckLeft.x, y: 282 },
     neckRight: { x: front.neckRight.x, y: 282 },
-    shoulderLeft: { x: front.shoulderLeft.x, y: 323 },
-    shoulderRight: { x: front.shoulderRight.x, y: 323 },
+    shoulderLeft: { x: front.shoulderLeft.x, y: front.shoulderLeft.y },
+    shoulderRight: { x: front.shoulderRight.x, y: front.shoulderRight.y },
     bustLeft: { x: front.bustLeft.x, y: front.bustLeft.y },
     bustRight: { x: front.bustRight.x, y: front.bustRight.y },
     waistLeft: { x: front.waistLeft.x, y: 490 },
@@ -125,22 +125,24 @@ export function getFemaleCroquisCalibration(size = 'M', view = 'front') {
 
 /**
  * Computes calibrated foreground hand clips for each size.
- * Strictly encloses the bare hands and wrists (Y=640 to 750) resting in front of the skirt flare.
- * Starts below the shorts (Y > 580) so undergarments never bleed over the garment.
+ * Strictly encloses the bare hands and wrists (Y=660 to 745) resting in front of the skirt flare.
+ * Bounded cleanly so undergarment shorts and thighs are NEVER clipped over the skirt.
  */
 export function getCalibratedHandClips(size = 'M') {
   const normSize = String(size || 'M').toUpperCase();
   const entry = femaleCroquisCalibration[normSize] || femaleCroquisCalibration.M;
   const hipScale = entry.scales.hipScale;
 
-  const leftMinX = Math.round(scaleX(235, hipScale));
-  const leftMaxX = Math.round(scaleX(278, hipScale));
-  const rightMinX = Math.round(scaleX(492, hipScale));
-  const rightMaxX = Math.round(scaleX(535, hipScale));
+  // On size M: hand is at X in [244, 268]. Shorts/thighs are at X >= 274.
+  // We keep a safe 6px gap from the body so zero shorts can ever bleed through.
+  const leftMinX = Math.round(scaleX(238, hipScale));
+  const leftMaxX = Math.round(scaleX(268, hipScale));
+  const rightMinX = Math.round(scaleX(502, hipScale));
+  const rightMaxX = Math.round(scaleX(532, hipScale));
 
   return {
-    left: `M ${leftMinX} 640 L ${leftMaxX} 640 L ${leftMaxX} 750 L ${leftMinX} 750 Z`,
-    right: `M ${rightMinX} 640 L ${rightMaxX} 640 L ${rightMaxX} 750 L ${rightMinX} 750 Z`
+    left: `M ${leftMinX} 660 L ${leftMaxX} 660 L ${leftMaxX} 745 L ${leftMinX} 745 Z`,
+    right: `M ${rightMinX} 660 L ${rightMaxX} 660 L ${rightMaxX} 745 L ${rightMinX} 745 Z`
   };
 }
 

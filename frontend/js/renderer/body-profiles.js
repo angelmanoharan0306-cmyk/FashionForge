@@ -140,49 +140,54 @@ export function getBodyLandmarks(sizeId = 'M') {
   const baseLM = MODEL_GEOMETRY.landmarks;
   const handClips = SIZE_HAND_CLIPS[String(sizeId).toUpperCase()] || SIZE_HAND_CLIPS['M'];
 
+  // Proportional neck scale matching calibrated human model
+  const neckScale = 1.0 + (bustScale - 1.0) * 0.48;
+
+  // Sleeve outer hem follows deltoid contour with gentle tailored ease (+3px)
+  const armOuterScale = shoulderScale * 0.35 + armholeScale * 0.65;
+  const sleeveOuterX = scaleX(256, armOuterScale);
+  const sleeveOuterY = Math.round(406 + (armholeScale - 1.0) * 12);
+
+  // Armscye pit: encloses bust fullness with zero undergarment peek
+  const armscyePitScale = 1.0 + (bustScale - 1.0) * 1.05;
+  const armscyePitX = scaleX(295, armscyePitScale);
+  const armscyePitY = Math.round(baseLM.armscye.leftPit.y + (armholeScale - 1.0) * 10);
+
+  const armscyeMidScale = 1.0 + (bustScale - 1.0) * 0.90;
+  const armscyeMidX = scaleX(baseLM.armscye.leftMid.x, armscyeMidScale);
+  const armscyeMidY = Math.round(baseLM.armscye.leftMid.y + (armholeScale - 1.0) * 6);
+
   return {
     head: baseLM.head,
     neck: {
-      left: { x: scaleX(baseLM.neck.left.x, 1 + (shoulderScale - 1) * 0.35), y: baseLM.neck.left.y },
-      right: { x: scaleX(baseLM.neck.right.x, 1 + (shoulderScale - 1) * 0.35), y: baseLM.neck.right.y },
-      frontJewelDip: { x: CX, y: baseLM.neck.frontJewelDip.y + (bustScale - 1) * 2 },
-      backCervicaleDip: baseLM.neck.backCervicaleDip,
-      sternalNotch: baseLM.neck.sternalNotch
+      left: { x: scaleX(baseLM.neck.left.x, neckScale), y: baseLM.neck.left.y },
+      right: { x: scaleX(baseLM.neck.right.x, neckScale), y: baseLM.neck.right.y },
+      frontJewelDip: { x: CX, y: Math.round(baseLM.neck.frontJewelDip.y + (bustScale - 1.0) * 14) },
+      backCervicaleDip: { x: CX, y: Math.round(baseLM.neck.backCervicaleDip.y + (bustScale - 1.0) * 4) },
+      sternalNotch: { x: CX, y: Math.round(baseLM.neck.sternalNotch.y + (bustScale - 1.0) * 10) }
     },
     shoulders: {
-      leftTip: { x: scaleX(baseLM.shoulders.leftTip.x, shoulderScale), y: baseLM.shoulders.leftTip.y },
-      rightTip: { x: scaleX(baseLM.shoulders.rightTip.x, shoulderScale), y: baseLM.shoulders.rightTip.y },
-      leftMid: { x: scaleX(baseLM.shoulders.leftMid.x, shoulderScale), y: baseLM.shoulders.leftMid.y },
-      rightMid: { x: scaleX(baseLM.shoulders.rightMid.x, shoulderScale), y: baseLM.shoulders.rightMid.y }
+      leftTip: { x: scaleX(baseLM.shoulders.leftTip.x, shoulderScale), y: Math.round(baseLM.shoulders.leftTip.y + (shoulderScale - 1.0) * 3) },
+      rightTip: { x: scaleX(baseLM.shoulders.rightTip.x, shoulderScale), y: Math.round(baseLM.shoulders.rightTip.y + (shoulderScale - 1.0) * 3) },
+      leftMid: { x: scaleX(baseLM.shoulders.leftMid.x, shoulderScale), y: Math.round(baseLM.shoulders.leftMid.y + (shoulderScale - 1.0) * 2) },
+      rightMid: { x: scaleX(baseLM.shoulders.rightMid.x, shoulderScale), y: Math.round(baseLM.shoulders.rightMid.y + (shoulderScale - 1.0) * 2) }
     },
     armscye: {
-      leftPit: {
-        x: scaleX(baseLM.armscye.leftPit.x, 1 + (bustScale - 1) * 0.8),
-        y: Math.round(baseLM.armscye.leftPit.y + (armholeScale - 1) * 12)
-      },
-      rightPit: {
-        x: scaleX(baseLM.armscye.rightPit.x, 1 + (bustScale - 1) * 0.8),
-        y: Math.round(baseLM.armscye.rightPit.y + (armholeScale - 1) * 12)
-      },
-      leftMid: {
-        x: scaleX(baseLM.armscye.leftMid.x, shoulderScale),
-        y: Math.round(baseLM.armscye.leftMid.y + (armholeScale - 1) * 6)
-      },
-      rightMid: {
-        x: scaleX(baseLM.armscye.rightMid.x, shoulderScale),
-        y: Math.round(baseLM.armscye.rightMid.y + (armholeScale - 1) * 6)
-      }
+      leftPit: { x: armscyePitX, y: armscyePitY },
+      rightPit: { x: 2 * CX - armscyePitX, y: armscyePitY },
+      leftMid: { x: armscyeMidX, y: armscyeMidY },
+      rightMid: { x: 2 * CX - armscyeMidX, y: armscyeMidY }
     },
     bust: {
-      leftApex: { x: scaleX(baseLM.bust.leftApex.x, bustScale), y: Math.round(baseLM.bust.leftApex.y + (bustScale - 1) * 4) },
-      rightApex: { x: scaleX(baseLM.bust.rightApex.x, bustScale), y: Math.round(baseLM.bust.rightApex.y + (bustScale - 1) * 4) },
-      center: { x: CX, y: Math.round(baseLM.bust.center.y + (bustScale - 1) * 4) }
+      leftApex: { x: scaleX(baseLM.bust.leftApex.x, bustScale), y: Math.round(baseLM.bust.leftApex.y + (bustScale - 1.0) * 4) },
+      rightApex: { x: scaleX(baseLM.bust.rightApex.x, bustScale), y: Math.round(baseLM.bust.rightApex.y + (bustScale - 1.0) * 4) },
+      center: { x: CX, y: Math.round(baseLM.bust.center.y + (bustScale - 1.0) * 4) }
     },
     waist: {
       left: { x: scaleX(baseLM.waist.left.x, waistScale), y: baseLM.waist.left.y },
       right: { x: scaleX(baseLM.waist.right.x, waistScale), y: baseLM.waist.right.y },
-      centerFront: baseLM.waist.centerFront,
-      centerBack: baseLM.waist.centerBack
+      centerFront: { x: CX, y: Math.round(baseLM.waist.centerFront.y + (waistScale - 1.0) * 8) },
+      centerBack: { x: CX, y: Math.round(baseLM.waist.centerBack.y + (waistScale - 1.0) * 3) }
     },
     hip: {
       highLeft: { x: scaleX(baseLM.hip.highLeft.x, 1 + (waistScale - 1) * 0.5 + (hipScale - 1) * 0.5), y: baseLM.hip.highLeft.y },
@@ -200,22 +205,10 @@ export function getBodyLandmarks(sizeId = 'M') {
       hemCenterBack: { x: CX, y: Math.round(baseLM.skirtAline.hemCenterBack.y + lengthDeltaPx) }
     },
     sleeveShort: {
-      leftOuterHem: {
-        x: scaleX(baseLM.sleeveShort.leftOuterHem.x, shoulderScale),
-        y: Math.round(baseLM.sleeveShort.leftOuterHem.y + (armholeScale - 1) * 8)
-      },
-      leftInnerHem: {
-        x: scaleX(baseLM.sleeveShort.leftInnerHem.x, 1 + (bustScale - 1) * 0.8),
-        y: Math.round(baseLM.sleeveShort.leftInnerHem.y + (armholeScale - 1) * 12)
-      },
-      rightOuterHem: {
-        x: scaleX(baseLM.sleeveShort.rightOuterHem.x, shoulderScale),
-        y: Math.round(baseLM.sleeveShort.rightOuterHem.y + (armholeScale - 1) * 8)
-      },
-      rightInnerHem: {
-        x: scaleX(baseLM.sleeveShort.rightInnerHem.x, 1 + (bustScale - 1) * 0.8),
-        y: Math.round(baseLM.sleeveShort.rightInnerHem.y + (armholeScale - 1) * 12)
-      }
+      leftOuterHem: { x: sleeveOuterX, y: sleeveOuterY },
+      leftInnerHem: { x: armscyePitX, y: armscyePitY - 2 },
+      rightOuterHem: { x: 2 * CX - sleeveOuterX, y: sleeveOuterY },
+      rightInnerHem: { x: 2 * CX - armscyePitX, y: armscyePitY - 2 }
     },
     armsForeground: {
       leftClip: handClips.left,

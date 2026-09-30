@@ -98,23 +98,35 @@ const DEFAULT_LM = MODEL_GEOMETRY.landmarks;
 
 /**
  * Bodice Front Path:
- * Contours neck base, shoulder slope, armscye, bust volume, and natural waist.
+ * Contours neck base, natural shoulder slope, armscye, bust fullness, and curved natural waist.
  */
 export function getBodiceFrontPath(landmarks = DEFAULT_LM) {
   const LM = landmarks || DEFAULT_LM;
-  const rightShoulderMidX = Math.round((LM.neck.right.x + LM.shoulders.rightTip.x) / 2);
-  const leftShoulderMidX = Math.round((LM.neck.left.x + LM.shoulders.leftTip.x) / 2);
+
+  const shDxR = LM.shoulders.rightTip.x - LM.neck.right.x;
+  const shDyR = LM.shoulders.rightTip.y - LM.neck.right.y;
+  const cp1Rx = Math.round(LM.neck.right.x + shDxR * 0.40);
+  const cp1Ry = Math.round(LM.neck.right.y + shDyR * 0.20);
+  const cp2Rx = Math.round(LM.neck.right.x + shDxR * 0.80);
+  const cp2Ry = Math.round(LM.neck.right.y + shDyR * 0.65);
+
+  const shDxL = LM.shoulders.leftTip.x - LM.neck.left.x;
+  const shDyL = LM.shoulders.leftTip.y - LM.neck.left.y;
+  const cp1Lx = Math.round(LM.neck.left.x + shDxL * 0.40);
+  const cp1Ly = Math.round(LM.neck.left.y + shDyL * 0.20);
+  const cp2Lx = Math.round(LM.neck.left.x + shDxL * 0.80);
+  const cp2Ly = Math.round(LM.neck.left.y + shDyL * 0.65);
 
   return [
     `M ${LM.neck.left.x} ${LM.neck.left.y}`,
     `Q ${LM.neck.frontJewelDip.x} ${LM.neck.frontJewelDip.y} ${LM.neck.right.x} ${LM.neck.right.y}`,
-    `C ${rightShoulderMidX - 10} 292, ${rightShoulderMidX + 15} 302, ${LM.shoulders.rightTip.x} ${LM.shoulders.rightTip.y}`,
-    `C ${LM.armscye.rightMid.x} ${LM.armscye.rightMid.y}, ${LM.armscye.rightPit.x + 4} ${LM.armscye.rightPit.y - 15}, ${LM.armscye.rightPit.x} ${LM.armscye.rightPit.y}`,
-    `C ${LM.bust.rightApex.x + 36} 440, ${LM.waist.right.x + 2} 468, ${LM.waist.right.x} ${LM.waist.right.y}`,
+    `C ${cp1Rx} ${cp1Ry}, ${cp2Rx} ${cp2Ry}, ${LM.shoulders.rightTip.x} ${LM.shoulders.rightTip.y}`,
+    `C ${LM.armscye.rightMid.x} ${LM.armscye.rightMid.y}, ${LM.armscye.rightPit.x + 2} ${LM.armscye.rightPit.y - 12}, ${LM.armscye.rightPit.x} ${LM.armscye.rightPit.y}`,
+    `C ${LM.armscye.rightPit.x - 2} 445, ${LM.waist.right.x + 2} 470, ${LM.waist.right.x} ${LM.waist.right.y}`,
     `Q ${LM.waist.centerFront.x} ${LM.waist.centerFront.y} ${LM.waist.left.x} ${LM.waist.left.y}`,
-    `C ${LM.waist.left.x - 2} 468, ${LM.bust.leftApex.x - 36} 440, ${LM.armscye.leftPit.x} ${LM.armscye.leftPit.y}`,
-    `C ${LM.armscye.leftPit.x - 4} ${LM.armscye.leftPit.y - 15}, ${LM.armscye.leftMid.x} ${LM.armscye.leftMid.y}, ${LM.shoulders.leftTip.x} ${LM.shoulders.leftTip.y}`,
-    `C ${leftShoulderMidX - 15} 302, ${leftShoulderMidX + 10} 292, ${LM.neck.left.x} ${LM.neck.left.y}`,
+    `C ${LM.waist.left.x - 2} 470, ${LM.armscye.leftPit.x + 2} 445, ${LM.armscye.leftPit.x} ${LM.armscye.leftPit.y}`,
+    `C ${LM.armscye.leftPit.x - 2} ${LM.armscye.leftPit.y - 12}, ${LM.armscye.leftMid.x} ${LM.armscye.leftMid.y}, ${LM.shoulders.leftTip.x} ${LM.shoulders.leftTip.y}`,
+    `C ${cp2Lx} ${cp2Ly}, ${cp1Lx} ${cp1Ly}, ${LM.neck.left.x} ${LM.neck.left.y}`,
     'Z'
   ].join(' ');
 }
@@ -125,19 +137,31 @@ export function getBodiceFrontPath(landmarks = DEFAULT_LM) {
  */
 export function getBodiceBackPath(landmarks = DEFAULT_LM) {
   const LM = landmarks || DEFAULT_LM;
-  const rightShoulderMidX = Math.round((LM.neck.right.x + LM.shoulders.rightTip.x) / 2);
-  const leftShoulderMidX = Math.round((LM.neck.left.x + LM.shoulders.leftTip.x) / 2);
+
+  const shDxR = LM.shoulders.rightTip.x - LM.neck.right.x;
+  const shDyR = LM.shoulders.rightTip.y - LM.neck.right.y;
+  const cp1Rx = Math.round(LM.neck.right.x + shDxR * 0.40);
+  const cp1Ry = Math.round(LM.neck.right.y + shDyR * 0.20);
+  const cp2Rx = Math.round(LM.neck.right.x + shDxR * 0.80);
+  const cp2Ry = Math.round(LM.neck.right.y + shDyR * 0.65);
+
+  const shDxL = LM.shoulders.leftTip.x - LM.neck.left.x;
+  const shDyL = LM.shoulders.leftTip.y - LM.neck.left.y;
+  const cp1Lx = Math.round(LM.neck.left.x + shDxL * 0.40);
+  const cp1Ly = Math.round(LM.neck.left.y + shDyL * 0.20);
+  const cp2Lx = Math.round(LM.neck.left.x + shDxL * 0.80);
+  const cp2Ly = Math.round(LM.neck.left.y + shDyL * 0.65);
 
   return [
     `M ${LM.neck.left.x} ${LM.neck.left.y}`,
     `Q ${LM.neck.backCervicaleDip.x} ${LM.neck.backCervicaleDip.y} ${LM.neck.right.x} ${LM.neck.right.y}`,
-    `C ${rightShoulderMidX - 10} 292, ${rightShoulderMidX + 15} 302, ${LM.shoulders.rightTip.x} ${LM.shoulders.rightTip.y}`,
-    `C ${LM.armscye.rightMid.x} ${LM.armscye.rightMid.y}, ${LM.armscye.rightPit.x + 4} ${LM.armscye.rightPit.y - 15}, ${LM.armscye.rightPit.x} ${LM.armscye.rightPit.y}`,
-    `C ${LM.bust.rightApex.x + 32} 440, ${LM.waist.right.x + 2} 468, ${LM.waist.right.x} ${LM.waist.right.y}`,
+    `C ${cp1Rx} ${cp1Ry}, ${cp2Rx} ${cp2Ry}, ${LM.shoulders.rightTip.x} ${LM.shoulders.rightTip.y}`,
+    `C ${LM.armscye.rightMid.x} ${LM.armscye.rightMid.y}, ${LM.armscye.rightPit.x + 2} ${LM.armscye.rightPit.y - 12}, ${LM.armscye.rightPit.x} ${LM.armscye.rightPit.y}`,
+    `C ${LM.armscye.rightPit.x - 2} 445, ${LM.waist.right.x + 2} 470, ${LM.waist.right.x} ${LM.waist.right.y}`,
     `Q ${LM.waist.centerBack.x} ${LM.waist.centerBack.y} ${LM.waist.left.x} ${LM.waist.left.y}`,
-    `C ${LM.waist.left.x - 2} 468, ${LM.bust.leftApex.x - 32} 440, ${LM.armscye.leftPit.x} ${LM.armscye.leftPit.y}`,
-    `C ${LM.armscye.leftPit.x - 4} ${LM.armscye.leftPit.y - 15}, ${LM.armscye.leftMid.x} ${LM.armscye.leftMid.y}, ${LM.shoulders.leftTip.x} ${LM.shoulders.leftTip.y}`,
-    `C ${leftShoulderMidX - 15} 302, ${leftShoulderMidX + 10} 292, ${LM.neck.left.x} ${LM.neck.left.y}`,
+    `C ${LM.waist.left.x - 2} 470, ${LM.armscye.leftPit.x + 2} 445, ${LM.armscye.leftPit.x} ${LM.armscye.leftPit.y}`,
+    `C ${LM.armscye.leftPit.x - 2} ${LM.armscye.leftPit.y - 12}, ${LM.armscye.leftMid.x} ${LM.armscye.leftMid.y}, ${LM.shoulders.leftTip.x} ${LM.shoulders.leftTip.y}`,
+    `C ${cp2Lx} ${cp2Ly}, ${cp1Lx} ${cp1Ly}, ${LM.neck.left.x} ${LM.neck.left.y}`,
     'Z'
   ].join(' ');
 }
@@ -206,32 +230,52 @@ export function getHemFacingDepthPath(landmarks = DEFAULT_LM) {
 
 /**
  * Left Sleeve Path (Set-In Short Sleeve):
- * Wraps deltoid cap smoothly with tailored bicep contour and elliptical hem.
+ * Rounds softly over deltoid cap and drapes downward along upper arm cylinder with elliptical hem.
  */
 export function getLeftSleevePath(isBack = false, landmarks = DEFAULT_LM) {
   const LM = landmarks || DEFAULT_LM;
-  const outerCurveControlX = Math.round(LM.shoulders.leftTip.x - 5);
+  const shX = LM.shoulders.leftTip.x;
+  const shY = LM.shoulders.leftTip.y;
+  const outX = LM.sleeveShort.leftOuterHem.x;
+  const outY = LM.sleeveShort.leftOuterHem.y;
+  const inX = LM.sleeveShort.leftInnerHem.x;
+  const inY = LM.sleeveShort.leftInnerHem.y;
+  const pitX = LM.armscye.leftPit.x;
+  const pitY = LM.armscye.leftPit.y;
+  const midX = LM.armscye.leftMid.x;
+  const midY = LM.armscye.leftMid.y;
+
   return [
-    `M ${LM.shoulders.leftTip.x} ${LM.shoulders.leftTip.y}`,
-    `C ${outerCurveControlX} 345, ${outerCurveControlX - 1} 370, ${LM.sleeveShort.leftOuterHem.x} ${LM.sleeveShort.leftOuterHem.y}`,
-    `C ${LM.sleeveShort.leftOuterHem.x + 4} 408, ${LM.sleeveShort.leftInnerHem.x - 15} 418, ${LM.sleeveShort.leftInnerHem.x} ${LM.sleeveShort.leftInnerHem.y}`,
-    `C ${LM.armscye.leftPit.x - 4} ${LM.armscye.leftPit.y - 20}, ${LM.armscye.leftMid.x} ${LM.armscye.leftMid.y}, ${LM.shoulders.leftTip.x} ${LM.shoulders.leftTip.y}`,
+    `M ${shX} ${shY}`,
+    `C ${shX - 10} ${shY + 20}, ${outX - 4} ${outY - 24}, ${outX} ${outY}`,
+    `C ${outX + 8} ${outY + 6}, ${inX - 10} ${inY + 6}, ${inX} ${inY}`,
+    `C ${pitX - 2} ${pitY - 12}, ${midX} ${midY}, ${shX} ${shY}`,
     'Z'
   ].join(' ');
 }
 
 /**
  * Right Sleeve Path (Set-In Short Sleeve):
- * Wraps deltoid cap smoothly with tailored bicep contour and elliptical hem.
+ * Rounds softly over deltoid cap and drapes downward along upper arm cylinder with elliptical hem.
  */
 export function getRightSleevePath(isBack = false, landmarks = DEFAULT_LM) {
   const LM = landmarks || DEFAULT_LM;
-  const outerCurveControlX = Math.round(LM.shoulders.rightTip.x + 5);
+  const shX = LM.shoulders.rightTip.x;
+  const shY = LM.shoulders.rightTip.y;
+  const outX = LM.sleeveShort.rightOuterHem.x;
+  const outY = LM.sleeveShort.rightOuterHem.y;
+  const inX = LM.sleeveShort.rightInnerHem.x;
+  const inY = LM.sleeveShort.rightInnerHem.y;
+  const pitX = LM.armscye.rightPit.x;
+  const pitY = LM.armscye.rightPit.y;
+  const midX = LM.armscye.rightMid.x;
+  const midY = LM.armscye.rightMid.y;
+
   return [
-    `M ${LM.shoulders.rightTip.x} ${LM.shoulders.rightTip.y}`,
-    `C ${outerCurveControlX} 345, ${outerCurveControlX + 1} 370, ${LM.sleeveShort.rightOuterHem.x} ${LM.sleeveShort.rightOuterHem.y}`,
-    `C ${LM.sleeveShort.rightOuterHem.x - 4} 408, ${LM.sleeveShort.rightInnerHem.x + 15} 418, ${LM.sleeveShort.rightInnerHem.x} ${LM.sleeveShort.rightInnerHem.y}`,
-    `C ${LM.armscye.rightPit.x + 4} ${LM.armscye.rightPit.y - 20}, ${LM.armscye.rightMid.x} ${LM.armscye.rightMid.y}, ${LM.shoulders.rightTip.x} ${LM.shoulders.rightTip.y}`,
+    `M ${shX} ${shY}`,
+    `C ${shX + 10} ${shY + 20}, ${outX + 4} ${outY - 24}, ${outX} ${outY}`,
+    `C ${outX - 8} ${outY + 6}, ${inX + 10} ${inY + 6}, ${inX} ${inY}`,
+    `C ${pitX + 2} ${pitY - 12}, ${midX} ${midY}, ${shX} ${shY}`,
     'Z'
   ].join(' ');
 }
@@ -268,12 +312,17 @@ export function getConstructionLines(view = 'front', landmarks = DEFAULT_LM) {
   const leftPrincessWaistX = Math.round(LM.waist.left.x + (LM.bust.center.x - LM.waist.left.x) * 0.49);
   const rightPrincessWaistX = Math.round(LM.bust.center.x + (LM.waist.right.x - LM.bust.center.x) * 0.51);
 
+  const lOuterY = LM.sleeveShort.leftOuterHem.y;
+  const lInnerY = LM.sleeveShort.leftInnerHem.y;
+  const rOuterY = LM.sleeveShort.rightOuterHem.y;
+  const rInnerY = LM.sleeveShort.rightInnerHem.y;
+
   if (view === 'front') {
     return {
       leftPrincessSeam: `M ${LM.shoulders.leftMid.x} ${LM.shoulders.leftMid.y} Q ${LM.bust.leftApex.x - 4} 345 ${LM.bust.leftApex.x} ${LM.bust.leftApex.y} Q ${LM.bust.leftApex.x + 4} 435 ${leftPrincessWaistX} ${LM.waist.left.y + 2}`,
       rightPrincessSeam: `M ${LM.shoulders.rightMid.x} ${LM.shoulders.rightMid.y} Q ${LM.bust.rightApex.x + 4} 345 ${LM.bust.rightApex.x} ${LM.bust.rightApex.y} Q ${LM.bust.rightApex.x - 4} 435 ${rightPrincessWaistX} ${LM.waist.right.y + 2}`,
-      leftArmscye: `M ${LM.shoulders.leftTip.x} ${LM.shoulders.leftTip.y} C ${LM.armscye.leftMid.x} ${LM.armscye.leftMid.y}, ${LM.armscye.leftPit.x - 4} ${LM.armscye.leftPit.y - 15}, ${LM.armscye.leftPit.x} ${LM.armscye.leftPit.y}`,
-      rightArmscye: `M ${LM.shoulders.rightTip.x} ${LM.shoulders.rightTip.y} C ${LM.armscye.rightMid.x} ${LM.armscye.rightMid.y}, ${LM.armscye.rightPit.x + 4} ${LM.armscye.rightPit.y - 15}, ${LM.armscye.rightPit.x} ${LM.armscye.rightPit.y}`,
+      leftArmscye: `M ${LM.shoulders.leftTip.x} ${LM.shoulders.leftTip.y} C ${LM.armscye.leftMid.x} ${LM.armscye.leftMid.y}, ${LM.armscye.leftPit.x - 2} ${LM.armscye.leftPit.y - 12}, ${LM.armscye.leftPit.x} ${LM.armscye.leftPit.y}`,
+      rightArmscye: `M ${LM.shoulders.rightTip.x} ${LM.shoulders.rightTip.y} C ${LM.armscye.rightMid.x} ${LM.armscye.rightMid.y}, ${LM.armscye.rightPit.x + 2} ${LM.armscye.rightPit.y - 12}, ${LM.armscye.rightPit.x} ${LM.armscye.rightPit.y}`,
       waistSeam: `M ${LM.waist.left.x} ${LM.waist.left.y} Q ${LM.waist.centerFront.x} ${LM.waist.centerFront.y} ${LM.waist.right.x} ${LM.waist.right.y}`,
       skirtFluteOuterLeft: `M ${LM.waist.left.x + 19} ${LM.waist.left.y + 1} Q ${LM.hip.lowLeft.x + 8} 680 ${LM.skirtAline.hemLeft.x + 34} ${LM.skirtAline.hemY + 4}`,
       skirtFluteLeft: `M ${leftPrincessWaistX} ${LM.waist.left.y + 2} Q ${LM.bust.leftApex.x - 15} 680 ${LM.skirtAline.hemLeft.x + 94} ${LM.skirtAline.hemY + 9}`,
@@ -281,8 +330,8 @@ export function getConstructionLines(view = 'front', landmarks = DEFAULT_LM) {
       skirtFluteRight: `M ${rightPrincessWaistX} ${LM.waist.right.y + 2} Q ${LM.bust.rightApex.x + 15} 680 ${LM.skirtAline.hemRight.x - 94} ${LM.skirtAline.hemY + 9}`,
       skirtFluteOuterRight: `M ${LM.waist.right.x - 17} ${LM.waist.right.y + 1} Q ${LM.hip.lowRight.x - 8} 680 ${LM.skirtAline.hemRight.x - 34} ${LM.skirtAline.hemY + 4}`,
       hemStitch: `M ${LM.skirtAline.hemLeft.x + 6} ${LM.skirtAline.hemY - 7} Q ${LM.skirtAline.hemCenterFront.x} ${LM.skirtAline.hemCenterFront.y - 7} ${LM.skirtAline.hemRight.x - 6} ${LM.skirtAline.hemY - 7}`,
-      sleeveLeftStitch: `M ${LM.sleeveShort.leftOuterHem.x + 3} ${LM.sleeveShort.leftOuterHem.y - 5} C ${LM.sleeveShort.leftOuterHem.x + 7} 403, ${LM.sleeveShort.leftInnerHem.x - 15} 412, ${LM.sleeveShort.leftInnerHem.x} ${LM.sleeveShort.leftInnerHem.y - 5}`,
-      sleeveRightStitch: `M ${LM.sleeveShort.rightInnerHem.x} ${LM.sleeveShort.rightInnerHem.y - 5} C ${LM.sleeveShort.rightInnerHem.x + 15} 412, ${LM.sleeveShort.rightOuterHem.x - 7} 403, ${LM.sleeveShort.rightOuterHem.x - 3} ${LM.sleeveShort.rightOuterHem.y - 5}`
+      sleeveLeftStitch: `M ${LM.sleeveShort.leftOuterHem.x + 3} ${lOuterY - 5} C ${LM.sleeveShort.leftOuterHem.x + 7} ${lOuterY + 2}, ${LM.sleeveShort.leftInnerHem.x - 10} ${lInnerY + 2}, ${LM.sleeveShort.leftInnerHem.x} ${lInnerY - 5}`,
+      sleeveRightStitch: `M ${LM.sleeveShort.rightInnerHem.x} ${rInnerY - 5} C ${LM.sleeveShort.rightInnerHem.x + 10} ${rInnerY + 2}, ${LM.sleeveShort.rightOuterHem.x - 7} ${rOuterY + 2}, ${LM.sleeveShort.rightOuterHem.x - 3} ${rOuterY - 5}`
     };
   }
 
@@ -294,8 +343,8 @@ export function getConstructionLines(view = 'front', landmarks = DEFAULT_LM) {
     centerBackSeam: `M ${LM.bust.center.x} ${LM.waist.centerBack.y + 75} L ${LM.bust.center.x} ${LM.skirtAline.hemCenterBack.y}`,
     leftBackDart: `M ${leftDartX} 320 L ${leftDartX} ${LM.waist.left.y - 2}`,
     rightBackDart: `M ${rightDartX} 320 L ${rightDartX} ${LM.waist.right.y - 2}`,
-    leftArmscye: `M ${LM.shoulders.leftTip.x} ${LM.shoulders.leftTip.y} C ${LM.armscye.leftMid.x} ${LM.armscye.leftMid.y}, ${LM.armscye.leftPit.x - 4} ${LM.armscye.leftPit.y - 15}, ${LM.armscye.leftPit.x} ${LM.armscye.leftPit.y}`,
-    rightArmscye: `M ${LM.shoulders.rightTip.x} ${LM.shoulders.rightTip.y} C ${LM.armscye.rightMid.x} ${LM.armscye.rightMid.y}, ${LM.armscye.rightPit.x + 4} ${LM.armscye.rightPit.y - 15}, ${LM.armscye.rightPit.x} ${LM.armscye.rightPit.y}`,
+    leftArmscye: `M ${LM.shoulders.leftTip.x} ${LM.shoulders.leftTip.y} C ${LM.armscye.leftMid.x} ${LM.armscye.leftMid.y}, ${LM.armscye.leftPit.x - 2} ${LM.armscye.leftPit.y - 12}, ${LM.armscye.leftPit.x} ${LM.armscye.leftPit.y}`,
+    rightArmscye: `M ${LM.shoulders.rightTip.x} ${LM.shoulders.rightTip.y} C ${LM.armscye.rightMid.x} ${LM.armscye.rightMid.y}, ${LM.armscye.rightPit.x + 2} ${LM.armscye.rightPit.y - 12}, ${LM.armscye.rightPit.x} ${LM.armscye.rightPit.y}`,
     waistSeam: `M ${LM.waist.left.x} ${LM.waist.left.y} Q ${LM.waist.centerBack.x} ${LM.waist.centerBack.y} ${LM.waist.right.x} ${LM.waist.right.y}`,
     skirtFluteOuterLeft: `M ${LM.waist.left.x + 19} ${LM.waist.left.y + 1} Q ${LM.hip.lowLeft.x + 8} 680 ${LM.skirtAline.hemLeft.x + 34} ${LM.skirtAline.hemY - 1}`,
     skirtFluteLeft: `M ${leftDartX} ${LM.waist.left.y - 2} Q ${LM.bust.leftApex.x - 15} 680 ${LM.skirtAline.hemLeft.x + 94} ${LM.skirtAline.hemY}`,
@@ -303,7 +352,7 @@ export function getConstructionLines(view = 'front', landmarks = DEFAULT_LM) {
     skirtFluteRight: `M ${rightDartX} ${LM.waist.right.y - 2} Q ${LM.bust.rightApex.x + 15} 680 ${LM.skirtAline.hemRight.x - 94} ${LM.skirtAline.hemY}`,
     skirtFluteOuterRight: `M ${LM.waist.right.x - 17} ${LM.waist.right.y + 1} Q ${LM.hip.lowRight.x - 8} 680 ${LM.skirtAline.hemRight.x - 34} ${LM.skirtAline.hemY - 1}`,
     hemStitch: `M ${LM.skirtAline.hemLeft.x + 6} ${LM.skirtAline.hemY - 7} Q ${LM.skirtAline.hemCenterBack.x} ${LM.skirtAline.hemCenterBack.y + 3} ${LM.skirtAline.hemRight.x - 6} ${LM.skirtAline.hemY - 7}`,
-    sleeveLeftStitch: `M ${LM.sleeveShort.leftOuterHem.x + 3} ${LM.sleeveShort.leftOuterHem.y - 5} C ${LM.sleeveShort.leftOuterHem.x + 7} 403, ${LM.sleeveShort.leftInnerHem.x - 15} 412, ${LM.sleeveShort.leftInnerHem.x} ${LM.sleeveShort.leftInnerHem.y - 5}`,
-    sleeveRightStitch: `M ${LM.sleeveShort.rightInnerHem.x} ${LM.sleeveShort.rightInnerHem.y - 5} C ${LM.sleeveShort.rightInnerHem.x + 15} 412, ${LM.sleeveShort.rightOuterHem.x - 7} 403, ${LM.sleeveShort.rightOuterHem.x - 3} ${LM.sleeveShort.rightOuterHem.y - 5}`
+    sleeveLeftStitch: `M ${LM.sleeveShort.leftOuterHem.x + 3} ${lOuterY - 5} C ${LM.sleeveShort.leftOuterHem.x + 7} ${lOuterY + 2}, ${LM.sleeveShort.leftInnerHem.x - 10} ${lInnerY + 2}, ${LM.sleeveShort.leftInnerHem.x} ${lInnerY - 5}`,
+    sleeveRightStitch: `M ${LM.sleeveShort.rightInnerHem.x} ${rInnerY - 5} C ${LM.sleeveShort.rightInnerHem.x + 10} ${rInnerY + 2}, ${LM.sleeveShort.rightOuterHem.x - 7} ${rOuterY + 2}, ${LM.sleeveShort.rightOuterHem.x - 3} ${rOuterY - 5}`
   };
 }
