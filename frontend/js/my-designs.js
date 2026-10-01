@@ -204,6 +204,13 @@ function createDesignCardElement(design) {
         <span class="mydesigns-id-badge">${escapeHtml(design.styleId || design.id)}</span>
       </div>
 
+      <button class="mydesigns-thumb-delete-btn btn-delete-design" type="button" data-id="${escapeHtml(design.id)}" data-name="${escapeHtml(design.name)}" title="Delete design" aria-label="Delete ${escapeHtml(design.name)}">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        </svg>
+      </button>
+
       <div class="mydesigns-svg-frame">
         <svg class="design-card-preview-svg" viewBox="85 70 600 1240" aria-label="Garment preview of ${escapeHtml(design.name)}"></svg>
       </div>
@@ -226,37 +233,42 @@ function createDesignCardElement(design) {
 
       <!-- Action Buttons Toolbar -->
       <div class="mydesigns-card-actions">
-        <a class="btn-primary mydesigns-action-btn btn-open-design" href="design.html?id=${encodeURIComponent(design.id)}" title="Open design in 2.5D Studio">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 20h9"/>
-            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-          </svg>
-          <span>Open / Edit</span>
-        </a>
+        <div class="mydesigns-action-row mydesigns-action-row-primary">
+          <a class="btn-primary mydesigns-action-btn btn-open-design" href="design.html?id=${encodeURIComponent(design.id)}" title="Open design in 2.5D Studio">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 20h9"/>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+            </svg>
+            <span>Open / Edit</span>
+          </a>
 
-        <button class="btn-secondary mydesigns-action-btn btn-add-cart-card" type="button" data-id="${escapeHtml(design.id)}" title="Add to shopping bag">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="9" cy="21" r="1"></circle>
-            <circle cx="20" cy="21" r="1"></circle>
-            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-          </svg>
-          <span>Add to Bag</span>
-        </button>
+          <button class="btn-secondary mydesigns-action-btn btn-add-cart-card" type="button" data-id="${escapeHtml(design.id)}" title="Add to shopping bag">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="9" cy="21" r="1"></circle>
+              <circle cx="20" cy="21" r="1"></circle>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+            </svg>
+            <span>Add to Bag</span>
+          </button>
+        </div>
 
-        <button class="btn-secondary mydesigns-action-btn btn-duplicate-design" type="button" data-id="${escapeHtml(design.id)}" title="Duplicate this design">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect width="13" height="13" x="9" y="9" rx="2" ry="2"/>
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-          </svg>
-          <span>Duplicate</span>
-        </button>
+        <div class="mydesigns-action-row mydesigns-action-row-secondary">
+          <button class="btn-secondary mydesigns-action-btn btn-duplicate-design" type="button" data-id="${escapeHtml(design.id)}" title="Duplicate this design">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="13" height="13" x="9" y="9" rx="2" ry="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+            <span>Duplicate</span>
+          </button>
 
-        <button class="btn-danger-icon mydesigns-action-btn btn-delete-design" type="button" data-id="${escapeHtml(design.id)}" data-name="${escapeHtml(design.name)}" title="Delete design" aria-label="Delete ${escapeHtml(design.name)}">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6"/>
-            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-          </svg>
-        </button>
+          <button class="btn-delete-card-btn mydesigns-action-btn btn-delete-design" type="button" data-id="${escapeHtml(design.id)}" data-name="${escapeHtml(design.name)}" title="Delete design" aria-label="Delete ${escapeHtml(design.name)}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+            <span>Delete</span>
+          </button>
+        </div>
       </div>
     </div>
   `;
@@ -289,10 +301,12 @@ function createDesignCardElement(design) {
     btnDup.addEventListener('click', () => handleDuplicateDesign(design.id));
   }
 
-  const btnDel = card.querySelector('.btn-delete-design');
-  if (btnDel) {
-    btnDel.addEventListener('click', () => openDeleteModal(design.id, design.name));
-  }
+  card.querySelectorAll('.btn-delete-design').forEach(btnDel => {
+    btnDel.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openDeleteModal(design.id, design.name);
+    });
+  });
 
   return card;
 }
@@ -345,10 +359,17 @@ export function closeDeleteModal() {
 export async function confirmDeleteDesign() {
   if (!pendingDeleteId) return;
 
+  const btnConfirm = document.querySelector('#btn-confirm-delete');
+  const deleteId = pendingDeleteId;
+
   try {
-    const target = await getDesignById(pendingDeleteId);
+    if (btnConfirm) {
+      btnConfirm.disabled = true;
+      btnConfirm.textContent = 'Deleting...';
+    }
+    const target = await getDesignById(deleteId);
     const targetName = target?.name || 'Design';
-    const success = await deleteDesign(pendingDeleteId);
+    const success = await deleteDesign(deleteId);
 
     closeDeleteModal();
 
@@ -360,7 +381,13 @@ export async function confirmDeleteDesign() {
     }
   } catch (err) {
     console.error('Delete design error:', err);
+    closeDeleteModal();
     showToast('Failed to delete design');
+  } finally {
+    if (btnConfirm) {
+      btnConfirm.disabled = false;
+      btnConfirm.textContent = 'Delete Permanently';
+    }
   }
 }
 

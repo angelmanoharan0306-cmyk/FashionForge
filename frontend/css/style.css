@@ -3121,11 +3121,17 @@ img, svg {
 
 .mydesigns-card-actions {
   display: flex;
+  flex-direction: column;
   gap: 8px;
-  align-items: center;
   border-top: 1px solid var(--color-border-subtle);
   padding-top: var(--space-3);
   margin-top: auto;
+}
+
+.mydesigns-action-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
 }
 
 .mydesigns-action-btn {
@@ -3141,14 +3147,61 @@ img, svg {
   cursor: pointer;
   transition: all 150ms ease;
   white-space: nowrap;
+  flex: 1;
 }
 
 .btn-open-design {
   flex: 1;
 }
 
+.btn-add-cart-card {
+  flex: 1;
+}
+
 .btn-duplicate-design {
-  padding: 0 10px;
+  flex: 1;
+}
+
+.btn-delete-card-btn {
+  flex: 1;
+  background: transparent;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.btn-delete-card-btn:hover {
+  background: #fef2f2;
+  border-color: #f87171;
+  color: #b91c1c;
+}
+
+.mydesigns-thumb-delete-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(4px);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 5;
+  transition: all 150ms ease;
+  padding: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.mydesigns-thumb-delete-btn:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
+  color: #dc2626;
+  transform: scale(1.08);
 }
 
 .btn-danger-icon {
