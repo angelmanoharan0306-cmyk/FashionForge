@@ -358,6 +358,14 @@ async function getCardSession(req, res, next) {
       });
     }
 
+    if (!cashfreeService.isConfigured()) {
+      return res.status(200).json({
+        success: false,
+        isConfigured: false,
+        message: 'Online card payment is currently unavailable. Please try Cash on Delivery.'
+      });
+    }
+
     let sessionId = order.cashfreePaymentSessionId;
     if (!sessionId) {
       const cfOrder = await cashfreeService.createCashfreeOrder({
@@ -521,6 +529,18 @@ async function mockPaymentStatus(req, res, next) {
   }
 }
 
+/**
+ * GET /api/payments/config
+ * Reports gateway availability status to client
+ */
+function getPaymentConfig(req, res) {
+  return res.status(200).json({
+    success: true,
+    cashfreeConfigured: cashfreeService.isConfigured(),
+    environment: (process.env.CASHFREE_ENV || 'sandbox').toLowerCase()
+  });
+}
+
 module.exports = {
   generateDynamicUpiQr,
   getPaymentStatus,
@@ -528,5 +548,6 @@ module.exports = {
   confirmCod,
   getCardSession,
   handleCashfreeWebhook,
-  mockPaymentStatus
+  mockPaymentStatus,
+  getPaymentConfig
 };

@@ -8,6 +8,9 @@ const router = express.Router();
 const paymentController = require('../controllers/paymentController');
 const { requireAuth } = require('../middleware/auth');
 
+// Gateway configuration status endpoint
+router.get('/config', paymentController.getPaymentConfig);
+
 // Public Webhook Endpoint (verified cryptographically via HMAC-SHA256 signature)
 router.post('/cashfree/webhook', paymentController.handleCashfreeWebhook);
 

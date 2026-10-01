@@ -191,6 +191,11 @@ function setupPaymentMethodSelector() {
   const cardPanel = document.getElementById('card-action-panel');
 
   function selectMethod(method) {
+    // Dismiss any rogue Cashfree modal iframes from DOM immediately
+    document.querySelectorAll('iframe[src*="cashfree"], [id*="cf-checkout"], [class*="cashfree"]').forEach(el => el.remove());
+    const upiModal = document.getElementById('upi-qr-modal');
+    if (upiModal && method !== 'upi') upiModal.style.display = 'none';
+
     [optionCod, optionUpi, optionCard].forEach(el => {
       if (el) {
         el.classList.remove('is-selected');
@@ -216,6 +221,16 @@ function setupPaymentMethodSelector() {
       if (upiPanel) upiPanel.style.display = 'block';
     }
   }
+
+  // Check gateway availability: If Cashfree is not configured, default to Cash on Delivery!
+  fetch('/api/payments/config')
+    .then(r => r.json())
+    .then(cfg => {
+      if (cfg && cfg.cashfreeConfigured === false) {
+        selectMethod('cod');
+      }
+    })
+    .catch(() => {});
 
   optionCod?.addEventListener('click', () => selectMethod('cod'));
   optionUpi?.addEventListener('click', () => selectMethod('upi'));
@@ -417,6 +432,7 @@ function setupCodAndCardActions() {
   // Cash on Delivery
   btnCod?.addEventListener('click', async () => {
     if (!currentOrder) return;
+    document.querySelectorAll('iframe[src*="cashfree"], [id*="cf-checkout"], [class*="cashfree"]').forEach(el => el.remove());
     btnCod.disabled = true;
     btnCod.textContent = 'Placing Order...';
 
@@ -436,6 +452,7 @@ function setupCodAndCardActions() {
   // Card Checkout via Cashfree JS SDK
   btnCard?.addEventListener('click', async () => {
     if (!currentOrder) return;
+    document.querySelectorAll('iframe[src*="cashfree"], [id*="cf-checkout"], [class*="cashfree"]').forEach(el => el.remove());
     btnCard.disabled = true;
     btnCard.textContent = 'Processing...';
 
@@ -445,7 +462,21 @@ function setupCodAndCardActions() {
     try {
       const cardRes = await cartService.getCardSession(currentOrder.orderId);
 
-      if (typeof window.Cashfree !== 'undefined' && cardRes && cardRes.paymentSessionId) {
+      if (cardRes && cardRes.isConfigured === false) {
+        if (cardStatusMsg) {
+          cardStatusMsg.textContent = 'Online card payment is currently unavailable. Please try Cash on Delivery.';
+          cardStatusMsg.style.display = 'block';
+          cardStatusMsg.style.color = '#dc2626';
+        }
+        showAlert('Online card payment is currently unavailable. Please try Cash on Delivery.');
+        btnCard.disabled = true;
+        btnCard.textContent = 'Online Card Payment Unavailable';
+        btnCard.style.opacity = '0.6';
+        btnCard.style.cursor = 'not-allowed';
+        return;
+      }
+
+      if (typeof window.Cashfree !== 'undefined' && cardRes && cardRes.paymentSessionId && cardRes.isConfigured !== false) {
         const cashfree = window.Cashfree({ mode: cardRes.cashfreeEnv || 'sandbox' });
         cashfree.checkout({
           paymentSessionId: cardRes.paymentSessionId,
@@ -462,11 +493,11 @@ function setupCodAndCardActions() {
         });
       } else {
         if (cardStatusMsg) {
-          cardStatusMsg.textContent = 'Online card payment is currently unavailable.';
+          cardStatusMsg.textContent = 'Online card payment is currently unavailable. Please try Cash on Delivery.';
           cardStatusMsg.style.display = 'block';
           cardStatusMsg.style.color = '#dc2626';
         }
-        showAlert('Online card payment is currently unavailable.');
+        showAlert('Online card payment is currently unavailable. Please try Cash on Delivery.');
         btnCard.disabled = true;
         btnCard.textContent = 'Online Card Payment Unavailable';
         btnCard.style.opacity = '0.6';
@@ -474,11 +505,11 @@ function setupCodAndCardActions() {
       }
     } catch (err) {
       if (cardStatusMsg) {
-        cardStatusMsg.textContent = 'Online card payment is currently unavailable.';
+        cardStatusMsg.textContent = 'Online card payment is currently unavailable. Please try Cash on Delivery.';
         cardStatusMsg.style.display = 'block';
         cardStatusMsg.style.color = '#dc2626';
       }
-      showAlert('Online card payment is currently unavailable.');
+      showAlert('Online card payment is currently unavailable. Please try Cash on Delivery.');
       btnCard.disabled = true;
       btnCard.textContent = 'Online Card Payment Unavailable';
       btnCard.style.opacity = '0.6';
