@@ -21,5 +21,6 @@ router.post('/:orderId/cancel', requireAuth, paymentController.cancelPayment);
 router.post('/:orderId/cod', requireAuth, paymentController.confirmCod);
 router.post('/:orderId/card-session', requireAuth, paymentController.getCardSession);
 router.post('/:orderId/mock-status', paymentController.mockPaymentStatus);
+router.post('/test-mode', paymentController.setTestMode);
 
 module.exports = router;

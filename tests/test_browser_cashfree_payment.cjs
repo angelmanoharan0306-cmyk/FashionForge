@@ -44,6 +44,13 @@ async function runCashfreeBrowserE2E() {
   const page = await browser.newPage();
   page.setDefaultTimeout(30000);
 
+  // Enable test mode for browser E2E test suite
+  await fetch(`${BASE_URL}/api/payments/test-mode`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ enabled: true })
+  }).catch(() => {});
+
   try {
     // -------------------------------------------------------------
     // Step 1: Register & Login
@@ -304,6 +311,11 @@ async function runCashfreeBrowserE2E() {
     console.error('\n❌ Cashfree Browser E2E Test Failure:', err);
     process.exitCode = 1;
   } finally {
+    await fetch(`${BASE_URL}/api/payments/test-mode`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabled: false })
+    }).catch(() => {});
     await browser.close();
   }
 }

@@ -57,6 +57,15 @@ async function generateDynamicUpiQr(req, res, next) {
       });
     }
 
+    if (!cashfreeService.isConfigured()) {
+      return res.status(503).json({
+        success: false,
+        isConfigured: false,
+        error: 'PaymentGatewayUnavailable',
+        message: 'Online payment is temporarily unavailable. Please try Cash on Delivery.'
+      });
+    }
+
     // Ensure Cashfree payment session exists
     let sessionId = order.cashfreePaymentSessionId;
     if (!sessionId) {
@@ -87,8 +96,11 @@ async function generateDynamicUpiQr(req, res, next) {
     const rawQr = upiQrData.data?.payload?.qrcode ||
       upiQrData.data?.payload?.upi_string ||
       upiQrData.data?.url ||
-      upiQrData.qrCode ||
-      `upi://pay?pa=fashionforge.cashfree@okhdfcbank&pn=FashionForge&tr=${encodeURIComponent(order.orderId)}&am=${Number(order.total).toFixed(2)}&cu=INR&tn=FashionForge%20Order%20${encodeURIComponent(order.orderId)}`;
+      upiQrData.qrCode;
+
+    if (!rawQr) {
+      throw new Error('Cashfree did not return a valid UPI QR code payload.');
+    }
 
     // Also attempt mobile intent URI for mobile support
     let intentUrl = null;
@@ -156,6 +168,7 @@ async function getPaymentStatus(req, res, next) {
     if (order.paymentStatus === 'paid') {
       return res.status(200).json({
         success: true,
+        status: 'PAID',
         orderId: order.orderId,
         paymentStatus: 'paid',
         orderStatus: order.orderStatus,
@@ -194,6 +207,7 @@ async function getPaymentStatus(req, res, next) {
 
       return res.status(200).json({
         success: true,
+        status: 'PAID',
         orderId: order.orderId,
         paymentStatus: 'paid',
         orderStatus: order.orderStatus,
@@ -211,6 +225,7 @@ async function getPaymentStatus(req, res, next) {
 
       return res.status(200).json({
         success: true,
+        status: 'FAILED',
         orderId: order.orderId,
         paymentStatus: 'failed',
         orderStatus: order.orderStatus,
@@ -223,6 +238,7 @@ async function getPaymentStatus(req, res, next) {
 
     return res.status(200).json({
       success: true,
+      status: 'PENDING',
       orderId: order.orderId,
       paymentStatus: order.paymentStatus || 'pending',
       orderStatus: order.orderStatus,
@@ -531,13 +547,30 @@ async function mockPaymentStatus(req, res, next) {
 
 /**
  * GET /api/payments/config
- * Reports gateway availability status to client
+ * Reports gateway availability status and configuration validation to client
  */
 function getPaymentConfig(req, res) {
+  const validation = cashfreeService.validateCashfreeConfig();
   return res.status(200).json({
     success: true,
     cashfreeConfigured: cashfreeService.isConfigured(),
-    environment: (process.env.CASHFREE_ENV || 'sandbox').toLowerCase()
+    environment: validation.environment || (process.env.CASHFREE_ENV || 'sandbox').toLowerCase(),
+    isValid: validation.valid,
+    message: validation.message,
+    error: validation.error || null
+  });
+}
+
+/**
+ * POST /api/payments/test-mode
+ * Toggles test mocking mode for isolated test suites
+ */
+function setTestMode(req, res) {
+  const { enabled } = req.body || {};
+  cashfreeService.__enableTestMocking(Boolean(enabled));
+  return res.status(200).json({
+    success: true,
+    testMocking: Boolean(enabled)
   });
 }
 
@@ -549,5 +582,6 @@ module.exports = {
   getCardSession,
   handleCashfreeWebhook,
   mockPaymentStatus,
-  getPaymentConfig
+  getPaymentConfig,
+  setTestMode
 };

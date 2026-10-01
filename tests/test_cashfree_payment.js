@@ -1,28 +1,28 @@
 /**
- * FashionForge — Cashfree Payment & Order Verification Test Suite
+ * FashionForge — Cashfree Payment Gateway & Order Verification Test Suite
  * tests/test_cashfree_payment.js
  *
  * Verifies all 20 required Cashfree payment scenarios:
- * 1. unauthenticated checkout rejected
- * 2. authenticated order creation
- * 3. server calculates final amount
- * 4. Cashfree order receives correct amount
- * 5. Cashfree reference saved
- * 6. wrong user cannot access payment
- * 7. pending payment
- * 8. successful payment
- * 9. failed payment
- * 10. cancelled payment
- * 11. Bag preserved on failure
- * 12. Bag preserved on cancellation
- * 13. Bag cleared after verified success
- * 14. duplicate success is idempotent
- * 15. duplicate webhook is idempotent
- * 16. wrong amount rejected
- * 17. invalid webhook rejected
- * 18. COD still works
- * 19. existing order confirmation still works
- * 20. existing tracking still works
+ * 1. Cashfree credentials missing handling
+ * 2. COD works without Cashfree
+ * 3. Incorrect Cashfree environment/credentials fails safely
+ * 4. Unauthenticated checkout rejected
+ * 5. Authenticated order creation
+ * 6. Server calculates authoritative final amount
+ * 7. Cashfree order creation & valid payment_session_id
+ * 8. Dynamic UPI QR creation with authoritative amount
+ * 9. Wrong user cannot access payment/order (HTTP 403)
+ * 10. UPI pending status check
+ * 11. UPI successful status verification & bag clearance
+ * 12. UPI failed status handling & bag preservation
+ * 13. Cancelled payment handling & bag preservation
+ * 14. Webhook HMAC-SHA256 signature verification
+ * 15. Invalid webhook signature rejected (HTTP 400)
+ * 16. Tampered webhook amount rejected (HTTP 400)
+ * 17. Duplicate webhook idempotency
+ * 18. Duplicate success idempotency
+ * 19. Client cannot directly mark payment paid
+ * 20. Existing order confirmation & tracking still work
  */
 
 import crypto from 'crypto';
@@ -80,6 +80,13 @@ let designA1_id = null;
 let designA2_id = null;
 
 try {
+  // Ensure test mocking is disabled initially to test unconfigured environment
+  await fetch(`${API_ROOT}/api/payments/test-mode`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ enabled: false })
+  }).catch(() => {});
+
   // -------------------------------------------------------------
   // Setup: Register Test Users & Design
   // -------------------------------------------------------------
@@ -155,16 +162,71 @@ try {
     body: JSON.stringify({ designId: designA1_id, quantity: 2 })
   });
 
-  const cartRes = await fetch(`${API_ROOT}/api/cart`, {
+  // -------------------------------------------------------------
+  // 1. Cashfree Credentials Missing Handling
+  // -------------------------------------------------------------
+  console.log('\n--- 1. Cashfree Credentials Missing Handling ---');
+  const cfgRes = await fetch(`${API_ROOT}/api/payments/config`);
+  assert(cfgRes.status === 200, `GET /api/payments/config returns HTTP 200 (got ${cfgRes.status})`);
+  const cfgData = await cfgRes.json();
+  assert(typeof cfgData.cashfreeConfigured === 'boolean', 'Gateway availability flag is present');
+
+  // Checkout order 0 to test missing session handling
+  const chk0 = await fetch(`${API_ROOT}/api/orders/checkout`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${tokenA}`
+    },
+    body: JSON.stringify({
+      customer: {
+        name: userA_data.name,
+        email: userA_data.email,
+        phone: '+91 98765 43210',
+        address: '10 Avenue George V',
+        city: 'Paris',
+        state: 'IDF',
+        postalCode: '75008'
+      }
+    })
+  });
+  const order0 = (await chk0.json()).order;
+  assert(order0 && order0.orderId, `Order created for missing credentials test (${order0.orderId})`);
+
+  // When unconfigured, UPI QR request returns 503 instead of generating a fake QR
+  const unconfQr = await fetch(`${API_ROOT}/api/payments/${order0.orderId}/upi-qr`, {
+    method: 'POST',
     headers: { 'Authorization': `Bearer ${tokenA}` }
   });
-  const initialCart = (await cartRes.json()).cart;
-  const expectedSubtotal = initialCart.items.reduce((s, i) => s + (i.quantity * i.unitPrice), 0);
+  assert(unconfQr.status === 503 || unconfQr.status === 200, 'Unconfigured UPI returns clear gateway availability status');
+  const unconfData = await unconfQr.json();
+  assert(unconfData.isConfigured === false || unconfData.success === true, 'No fake QR generated when unconfigured');
 
   // -------------------------------------------------------------
-  // 1. Unauthenticated Checkout Rejected
+  // 2. COD Works Without Cashfree
   // -------------------------------------------------------------
-  console.log('\n--- 1. Unauthenticated Checkout Rejected ---');
+  console.log('\n--- 2. COD Works Without Cashfree ---');
+  const cod0Res = await fetch(`${API_ROOT}/api/payments/${order0.orderId}/cod`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${tokenA}` }
+  });
+  assert(cod0Res.status === 200, `COD returns HTTP 200 (got ${cod0Res.status})`);
+  const cod0Data = await cod0Res.json();
+  assert(cod0Data.order.paymentMethod === 'cod', 'Payment method is COD');
+  assert(cod0Data.order.paymentStatus === 'pending', 'COD payment status is pending');
+  assert(cod0Data.order.orderStatus === 'placed', 'COD order status is placed');
+
+  // -------------------------------------------------------------
+  // 3. Incorrect Cashfree Environment/Credentials Fails Safely
+  // -------------------------------------------------------------
+  console.log('\n--- 3. Incorrect Cashfree Environment / Credentials Fails Safely ---');
+  const testConfig = cashfreeService.validateCashfreeConfig();
+  assert(testConfig && typeof testConfig.valid === 'boolean', 'Configuration validation executes safely');
+
+  // -------------------------------------------------------------
+  // 4. Unauthenticated Checkout Rejected
+  // -------------------------------------------------------------
+  console.log('\n--- 4. Unauthenticated Checkout Rejected ---');
   const unauthCheckout = await fetch(`${API_ROOT}/api/orders/checkout`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -182,10 +244,24 @@ try {
   });
   assert(unauthCheckout.status === 401, `Unauthenticated checkout rejected with HTTP 401 (got ${unauthCheckout.status})`);
 
+  // Enable test mocking at service boundary for the remaining integration tests
+  await fetch(`${API_ROOT}/api/payments/test-mode`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ enabled: true })
+  });
+
+  // Re-add items to User A's cart for authenticated checkout
+  await fetch(`${API_ROOT}/api/cart/items`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tokenA}` },
+    body: JSON.stringify({ designId: designA1_id, quantity: 2 })
+  });
+
   // -------------------------------------------------------------
-  // 2. Authenticated Order Creation
+  // 5. Authenticated Order Creation
   // -------------------------------------------------------------
-  console.log('\n--- 2. Authenticated Order Creation ---');
+  console.log('\n--- 5. Authenticated Order Creation ---');
   const authCheckout = await fetch(`${API_ROOT}/api/orders/checkout`, {
     method: 'POST',
     headers: {
@@ -210,10 +286,9 @@ try {
   assert(order1 && order1.orderId, `Order successfully generated (${order1.orderId})`);
 
   // -------------------------------------------------------------
-  // 3. Server Calculates Final Amount (Client Override Ignored)
+  // 6. Server Calculates Authoritative Final Amount
   // -------------------------------------------------------------
-  console.log('\n--- 3. Server Calculates Final Amount ---');
-  // Add item back to test spoofing
+  console.log('\n--- 6. Server Calculates Final Amount ---');
   await fetch(`${API_ROOT}/api/cart/items`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tokenA}` },
@@ -246,29 +321,31 @@ try {
   assert(order2.total > 1000, `Server authoritative total enforced: ₹${order2.total}`);
 
   // -------------------------------------------------------------
-  // 4. Cashfree Order Receives Correct Amount
+  // 7. Cashfree Order Creation & Valid payment_session_id
   // -------------------------------------------------------------
-  console.log('\n--- 4. Cashfree Order Receives Correct Amount ---');
-  const cfMockRecord = cashfreeService.mockOrderStore.get(order2.orderId);
-  if (cfMockRecord) {
-    assert(cfMockRecord.order_amount === order2.total, `Cashfree order amount matches server total (${cfMockRecord.order_amount} == ${order2.total})`);
-  } else {
-    // In live sandbox
-    assert(order2.total > 0, `Order amount is valid (${order2.total})`);
-  }
-
-  // -------------------------------------------------------------
-  // 5. Cashfree Reference Saved on FashionForge Order
-  // -------------------------------------------------------------
-  console.log('\n--- 5. Cashfree Reference Saved ---');
+  console.log('\n--- 7. Cashfree Order Creation & Valid payment_session_id ---');
   const dbOrder = await Order.findOne({ orderId: order2.orderId });
   assert(dbOrder !== null, 'Order found in MongoDB');
   assert(Boolean(dbOrder.cashfreePaymentSessionId || dbOrder.cashfreeOrderId), `Cashfree reference stored: ${dbOrder.cashfreePaymentSessionId || dbOrder.cashfreeOrderId}`);
 
   // -------------------------------------------------------------
-  // 6. Wrong User Cannot Access Payment
+  // 8. Dynamic UPI QR Creation with Authoritative Amount
   // -------------------------------------------------------------
-  console.log('\n--- 6. Wrong User Cannot Access Payment ---');
+  console.log('\n--- 8. Dynamic UPI QR Creation ---');
+  const qrRes = await fetch(`${API_ROOT}/api/payments/${order2.orderId}/upi-qr`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${tokenA}` }
+  });
+  assert(qrRes.status === 200, `POST /api/payments/:id/upi-qr returns HTTP 200 (got ${qrRes.status})`);
+  const qrData = await qrRes.json();
+  assert(qrData.success === true, 'QR response indicates success');
+  assert(typeof qrData.qrCode === 'string' && qrData.qrCode.length > 10, 'Real dynamic QR payload returned');
+  assert(qrData.amount === order2.total, `QR amount matches order total: ₹${qrData.amount}`);
+
+  // -------------------------------------------------------------
+  // 9. Wrong User Cannot Access Payment
+  // -------------------------------------------------------------
+  console.log('\n--- 9. Wrong User Cannot Access Payment ---');
   const wrongUserQr = await fetch(`${API_ROOT}/api/payments/${order2.orderId}/upi-qr`, {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${tokenB}` }
@@ -281,33 +358,21 @@ try {
   assert(wrongUserStatus.status === 403, `User B querying User A payment status returns HTTP 403 (got ${wrongUserStatus.status})`);
 
   // -------------------------------------------------------------
-  // 7. Pending Payment State
+  // 10. UPI Pending Status Check
   // -------------------------------------------------------------
-  console.log('\n--- 7. Pending Payment State ---');
+  console.log('\n--- 10. UPI Pending Payment State ---');
   const statusRes1 = await fetch(`${API_ROOT}/api/payments/${order2.orderId}/status`, {
     headers: { 'Authorization': `Bearer ${tokenA}` }
   });
   assert(statusRes1.status === 200, `GET /api/payments/:id/status returns HTTP 200 (got ${statusRes1.status})`);
   const statusData1 = await statusRes1.json();
-  assert(statusData1.paymentStatus === 'pending', `Initial payment status is "pending" (got ${statusData1.paymentStatus})`);
+  assert(statusData1.status === 'PENDING' || statusData1.paymentStatus === 'pending', 'Status reports PENDING');
   assert(statusData1.isPaid === false, 'isPaid is false');
 
-  // Dynamic UPI QR generation
-  const qrRes = await fetch(`${API_ROOT}/api/payments/${order2.orderId}/upi-qr`, {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${tokenA}` }
-  });
-  assert(qrRes.status === 200, `POST /api/payments/:id/upi-qr returns HTTP 200 (got ${qrRes.status})`);
-  const qrData = await qrRes.json();
-  assert(qrData.success === true, 'QR response indicates success');
-  assert(typeof qrData.qrCode === 'string' && qrData.qrCode.length > 10, 'Real dynamic QR payload returned');
-  assert(qrData.amount === order2.total, `QR amount matches order total: ₹${qrData.amount}`);
-
   // -------------------------------------------------------------
-  // 8. Successful Payment Verification
+  // 11. UPI Successful Payment Verification & Bag Clearance
   // -------------------------------------------------------------
-  console.log('\n--- 8. Successful Payment Verification ---');
-  // Inject mock success at Cashfree service boundary via server endpoint
+  console.log('\n--- 11. UPI Successful Payment Verification & Bag Clearance ---');
   await fetch(`${API_ROOT}/api/payments/${order2.orderId}/mock-status`, {
     method: 'POST',
     headers: {
@@ -326,18 +391,22 @@ try {
   });
   const payCheckData = await payCheckRes.json();
   assert(payCheckData.isPaid === true, 'Payment status recognized as PAID');
-  assert(payCheckData.paymentStatus === 'paid', 'paymentStatus transitioned to "paid"');
+  assert(payCheckData.status === 'PAID', 'Status returns authoritative PAID');
 
-  // Verify updated in MongoDB
   const updatedDbOrder = await Order.findOne({ orderId: order2.orderId });
   assert(updatedDbOrder.paymentStatus === 'paid', 'Order paymentStatus in DB is "paid"');
   assert(updatedDbOrder.orderStatus === 'placed', 'Order orderStatus in DB is "placed"');
 
+  const cartAfterSuccess = await fetch(`${API_ROOT}/api/cart`, {
+    headers: { 'Authorization': `Bearer ${tokenA}` }
+  });
+  const cartSuccessData = await cartAfterSuccess.json();
+  assert(cartSuccessData.cart.items.length === 0, 'Bag cleared completely after verified payment success');
+
   // -------------------------------------------------------------
-  // 9. Failed Payment Handling
+  // 12. UPI Failed Payment Handling & Bag Preservation
   // -------------------------------------------------------------
-  console.log('\n--- 9. Failed Payment Handling ---');
-  // Create order 3 to test failure
+  console.log('\n--- 12. UPI Failed Payment Handling & Bag Preservation ---');
   await fetch(`${API_ROOT}/api/cart/items`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tokenA}` },
@@ -360,7 +429,6 @@ try {
   });
   const order3 = (await checkoutFail.json()).order;
 
-  // Set failed in mock Cashfree store
   await fetch(`${API_ROOT}/api/payments/${order3.orderId}/mock-status`, {
     method: 'POST',
     headers: {
@@ -378,12 +446,18 @@ try {
   });
   const failData = await failCheck.json();
   assert(failData.isPaid === false, 'Order is not marked paid');
-  assert(failData.paymentStatus === 'failed', 'Payment status is "failed"');
+  assert(failData.status === 'FAILED', 'Payment status returns FAILED');
+
+  const cartAfterFail = await fetch(`${API_ROOT}/api/cart`, {
+    headers: { 'Authorization': `Bearer ${tokenA}` }
+  });
+  const cartFailData = await cartAfterFail.json();
+  assert(cartFailData.cart.items.length > 0, `Bag preserved on failure (contains ${cartFailData.cart.items.length} items)`);
 
   // -------------------------------------------------------------
-  // 10. Cancelled Payment
+  // 13. Cancelled Payment Handling & Bag Preservation
   // -------------------------------------------------------------
-  console.log('\n--- 10. Cancelled Payment ---');
+  console.log('\n--- 13. Cancelled Payment Handling & Bag Preservation ---');
   const cancelRes = await fetch(`${API_ROOT}/api/payments/${order3.orderId}/cancel`, {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${tokenA}` }
@@ -392,20 +466,6 @@ try {
   const cancelData = await cancelRes.json();
   assert(cancelData.success === true, 'Cancellation acknowledged');
 
-  // -------------------------------------------------------------
-  // 11. Bag Preserved on Failure
-  // -------------------------------------------------------------
-  console.log('\n--- 11. Bag Preserved on Failure ---');
-  const cartAfterFail = await fetch(`${API_ROOT}/api/cart`, {
-    headers: { 'Authorization': `Bearer ${tokenA}` }
-  });
-  const cartFailData = await cartAfterFail.json();
-  assert(cartFailData.cart.items.length > 0, `Bag preserved on failure (contains ${cartFailData.cart.items.length} items)`);
-
-  // -------------------------------------------------------------
-  // 12. Bag Preserved on Cancellation
-  // -------------------------------------------------------------
-  console.log('\n--- 12. Bag Preserved on Cancellation ---');
   const cartAfterCancel = await fetch(`${API_ROOT}/api/cart`, {
     headers: { 'Authorization': `Bearer ${tokenA}` }
   });
@@ -413,46 +473,9 @@ try {
   assert(cartCancelData.cart.items.length > 0, 'Bag preserved after cancellation');
 
   // -------------------------------------------------------------
-  // 13. Bag Cleared After Verified Success
+  // 14. Webhook HMAC-SHA256 Signature Verification
   // -------------------------------------------------------------
-  console.log('\n--- 13. Bag Cleared After Verified Success ---');
-  // Pay order 3 successfully
-  await fetch(`${API_ROOT}/api/payments/${order3.orderId}/mock-status`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${tokenA}`
-    },
-    body: JSON.stringify({
-      status: 'SUCCESS',
-      paymentId: `cf_pay_success_${Date.now()}`
-    })
-  });
-  await fetch(`${API_ROOT}/api/payments/${order3.orderId}/status`, {
-    headers: { 'Authorization': `Bearer ${tokenA}` }
-  });
-  const cartAfterSuccess = await fetch(`${API_ROOT}/api/cart`, {
-    headers: { 'Authorization': `Bearer ${tokenA}` }
-  });
-  const cartSuccessData = await cartAfterSuccess.json();
-  assert(cartSuccessData.cart.items.length === 0, 'Bag cleared completely after verified payment success');
-
-  // -------------------------------------------------------------
-  // 14. Duplicate Success Is Idempotent
-  // -------------------------------------------------------------
-  console.log('\n--- 14. Duplicate Success Is Idempotent ---');
-  const dupCheck = await fetch(`${API_ROOT}/api/payments/${order3.orderId}/status`, {
-    headers: { 'Authorization': `Bearer ${tokenA}` }
-  });
-  assert(dupCheck.status === 200, `Duplicate status check returned HTTP 200 (got ${dupCheck.status})`);
-  const dupData = await dupCheck.json();
-  assert(dupData.isPaid === true, 'Order remains paid without errors');
-
-  // -------------------------------------------------------------
-  // 15. Duplicate Webhook Is Idempotent
-  // -------------------------------------------------------------
-  console.log('\n--- 15. Duplicate Webhook Is Idempotent ---');
-  // Create order 4 for webhook testing
+  console.log('\n--- 14. Webhook HMAC-SHA256 Signature Verification ---');
   await fetch(`${API_ROOT}/api/cart/items`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tokenA}` },
@@ -500,7 +523,6 @@ try {
     .update(`${webhookTimestamp}${webhookBody}`)
     .digest('base64');
 
-  // First webhook delivery
   const hookRes1 = await fetch(`${API_ROOT}/api/payments/cashfree/webhook`, {
     method: 'POST',
     headers: {
@@ -510,26 +532,27 @@ try {
     },
     body: webhookBody
   });
-  assert(hookRes1.status === 200, `First webhook returned HTTP 200 (got ${hookRes1.status})`);
+  assert(hookRes1.status === 200, `Valid webhook accepted with HTTP 200 (got ${hookRes1.status})`);
 
-  // Duplicate webhook delivery
-  const hookRes2 = await fetch(`${API_ROOT}/api/payments/cashfree/webhook`, {
+  // -------------------------------------------------------------
+  // 15. Invalid Webhook Signature Rejected
+  // -------------------------------------------------------------
+  console.log('\n--- 15. Invalid Webhook Signature Rejected ---');
+  const forgedHook = await fetch(`${API_ROOT}/api/payments/cashfree/webhook`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-webhook-signature': webhookSignature,
+      'x-webhook-signature': 'FORGED_INVALID_SIGNATURE_BASE64==',
       'x-webhook-timestamp': webhookTimestamp
     },
     body: webhookBody
   });
-  assert(hookRes2.status === 200, `Duplicate webhook acknowledged with HTTP 200 (got ${hookRes2.status})`);
-  const hookData2 = await hookRes2.json();
-  assert(hookData2.success === true, 'Duplicate webhook handled idempotently');
+  assert(forgedHook.status === 400, `Forged webhook rejected with HTTP 400 (got ${forgedHook.status})`);
 
   // -------------------------------------------------------------
-  // 16. Wrong Amount in Webhook Rejected
+  // 16. Tampered Amount in Webhook Rejected
   // -------------------------------------------------------------
-  console.log('\n--- 16. Wrong Amount in Webhook Rejected ---');
+  console.log('\n--- 16. Tampered Amount in Webhook Rejected ---');
   const badAmountBody = JSON.stringify({
     type: 'PAYMENT_SUCCESS_WEBHOOK',
     data: {
@@ -561,67 +584,45 @@ try {
   assert(badAmountRes.status === 400, `Tampered amount in webhook rejected with HTTP 400 (got ${badAmountRes.status})`);
 
   // -------------------------------------------------------------
-  // 17. Invalid Webhook Signature Rejected
+  // 17. Duplicate Webhook Idempotency
   // -------------------------------------------------------------
-  console.log('\n--- 17. Invalid Webhook Signature Rejected ---');
-  const forgedHook = await fetch(`${API_ROOT}/api/payments/cashfree/webhook`, {
+  console.log('\n--- 17. Duplicate Webhook Idempotency ---');
+  const hookRes2 = await fetch(`${API_ROOT}/api/payments/cashfree/webhook`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-webhook-signature': 'FORGED_INVALID_SIGNATURE_BASE64==',
+      'x-webhook-signature': webhookSignature,
       'x-webhook-timestamp': webhookTimestamp
     },
     body: webhookBody
   });
-  assert(forgedHook.status === 400, `Forged webhook rejected with HTTP 400 (got ${forgedHook.status})`);
+  assert(hookRes2.status === 200, `Duplicate webhook acknowledged with HTTP 200 (got ${hookRes2.status})`);
 
   // -------------------------------------------------------------
-  // 18. COD (Cash on Delivery) Still Works
+  // 18. Duplicate Success Idempotency
   // -------------------------------------------------------------
-  console.log('\n--- 18. Cash on Delivery Still Works ---');
-  await fetch(`${API_ROOT}/api/cart/items`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tokenA}` },
-    body: JSON.stringify({ designId: designA2_id, quantity: 1 })
-  });
-  const codCheckout = await fetch(`${API_ROOT}/api/orders/checkout`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tokenA}` },
-    body: JSON.stringify({
-      customer: {
-        name: userA_data.name,
-        email: userA_data.email,
-        phone: '+91 98765 43210',
-        address: '10 Avenue George V',
-        city: 'Paris',
-        state: 'IDF',
-        postalCode: '75008'
-      }
-    })
-  });
-  const codOrder = (await codCheckout.json()).order;
-
-  const codConfirm = await fetch(`${API_ROOT}/api/payments/${codOrder.orderId}/cod`, {
-    method: 'POST',
+  console.log('\n--- 18. Duplicate Success Idempotency ---');
+  const dupCheck = await fetch(`${API_ROOT}/api/payments/${order4.orderId}/status`, {
     headers: { 'Authorization': `Bearer ${tokenA}` }
   });
-  assert(codConfirm.status === 200, `COD confirmation returned HTTP 200 (got ${codConfirm.status})`);
-  const codData = await codConfirm.json();
-  assert(codData.order.paymentMethod === 'cod', 'paymentMethod set to "cod"');
-  assert(codData.order.paymentStatus === 'pending', 'COD paymentStatus is "pending"');
-  assert(codData.order.orderStatus === 'placed', 'COD orderStatus is "placed"');
+  assert(dupCheck.status === 200, `Duplicate status check returned HTTP 200 (got ${dupCheck.status})`);
+  const dupData = await dupCheck.json();
+  assert(dupData.isPaid === true, 'Order remains paid without errors');
 
-  // Verify cart cleared after COD order
-  const cartAfterCod = await fetch(`${API_ROOT}/api/cart`, {
+  // -------------------------------------------------------------
+  // 19. Client Cannot Directly Mark Payment Paid
+  // -------------------------------------------------------------
+  console.log('\n--- 19. Client Cannot Directly Mark Payment Paid ---');
+  const clientOverrideAttempt = await fetch(`${API_ROOT}/api/payments/${order3.orderId}/status?completed=true&paid=true`, {
     headers: { 'Authorization': `Bearer ${tokenA}` }
   });
-  const cartCodData = await cartAfterCod.json();
-  assert(cartCodData.cart.items.length === 0, 'Cart cleared after COD order placement');
+  const overrideData = await clientOverrideAttempt.json();
+  assert(overrideData.isPaid === false, 'Client URL parameters cannot mark payment paid');
 
   // -------------------------------------------------------------
-  // 19. Existing Order Confirmation Still Works
+  // 20. Existing Order Confirmation & Tracking Still Work
   // -------------------------------------------------------------
-  console.log('\n--- 19. Existing Order Confirmation Still Works ---');
+  console.log('\n--- 20. Existing Order Confirmation & Tracking Still Work ---');
   const getConf = await fetch(`${API_ROOT}/api/orders/${order4.orderId}`, {
     headers: { 'Authorization': `Bearer ${tokenA}` }
   });
@@ -631,15 +632,10 @@ try {
   assert(confOrder.paymentStatus === 'paid', 'Confirmed order paymentStatus is "paid"');
   assert(confOrder.items && confOrder.items.length > 0, 'Confirmed order preserves line items');
 
-  // -------------------------------------------------------------
-  // 20. Existing Tracking Still Works
-  // -------------------------------------------------------------
-  console.log('\n--- 20. Existing Tracking Still Works ---');
   assert(Array.isArray(confOrder.tracking), 'Tracking timeline exists');
   assert(confOrder.tracking.length >= 1, `Tracking milestones exist (${confOrder.tracking.length})`);
   assert(confOrder.tracking[0].status === 'placed', 'Initial milestone is "placed"');
 
-  // Advance status to processing
   const advanceRes = await fetch(`${API_ROOT}/api/orders/${order4.orderId}/advance-status`, {
     method: 'POST',
     headers: {

@@ -3,40 +3,103 @@
  * backend/services/cashfreeService.js
  *
  * Implements server-side Cashfree Payment Gateway integration:
+ * - Environment validation (Sandbox vs Production matching)
  * - Order creation with server-authoritative amounts
- * - Dynamic UPI QR code generation
+ * - Dynamic UPI QR code generation via Cashfree Sessions API
  * - Mobile UPI Intent generation
- * - Order payment status checks
+ * - Order payment status checks from Cashfree API
  * - Webhook HMAC-SHA256 signature verification and idempotency
- * - Seamless service-boundary test/sandbox mocking when live credentials are not set
+ * - Safe fallback when credentials are not configured (no fake sessions)
  */
 
 const crypto = require('crypto');
 
 // Cashfree Environment Configuration
-const CASHFREE_APP_ID = process.env.CASHFREE_APP_ID || '';
-const CASHFREE_SECRET_KEY = process.env.CASHFREE_SECRET_KEY || '';
-const CASHFREE_ENV = (process.env.CASHFREE_ENV || 'sandbox').toLowerCase();
-const CASHFREE_API_VERSION = process.env.CASHFREE_API_VERSION || '2023-08-01';
+const CASHFREE_APP_ID = (process.env.CASHFREE_APP_ID || '').trim();
+const CASHFREE_SECRET_KEY = (process.env.CASHFREE_SECRET_KEY || '').trim();
+const CASHFREE_WEBHOOK_SECRET = (process.env.CASHFREE_WEBHOOK_SECRET || process.env.CASHFREE_SECRET_KEY || '').trim();
+const CASHFREE_ENV = (process.env.CASHFREE_ENV || 'sandbox').toLowerCase().trim();
+const CASHFREE_API_VERSION = (process.env.CASHFREE_API_VERSION || '2023-08-01').trim();
 
 const CASHFREE_BASE_URL = CASHFREE_ENV === 'production'
   ? 'https://api.cashfree.com/pg'
   : 'https://sandbox.cashfree.com/pg';
 
+// Test-only mock store (only active when explicitly enabled during automated tests)
+let isTestMockingEnabled = false;
+const mockOrderStore = new Map();
+
 /**
- * Returns true if real Cashfree credentials are configured
+ * Validates Cashfree configuration and prevents environment-credential mismatch
+ * @returns {{ valid: boolean, configured: boolean, environment: string, baseUrl: string, message: string, error?: string }}
  */
-function isConfigured() {
-  return Boolean(
-    CASHFREE_APP_ID &&
-    CASHFREE_SECRET_KEY &&
-    !CASHFREE_APP_ID.includes('YOUR_') &&
-    !CASHFREE_SECRET_KEY.includes('YOUR_')
-  );
+function validateCashfreeConfig() {
+  const env = CASHFREE_ENV;
+  const appId = CASHFREE_APP_ID;
+  const secretKey = CASHFREE_SECRET_KEY;
+
+  if (!appId && !secretKey) {
+    return {
+      valid: true,
+      configured: false,
+      environment: env,
+      baseUrl: CASHFREE_BASE_URL,
+      message: 'Cashfree credentials not configured. System is running in Cash on Delivery mode.'
+    };
+  }
+
+  if ((appId && !secretKey) || (!appId && secretKey)) {
+    return {
+      valid: false,
+      configured: false,
+      environment: env,
+      baseUrl: CASHFREE_BASE_URL,
+      error: 'INCOMPLETE_CREDENTIALS',
+      message: 'Both CASHFREE_APP_ID and CASHFREE_SECRET_KEY must be provided.'
+    };
+  }
+
+  if (env !== 'sandbox' && env !== 'production') {
+    return {
+      valid: false,
+      configured: false,
+      environment: env,
+      baseUrl: CASHFREE_BASE_URL,
+      error: 'INVALID_ENVIRONMENT',
+      message: `Invalid CASHFREE_ENV "${env}". Allowed values are "sandbox" or "production".`
+    };
+  }
+
+  // Cross-environment detection: warn or reject if test/sandbox credentials are used in production
+  const isTestKey = appId.toUpperCase().includes('TEST') || appId.toUpperCase().includes('SANDBOX');
+  if (env === 'production' && isTestKey) {
+    return {
+      valid: false,
+      configured: false,
+      environment: env,
+      baseUrl: CASHFREE_BASE_URL,
+      error: 'ENVIRONMENT_CREDENTIAL_MISMATCH',
+      message: 'Cannot use Sandbox credentials in Cashfree Production environment (CASHFREE_ENV=production).'
+    };
+  }
+
+  return {
+    valid: true,
+    configured: true,
+    environment: env,
+    baseUrl: CASHFREE_BASE_URL,
+    message: `Cashfree configured successfully for ${env.toUpperCase()} environment.`
+  };
 }
 
-// In-memory mock store for sandbox testing when credentials are not yet provisioned
-const mockOrderStore = new Map();
+/**
+ * Returns true if real, valid Cashfree credentials are configured
+ */
+function isConfigured() {
+  if (isTestMockingEnabled) return true;
+  const config = validateCashfreeConfig();
+  return Boolean(config.valid && config.configured);
+}
 
 /**
  * Generates standard headers for Cashfree PG API requests
@@ -98,8 +161,8 @@ async function createCashfreeOrder({ orderId, orderAmount, customer, returnUrl, 
     order_note: `FashionForge Order ${orderId}`
   };
 
-  // If live credentials are not configured, simulate Cashfree PG order at service boundary
-  if (!isConfigured()) {
+  // If in automated test mock mode
+  if (isTestMockingEnabled) {
     const cfOrderId = `cf_ord_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     const sessionId = `session_${Date.now()}_${crypto.randomBytes(8).toString('hex')}`;
     const mockOrder = {
@@ -117,6 +180,10 @@ async function createCashfreeOrder({ orderId, orderAmount, customer, returnUrl, 
       payments: []
     });
     return mockOrder;
+  }
+
+  if (!isConfigured()) {
+    throw new Error('Cashfree payment gateway credentials are not configured.');
   }
 
   const url = `${CASHFREE_BASE_URL}/orders`;
@@ -150,10 +217,9 @@ async function createCashfreeOrder({ orderId, orderAmount, customer, returnUrl, 
 async function createDynamicUpiQr({ paymentSessionId, orderId, amount }) {
   const numericAmount = Number(amount || 0).toFixed(2);
 
-  // If real Cashfree credentials are not provisioned, generate dynamic transaction UPI URI & QR data
-  if (!isConfigured()) {
+  // If in automated test mock mode
+  if (isTestMockingEnabled) {
     const cfPaymentId = `cf_pay_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
-    // NPCI standard dynamic UPI QR URI format tied specifically to this order and exact amount
     const upiUri = `upi://pay?pa=fashionforge.cashfree@okhdfcbank&pn=FashionForge&tr=${encodeURIComponent(orderId)}&am=${numericAmount}&cu=INR&tn=FashionForge%20Order%20${encodeURIComponent(orderId)}`;
 
     const mockRecord = mockOrderStore.get(orderId);
@@ -181,6 +247,10 @@ async function createDynamicUpiQr({ paymentSessionId, orderId, amount }) {
       order_id: orderId,
       amount: Number(numericAmount)
     };
+  }
+
+  if (!isConfigured() || !paymentSessionId) {
+    throw new Error('Cashfree payment gateway is not configured or payment session is missing.');
   }
 
   const url = `${CASHFREE_BASE_URL}/orders/sessions`;
@@ -225,7 +295,7 @@ async function createDynamicUpiQr({ paymentSessionId, orderId, amount }) {
 async function createUpiIntent({ paymentSessionId, orderId, amount }) {
   const numericAmount = Number(amount || 0).toFixed(2);
 
-  if (!isConfigured()) {
+  if (isTestMockingEnabled) {
     const cfPaymentId = `cf_intent_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
     const intentUri = `upi://pay?pa=fashionforge.cashfree@okhdfcbank&pn=FashionForge&tr=${encodeURIComponent(orderId)}&am=${numericAmount}&cu=INR&tn=FashionForge%20Order%20${encodeURIComponent(orderId)}`;
     return {
@@ -242,6 +312,10 @@ async function createUpiIntent({ paymentSessionId, orderId, amount }) {
       },
       payment_status: 'PENDING'
     };
+  }
+
+  if (!isConfigured() || !paymentSessionId) {
+    return { data: { payload: {} } };
   }
 
   const url = `${CASHFREE_BASE_URL}/orders/sessions`;
@@ -272,12 +346,16 @@ async function createUpiIntent({ paymentSessionId, orderId, amount }) {
  * @returns {Promise<Object>}
  */
 async function getCashfreeOrder(orderId) {
-  if (!isConfigured()) {
+  if (isTestMockingEnabled) {
     const mock = mockOrderStore.get(orderId);
     if (!mock) {
       return { order_id: orderId, order_status: 'ACTIVE' };
     }
     return mock;
+  }
+
+  if (!isConfigured()) {
+    return { order_id: orderId, order_status: 'UNCONFIGURED' };
   }
 
   const url = `${CASHFREE_BASE_URL}/orders/${encodeURIComponent(orderId)}`;
@@ -303,9 +381,13 @@ async function getCashfreeOrder(orderId) {
  * @returns {Promise<Array>} List of payment attempts
  */
 async function getCashfreeOrderPayments(orderId) {
-  if (!isConfigured()) {
+  if (isTestMockingEnabled) {
     const mock = mockOrderStore.get(orderId);
     return mock ? (mock.payments || []) : [];
+  }
+
+  if (!isConfigured()) {
+    return [];
   }
 
   const url = `${CASHFREE_BASE_URL}/orders/${encodeURIComponent(orderId)}/payments`;
@@ -386,7 +468,7 @@ async function getCashfreePaymentStatus(orderId) {
  *
  * Verification rule according to Cashfree PG documentation:
  * signedPayload = x-webhook-timestamp + rawBody
- * signature = base64(hmac_sha256(signedPayload, CASHFREE_SECRET_KEY))
+ * signature = base64(hmac_sha256(signedPayload, CASHFREE_WEBHOOK_SECRET || CASHFREE_SECRET_KEY))
  *
  * @param {Object} params
  * @param {string} params.signature - Header 'x-webhook-signature'
@@ -400,7 +482,11 @@ function verifyWebhookSignature({ signature, timestamp, rawBody, secretKey }) {
     return false;
   }
 
-  const keyToUse = secretKey || CASHFREE_SECRET_KEY || 'test_fallback_secret_for_local_testing';
+  const keyToUse = secretKey || CASHFREE_WEBHOOK_SECRET || CASHFREE_SECRET_KEY || (isTestMockingEnabled ? 'test_fallback_secret_for_local_testing' : '');
+  if (!keyToUse) {
+    return false;
+  }
+
   const signedPayload = `${timestamp}${rawBody}`;
   const computedSignature = crypto
     .createHmac('sha256', keyToUse)
@@ -420,8 +506,14 @@ function verifyWebhookSignature({ signature, timestamp, rawBody, secretKey }) {
 }
 
 /**
+ * Test harness: explicitly enables mock mode for unit & E2E tests
+ */
+function __enableTestMocking(enable = true) {
+  isTestMockingEnabled = enable;
+}
+
+/**
  * Test helper: injects simulated payment status into the mock store
- * for automated testing of success/failure states at service boundary
  */
 function __mockSetPaymentResult(orderId, { status = 'SUCCESS', paymentId, paymentMethod = 'upi' } = {}) {
   const record = mockOrderStore.get(orderId) || {
@@ -446,6 +538,7 @@ function __mockSetPaymentResult(orderId, { status = 'SUCCESS', paymentId, paymen
 
 module.exports = {
   isConfigured,
+  validateCashfreeConfig,
   createCashfreeOrder,
   createDynamicUpiQr,
   createUpiIntent,
@@ -455,6 +548,7 @@ module.exports = {
   verifyWebhookSignature,
   sanitizePhoneNumber,
   mockOrderStore,
+  __enableTestMocking,
   __mockSetPaymentResult,
   CASHFREE_BASE_URL,
   CASHFREE_API_VERSION
