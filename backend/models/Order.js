@@ -144,15 +144,7 @@ const orderSchema = new mongoose.Schema(
       trim: true,
       default: 'upi'
     },
-    cashfreeOrderId: {
-      type: String,
-      trim: true
-    },
-    cashfreePaymentSessionId: {
-      type: String,
-      trim: true
-    },
-    cashfreePaymentId: {
+    OrderId: {
       type: String,
       trim: true
     },
@@ -162,7 +154,7 @@ const orderSchema = new mongoose.Schema(
     orderStatus: {
       type: String,
       enum: ['placed', 'processing', 'ready', 'shipped', 'delivered', 'completed', 'cancelled'],
-      default: 'placed',
+      default: 'plcashfreeaced',
       index: true
     },
     tracking: [
