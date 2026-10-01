@@ -60,8 +60,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   let cartData = null;
   try {
     const res = await cartService.getCart();
-    if (res.success && res.cart) {
+    if (res && res.cart) {
       cartData = res.cart;
+    } else if (res && res.items) {
+      cartData = res;
     }
   } catch (err) {
     console.error('Failed to load cart for checkout:', err);
@@ -134,10 +136,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       try {
         const orderRes = await cartService.checkout(customer);
-        if (orderRes.success && orderRes.order) {
-          window.location.href = `payment.html?orderId=${encodeURIComponent(orderRes.order.orderId)}`;
+        const order = (orderRes && orderRes.order) ? orderRes.order : orderRes;
+        if (order && order.orderId) {
+          window.location.href = `payment.html?orderId=${encodeURIComponent(order.orderId)}`;
         } else {
-          showAlert(orderRes.message || 'Checkout failed. Please try again.');
+          showAlert((orderRes && orderRes.message) || 'Checkout failed. Please try again.');
           if (submitBtn) {
             submitBtn.disabled = false;
             submitBtn.textContent = 'Continue to Payment Simulation';

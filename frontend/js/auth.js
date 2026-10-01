@@ -47,7 +47,7 @@ function getRedirectUrl() {
   const redirect = params.get('redirect');
   if (redirect) {
     // Only allow relative paths to prevent open redirects
-    if (redirect.startsWith('/') || redirect.endsWith('.html') || redirect.startsWith('design') || redirect.startsWith('my-designs')) {
+    if (!redirect.startsWith('//') && !redirect.startsWith('http://') && !redirect.startsWith('https://')) {
       return redirect;
     }
   }

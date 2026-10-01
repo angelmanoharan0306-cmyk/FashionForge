@@ -240,7 +240,7 @@ function createDesignCardElement(design) {
             <circle cx="20" cy="21" r="1"></circle>
             <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
           </svg>
-          <span>Bag</span>
+          <span>Add to Bag</span>
         </button>
 
         <button class="btn-secondary mydesigns-action-btn btn-duplicate-design" type="button" data-id="${escapeHtml(design.id)}" title="Duplicate this design">
@@ -269,7 +269,10 @@ function createDesignCardElement(design) {
         btnCart.disabled = true;
         const res = await cartService.addToCart(design.id, 1);
         if (res.success) {
-          showToast(`Added "${design.name}" to shopping bag!`);
+          showToast(`Added "${design.name}" to your bag! <a href="cart.html" style="color: var(--color-brand); font-weight: 700; text-decoration: underline; margin-left: 6px;">View Bag &rarr;</a>`);
+          if (typeof window.updateNavBagCount === 'function') {
+            window.updateNavBagCount();
+          }
         } else {
           showToast(res.message || 'Failed to add to bag', 'error');
         }

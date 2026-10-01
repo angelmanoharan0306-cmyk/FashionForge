@@ -91,7 +91,8 @@ export async function loadAndRenderCart() {
   }
 
   try {
-    const cart = await getCart();
+    const res = await getCart();
+    const cart = (res && res.cart) ? res.cart : (res || {});
     if (loadingEl) loadingEl.style.display = 'none';
 
     const items = cart.items || [];

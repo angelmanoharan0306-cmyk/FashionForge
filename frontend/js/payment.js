@@ -139,19 +139,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       try {
         const payRes = await cartService.simulatePayment(order.orderId, 'success');
-        if (payRes.success && payRes.order) {
-          updateStatusBadge('paid');
-          showToast('Payment Simulation Succeeded! Redirecting to confirmation...', 'success');
-          setTimeout(() => {
-            window.location.href = `order-confirmation.html?orderId=${encodeURIComponent(payRes.order.orderId)}`;
-          }, 1200);
-          showOutcome(true, payRes.order);
-        } else {
-          showAlert(payRes.message || 'Payment simulation failed.');
-          btnSuccess.disabled = false;
-          btnFail.disabled = false;
-          btnSuccess.textContent = 'Simulate Successful Payment';
-        }
+        const updatedOrd = payRes.order || order;
+        updateStatusBadge('paid');
+        showToast('Payment Simulation Succeeded! Redirecting to confirmation...', 'success');
+        setTimeout(() => {
+          window.location.href = `order-confirmation.html?orderId=${encodeURIComponent(updatedOrd.orderId)}`;
+        }, 1200);
+        showOutcome(true, updatedOrd);
       } catch (err) {
         showAlert(err.message || 'Network error.');
         btnSuccess.disabled = false;
@@ -170,16 +164,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       try {
         const payRes = await cartService.simulatePayment(order.orderId, 'failure');
-        if (payRes.success && payRes.order) {
-          updateStatusBadge('failed');
-          showToast('Payment Simulation Failed (Decline Recorded)', 'error');
-          showOutcome(false, payRes.order);
-        } else {
-          showAlert(payRes.message || 'Simulation error.');
-          btnSuccess.disabled = false;
-          btnFail.disabled = false;
-          btnFail.textContent = 'Simulate Failed Payment';
-        }
+        const updatedOrd = payRes.order || order;
+        updateStatusBadge('failed');
+        showToast('Payment Simulation Failed (Decline Recorded)', 'error');
+        showOutcome(false, updatedOrd);
       } catch (err) {
         showAlert(err.message || 'Network error.');
         btnSuccess.disabled = false;

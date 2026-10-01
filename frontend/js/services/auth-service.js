@@ -191,3 +191,15 @@ export async function fetchCurrentUser() {
     return getCurrentUser();
   }
 }
+
+export const authService = {
+  getToken,
+  isAuthenticated,
+  getCurrentUser,
+  setSession,
+  logout,
+  register,
+  login,
+  fetchCurrentUser
+};
+

@@ -1262,8 +1262,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const res = await cartService.addToCart(currentDesignId, 1);
       if (res.success) {
-        showToast(`Added "${designState.name}" to shopping bag! View in Bag or continue designing.`);
+        showToast(`Added "${designState.name}" to your bag! <a href="cart.html" style="color: var(--color-brand); font-weight: 700; text-decoration: underline; margin-left: 6px;">View Bag &rarr;</a>`);
         closeCartModal();
+        if (typeof window.updateNavBagCount === 'function') {
+          window.updateNavBagCount();
+        }
       } else {
         showToast(res.message || 'Failed to add to bag', 'error');
       }

@@ -1,9 +1,46 @@
 /**
  * FashionForge — Navigation Auth Widget
- * Dynamically renders user authentication badge or sign-in buttons across pages.
+ * Dynamically renders user authentication badge, Bag count, or sign-in buttons across pages.
  */
 
 import { isAuthenticated, getCurrentUser, logout } from './auth-service.js';
+
+export async function updateNavBagCount() {
+  const badge = document.querySelector('#nav-bag-count');
+  if (!badge) return;
+  if (!isAuthenticated()) {
+    badge.style.display = 'none';
+    return;
+  }
+  try {
+    const token = localStorage.getItem('fashionforge_auth_token');
+    if (!token) return;
+    const res = await fetch('/api/cart', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json'
+      }
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    const cart = data.cart || data;
+    const count = (cart && cart.totalItems !== undefined)
+      ? cart.totalItems
+      : (cart && cart.items ? cart.items.reduce((s, i) => s + (i.quantity || 1), 0) : 0);
+    if (count > 0) {
+      badge.textContent = String(count);
+      badge.style.display = 'inline-block';
+    } else {
+      badge.style.display = 'none';
+    }
+  } catch {
+    // Ignore network interruptions
+  }
+}
+
+if (typeof window !== 'undefined') {
+  window.updateNavBagCount = updateNavBagCount;
+}
 
 export function setupNavigationAuth(mountSelector) {
   let mountEl = null;
@@ -46,6 +83,29 @@ export function setupNavigationAuth(mountSelector) {
     const displayName = user.name || 'Account';
     const initials = displayName.charAt(0).toUpperCase();
 
+    // If on index.html, also add My Orders and Bag links to .home-nav-links
+    const homeNavLinks = document.querySelector('.home-nav-links');
+    if (homeNavLinks && !homeNavLinks.querySelector('a[href="orders.html"]')) {
+      const ordersLink = document.createElement('a');
+      ordersLink.className = 'home-nav-link nav-auth-link';
+      ordersLink.href = 'orders.html';
+      ordersLink.textContent = 'My Orders';
+
+      const bagLink = document.createElement('a');
+      bagLink.className = 'home-nav-link nav-auth-link';
+      bagLink.href = 'cart.html';
+      bagLink.textContent = 'Bag';
+
+      const capLink = homeNavLinks.querySelector('a[href="#capabilities"]');
+      if (capLink) {
+        homeNavLinks.insertBefore(ordersLink, capLink);
+        homeNavLinks.insertBefore(bagLink, capLink);
+      } else {
+        homeNavLinks.appendChild(ordersLink);
+        homeNavLinks.appendChild(bagLink);
+      }
+    }
+
     authWidget.innerHTML = `
       <a class="header-action-btn btn-header-orders" href="orders.html" title="My Orders & Tracking" aria-label="My Orders" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; padding: 4px 10px; font-size: var(--text-xs); color: inherit;">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -55,13 +115,14 @@ export function setupNavigationAuth(mountSelector) {
         </svg>
         <span>My Orders</span>
       </a>
-      <a class="header-action-btn btn-header-cart" href="cart.html" title="Shopping Bag" aria-label="Cart" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; padding: 4px 10px; font-size: var(--text-xs); color: inherit;">
+      <a class="header-action-btn btn-header-cart" href="cart.html" title="Shopping Bag" aria-label="Bag" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; padding: 4px 10px; font-size: var(--text-xs); color: inherit;">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="9" cy="21" r="1"></circle>
           <circle cx="20" cy="21" r="1"></circle>
           <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
         </svg>
         <span>Bag</span>
+        <span class="nav-bag-count-badge" id="nav-bag-count" style="display: none; background: var(--color-brand); color: #fff; border-radius: 999px; padding: 1px 6px; font-size: 10px; font-weight: 700; line-height: 1.2;"></span>
       </a>
       <div class="user-account-badge" id="nav-user-account" title="Signed in as ${user.email || displayName}" aria-label="Account">
         <span class="user-avatar-circle" aria-hidden="true">${initials}</span>
@@ -75,9 +136,12 @@ export function setupNavigationAuth(mountSelector) {
     if (btnLogout) {
       btnLogout.addEventListener('click', () => {
         logout();
-        window.location.reload();
+        window.location.href = 'index.html';
       });
     }
+
+    // Refresh bag count
+    updateNavBagCount();
   } else {
     // Current page path for redirect after login
     const currentPath = window.location.pathname.split('/').pop() || 'design.html';
@@ -93,4 +157,3 @@ export function setupNavigationAuth(mountSelector) {
     `;
   }
 }
-
