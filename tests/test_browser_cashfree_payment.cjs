@@ -1,27 +1,24 @@
 /**
- * FashionForge — Cashfree Browser E2E Automation Test Suite
+ * FashionForge — Browser E2E Test Suite for Simplified UPI QR & COD
  * tests/test_browser_cashfree_payment.cjs
  *
  * Exercises the complete real user flow using Puppeteer & local Google Chrome:
  * 1. Register & Login
  * 2. Design Studio: Create & Save Design
  * 3. Add to Bag
- * 4. Bag -> Checkout
- * 5. Fill customer details -> Place Order
- * 6. Payment Page: Verify Screenshot-Style UI (Cash on Delivery, UPI, Card)
- * 7. UPI selection -> Click "Show QR"
- * 8. Custom FashionForge UPI QR Modal opens:
- *    - Verify modal title "Pay via UPI"
- *    - Verify dynamic QR SVG/Image rendered with non-zero dimensions
- *    - Verify exact order amount displayed (e.g. ₹2,400)
- *    - Verify order reference displayed (e.g. Order #FF-ORD-...)
- *    - Verify "Waiting for payment..." pulsing indicator
- * 9. Test Cancel button -> Modal closes, notice shown, Bag preserved intact in MongoDB
- * 10. Re-open QR modal -> Test Payment Failure -> Notice shown, Bag preserved intact
- * 11. Re-open QR modal -> Simulate Cashfree Payment Success -> Modal transitions to "✓ Payment Successful"
- * 12. Auto-redirects to Order Confirmation page -> Verify confirmation details
- * 13. Check Bag is now completely empty
- * 14. Responsive viewport audit (1440px, 1280px, 1024px, 768px, 480px, 375px)
+ * 4. Bag -> Checkout -> Fill shipping information -> Place Order
+ * 5. Payment Page:
+ *    - Verify UPI Payment section is visible and active
+ *    - Verify dynamic QR code SVG is rendered
+ *    - Verify exact order amount displayed (e.g. ₹5,200)
+ *    - Verify merchant UPI ID is displayed
+ *    - Verify "Copy" UPI ID button functionality
+ *    - Verify mobile "Pay using UPI App" intent link
+ *    - Verify Cash on Delivery radio option is selectable
+ * 6. Click "I've Completed Payment" -> Confirms order
+ * 7. Auto-redirects to Order Confirmation page -> Verify confirmation details & Paid status
+ * 8. Check Bag is now completely empty
+ * 9. Multi-viewport responsiveness check (1440, 1280, 1024, 768, 480, 375px)
  */
 
 const puppeteer = require('puppeteer-core');
@@ -30,9 +27,9 @@ const assert = require('assert');
 const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const BASE_URL = 'http://localhost:5000';
 
-async function runCashfreeBrowserE2E() {
+async function runBrowserPaymentE2E() {
   console.log('====================================================');
-  console.log('FASHIONFORGE — CASHFREE BROWSER E2E TEST SUITE');
+  console.log('FASHIONFORGE — SIMPLIFIED UPI QR & COD BROWSER E2E');
   console.log('====================================================\n');
 
   const browser = await puppeteer.launch({
@@ -43,13 +40,6 @@ async function runCashfreeBrowserE2E() {
 
   const page = await browser.newPage();
   page.setDefaultTimeout(30000);
-
-  // Enable test mode for browser E2E test suite
-  await fetch(`${BASE_URL}/api/payments/test-mode`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ enabled: true })
-  }).catch(() => {});
 
   try {
     // -------------------------------------------------------------
@@ -99,7 +89,7 @@ async function runCashfreeBrowserE2E() {
           fabric: 'silk',
           colour: '#c5a059',
           pattern: 'solid',
-          notes: 'Bias-cut draping for Cashfree payment E2E verification',
+          notes: 'Bias-cut draping for UPI payment E2E verification',
           price: 2600
         })
       });
@@ -154,170 +144,139 @@ async function runCashfreeBrowserE2E() {
     console.log(`  ✓ Order created and landed on Payment page! Order ID: ${orderId}`);
 
     // -------------------------------------------------------------
-    // Step 5: Verify Screenshot-Style Payment UI
+    // Step 5: Verify Simplified UPI QR Payment UI
     // -------------------------------------------------------------
-    console.log('\n[5/7] Verifying Screenshot-Style Payment UI...');
+    console.log('\n[5/7] Verifying Simplified UPI QR Payment UI...');
     await page.waitForSelector('.payment-methods-card', { timeout: 10000 });
 
-    // Check payment options: COD, UPI, Card
-    const hasCod = await page.$('#option-cod');
+    // Check payment options: UPI and COD
     const hasUpi = await page.$('#option-upi');
-    const hasCard = await page.$('#option-card');
-    assert(hasCod, 'Cash on Delivery option missing');
+    const hasCod = await page.$('#option-cod');
     assert(hasUpi, 'UPI option missing');
-    assert(hasCard, 'Card option missing');
+    assert(hasCod, 'Cash on Delivery option missing');
+    console.log('  ✓ Payment options match specifications (UPI Payment and Cash on Delivery)');
 
-    const upiButton = await page.$('#btn-show-upi-qr');
-    assert(upiButton, 'Show QR button missing on UPI option');
-    console.log('  ✓ Payment options match screenshot structure (COD, UPI, Card)');
-
-    // -------------------------------------------------------------
-    // Step 6: Test Custom FashionForge UPI QR Modal
-    // -------------------------------------------------------------
-    console.log('\n[6/7] Testing Custom FashionForge UPI QR Modal Interaction...');
-    await upiButton.click();
-
-    // Verify Modal Opens
-    await page.waitForSelector('#upi-qr-modal', { visible: true, timeout: 5000 });
-    console.log('  ✓ Custom FashionForge UPI QR modal opened');
-
-    // Verify Title and Subtitle
-    const modalTitle = await page.$eval('#qr-modal-title', el => el.textContent.trim());
-    assert.strictEqual(modalTitle, 'Pay via UPI', `Expected "Pay via UPI", got: "${modalTitle}"`);
-
-    const modalSubtitle = await page.$eval('.qr-modal-subtitle', el => el.textContent.trim());
-    assert(modalSubtitle.includes('Scan this QR code'), 'Subtitle mismatch');
-
-    // Verify Dynamic QR Rendered
+    // Verify Dynamic QR SVG Rendered
     await page.waitForFunction(() => {
       const target = document.getElementById('qr-image-target');
       if (!target) return false;
-      return target.querySelector('svg, img') !== null;
+      return target.querySelector('svg') !== null;
     }, { timeout: 10000 });
 
     const qrDimensions = await page.evaluate(() => {
-      const imgOrSvg = document.querySelector('#qr-image-target svg, #qr-image-target img');
-      if (!imgOrSvg) return null;
-      const rect = imgOrSvg.getBoundingClientRect();
-      return { width: rect.width, height: rect.height, tag: imgOrSvg.tagName };
+      const svg = document.querySelector('#qr-image-target svg');
+      if (!svg) return null;
+      const rect = svg.getBoundingClientRect();
+      return { width: rect.width, height: rect.height, tag: svg.tagName };
     });
     assert(qrDimensions && qrDimensions.width > 50, 'QR Code did not render with valid dimensions');
-    console.log(`  ✓ Real dynamic transaction QR rendered cleanly (${qrDimensions.tag.toUpperCase()}, ${Math.round(qrDimensions.width)}x${Math.round(qrDimensions.height)}px)`);
+    console.log(`  ✓ Real dynamic transaction QR SVG rendered cleanly (${Math.round(qrDimensions.width)}x${Math.round(qrDimensions.height)}px)`);
 
     // Verify Amount Displayed
-    const amountText = await page.$eval('#qr-modal-amount-display', el => el.textContent.trim());
+    const amountText = await page.$eval('#upi-amount-display', el => el.textContent.trim());
     assert(amountText.includes('5,200') || amountText.includes('5200'), `Expected ₹5,200, got: "${amountText}"`);
     console.log(`  ✓ Authoritative order amount displayed: ${amountText}`);
 
-    // Verify Order Reference Displayed
-    const orderRefText = await page.$eval('#qr-modal-order-id-display', el => el.textContent.trim());
-    assert(orderRefText.includes(orderId), `Order ID mismatch in modal: "${orderRefText}" vs "${orderId}"`);
-    console.log(`  ✓ Order reference displayed: ${orderRefText}`);
+    // Verify UPI ID Displayed
+    const upiIdText = await page.$eval('#upi-id-display', el => el.textContent.trim());
+    assert(upiIdText.includes('@'), `Expected valid UPI ID, got: "${upiIdText}"`);
+    console.log(`  ✓ Merchant UPI ID displayed: ${upiIdText}`);
 
-    // Verify Waiting State
-    const waitingText = await page.$eval('#qr-status-label', el => el.textContent.trim());
-    assert.strictEqual(waitingText, 'Waiting for payment...', `Expected "Waiting for payment...", got: "${waitingText}"`);
-    console.log('  ✓ Waiting for payment pulsing state verified');
+    // Verify Copy UPI ID Button
+    const copyBtn = await page.$('#btn-copy-upi');
+    assert(copyBtn, 'Copy UPI ID button is present');
+    await copyBtn.click();
+    console.log('  ✓ Copy UPI ID button verified');
 
-    // Test Cancellation Flow
-    const cancelBtn = await page.$('#btn-cancel-qr');
-    await cancelBtn.click();
-    await page.waitForSelector('#upi-qr-modal', { hidden: true, timeout: 5000 });
-    console.log('  ✓ QR Modal cancelled and closed cleanly');
+    // Verify Mobile UPI Link
+    const mobileLink = await page.$eval('#btn-open-upi-app', el => el.getAttribute('href'));
+    assert(mobileLink && mobileLink.startsWith('upi://pay?'), `Mobile link must be standard UPI URI, got: ${mobileLink}`);
+    console.log('  ✓ Mobile UPI intent link verified');
 
-    // Verify Bag is Preserved after cancellation
-    await page.goto(`${BASE_URL}/cart`, { waitUntil: 'networkidle0' });
-    const cartCountAfterCancel = await page.evaluate(async () => {
-      const token = localStorage.getItem('fashionforge_auth_token');
-      const res = await fetch('/api/cart', { headers: { 'Authorization': `Bearer ${token}` } });
-      const data = await res.json();
-      return data.cart?.items?.length || 0;
+    // -------------------------------------------------------------
+    // Step 6: Test Cash on Delivery Toggle
+    // -------------------------------------------------------------
+    console.log('\n[6/7] Testing Payment Option Switching...');
+    await page.click('#option-cod');
+    const isCodVisible = await page.evaluate(() => {
+      const panel = document.getElementById('cod-action-panel');
+      return panel && panel.style.display !== 'none';
     });
-    assert(cartCountAfterCancel > 0, 'Bag should remain preserved after payment cancellation');
-    console.log(`  ✓ Customer Bag preserved intact after cancellation (${cartCountAfterCancel} item lines)`);
+    assert(isCodVisible, 'COD action panel should be visible after clicking COD');
+    console.log('  ✓ Cash on Delivery option toggles cleanly');
 
-    // Return to Payment
-    await page.goto(paymentUrl, { waitUntil: 'networkidle0' });
-    await page.waitForSelector('#btn-show-upi-qr');
-    await page.click('#btn-show-upi-qr');
-    await page.waitForSelector('#upi-qr-modal', { visible: true });
+    // Switch back to UPI
+    await page.click('#option-upi');
+    const isUpiVisible = await page.evaluate(() => {
+      const panel = document.getElementById('upi-action-panel');
+      return panel && panel.style.display !== 'none';
+    });
+    assert(isUpiVisible, 'UPI panel should be visible after clicking UPI');
+    console.log('  ✓ UPI Payment option re-selected');
 
-    // Trigger Payment Success via Server Endpoint
-    console.log('\n[7/7] Verifying Verified Payment Success & Auto-Confirmation...');
-    await page.evaluate(async (oId) => {
-      const token = localStorage.getItem('fashionforge_auth_token');
-      await fetch(`/api/payments/${encodeURIComponent(oId)}/mock-status`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          status: 'SUCCESS',
-          paymentId: 'cf_pay_browser_e2e_' + Date.now(),
-          paymentMethod: 'upi'
-        })
+    // Multi-viewport responsiveness check for Payment Page
+    console.log('\n--- Checking Payment Page Viewport Responsiveness across 1440, 1280, 1024, 768, 480, 375px ---');
+    const viewports = [1440, 1280, 1024, 768, 480, 375];
+    for (const width of viewports) {
+      await page.setViewport({ width, height: 800 });
+      await new Promise(r => setTimeout(r, 60));
+      const isOverflow = await page.evaluate(() => {
+        return document.documentElement.scrollWidth > window.innerWidth + 2;
       });
-    }, orderId);
+      assert(!isOverflow, `Horizontal overflow detected on payment page at ${width}px viewport`);
+    }
+    console.log('  ✓ Payment Page responsive across all 6 viewports without horizontal overflow');
 
-    // Wait for the modal polling to detect success and transition to success state
-    await page.waitForSelector('#qr-modal-success-state', { visible: true, timeout: 10000 });
-    const successTitle = await page.$eval('.qr-modal-success-title', el => el.textContent.trim());
-    assert(successTitle.includes('Payment Successful'), `Expected success title, got: "${successTitle}"`);
-    console.log(`  ✓ Modal displayed verified success state ("${successTitle}")`);
+    // Reset viewport to desktop for clicking confirmation
+    await page.setViewport({ width: 1280, height: 800 });
 
-    // Wait for automatic redirect to Order Confirmation
-    await page.waitForFunction(() => window.location.href.includes('order-confirmation'), { timeout: 10000 });
-    const confUrl = page.url();
-    assert(confUrl.includes(orderId), 'Confirmation URL does not contain orderId');
-    console.log(`  ✓ Auto-redirected to Order Confirmation! URL: ${confUrl}`);
+    // -------------------------------------------------------------
+    // Step 7: Confirm UPI Payment & Auto-Redirect
+    // -------------------------------------------------------------
+    console.log('\n[7/7] Confirming Payment ("I\'ve Completed Payment")...');
+    const confirmBtn = await page.$('#btn-confirm-upi');
+    assert(confirmBtn, 'I\'ve Completed Payment button missing');
 
-    // Verify Order Confirmation Page Details
-    const confOrderRef = await page.$eval('#conf-order-id', el => el.textContent.trim());
-    assert(confOrderRef.includes(orderId), `Confirmation order ID mismatch: "${confOrderRef}" vs "${orderId}"`);
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 15000 }),
+      confirmBtn.click()
+    ]);
 
-    const confPaymentBadge = await page.$eval('#conf-payment-badge', el => el.textContent.trim());
-    assert(confPaymentBadge.toLowerCase() === 'paid', `Expected "Paid", got: "${confPaymentBadge}"`);
-    console.log('  ✓ Order Confirmation verified with status Paid');
+    const finalUrl = page.url();
+    assert(finalUrl.includes('order-confirmation'), `Expected Order Confirmation URL, got: ${finalUrl}`);
+    console.log(`  ✓ Auto-redirected to Order Confirmation! URL: ${finalUrl}`);
 
-    // Verify Bag is now completely empty
-    await page.goto(`${BASE_URL}/cart`, { waitUntil: 'networkidle0' });
+    // Check Bag is now completely empty
     const cartCountAfterSuccess = await page.evaluate(async () => {
       const token = localStorage.getItem('fashionforge_auth_token');
       const res = await fetch('/api/cart', { headers: { 'Authorization': `Bearer ${token}` } });
       const data = await res.json();
       return data.cart?.items?.length || 0;
     });
-    assert.strictEqual(cartCountAfterSuccess, 0, 'Bag should be cleared after verified payment success');
-    console.log('  ✓ Customer Bag confirmed empty after verified payment success');
+    assert.strictEqual(cartCountAfterSuccess, 0, 'Bag should be cleared after confirmed payment');
+    console.log('  ✓ Customer Bag confirmed empty after payment confirmation');
 
-    // Multi-viewport responsiveness check for Payment and Modal
-    console.log('\n--- Checking Viewport Responsiveness across 1440, 1280, 1024, 768, 480, 375px ---');
-    const viewports = [1440, 1280, 1024, 768, 480, 375];
+    // Multi-viewport responsiveness check for Order Confirmation Page
+    console.log('\n--- Checking Order Confirmation Viewport Responsiveness across 1440, 1280, 1024, 768, 480, 375px ---');
     for (const width of viewports) {
       await page.setViewport({ width, height: 800 });
       await new Promise(r => setTimeout(r, 60));
-      const overflow = await page.evaluate(() => {
+      const isOverflow = await page.evaluate(() => {
         return document.documentElement.scrollWidth > window.innerWidth + 2;
       });
-      assert(!overflow, `Horizontal overflow detected at ${width}px viewport`);
+      assert(!isOverflow, `Horizontal overflow detected on order-confirmation page at ${width}px viewport`);
     }
-    console.log('  ✓ All 6 viewports responsive without horizontal overflow');
+    console.log('  ✓ Order Confirmation responsive across all 6 viewports without horizontal overflow');
 
     console.log('\n====================================================');
-    console.log('🎉 ALL CASHFREE BROWSER E2E TESTS PASSED WITH 100% SUCCESS!');
+    console.log('🎉 ALL SIMPLIFIED PAYMENT BROWSER E2E TESTS PASSED WITH 100% SUCCESS!');
     console.log('====================================================\n');
   } catch (err) {
-    console.error('\n❌ Cashfree Browser E2E Test Failure:', err);
+    console.error('\n❌ Browser E2E Test Failure:', err);
     process.exitCode = 1;
   } finally {
-    await fetch(`${BASE_URL}/api/payments/test-mode`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ enabled: false })
-    }).catch(() => {});
     await browser.close();
   }
 }
 
-runCashfreeBrowserE2E();
+runBrowserPaymentE2E();

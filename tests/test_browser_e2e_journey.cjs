@@ -181,19 +181,20 @@ async function runBrowserJourney() {
     console.log(`[PASS] 8. Order created: ${orderIdParam}`);
 
     // -------------------------------------------------------------------------
-    // STEP 9: Verify 3 Payment Options & Confirm Zero Simulation UI
+    // STEP 9: Verify Simplified Payment Options & Confirm Zero Simulation UI
     // -------------------------------------------------------------------------
     console.log('\n9. Verifying real Payment options and zero simulation UI...');
     await page.waitForSelector('.payment-methods-card', { timeout: 10000 });
     const hasCod = await page.$('#option-cod');
     const hasUpi = await page.$('#option-upi');
     const hasCard = await page.$('#option-card');
-    assert(hasCod && hasUpi && hasCard, 'Three payment options (COD, UPI, Card) must be present');
+    assert(hasCod && hasUpi, 'UPI and Cash on Delivery payment options must be present');
+    assert(!hasCard, 'Card payment option should be removed from simplified payment flow');
 
     const simSuccess = await page.$('#btn-simulate-success');
     const simFail = await page.$('#btn-simulate-failure');
     assert(!simSuccess && !simFail, 'Zero simulation buttons must be present in customer UI');
-    console.log('[PASS] 9. Three real payment methods verified; Zero simulation UI confirmed');
+    console.log('[PASS] 9. Simplified payment methods (UPI QR & COD) verified; Card option removed; Zero simulation UI confirmed');
 
     // -------------------------------------------------------------------------
     // STEP 10: Cash on Delivery Checkout Flow -> Redirect to Confirmation

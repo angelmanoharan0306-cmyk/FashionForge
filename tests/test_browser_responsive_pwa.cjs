@@ -268,16 +268,17 @@ async function runBrowserE2E() {
     const orderIdMatch = paymentUrl.match(/orderId=([^&]+)/);
     const orderId = orderIdMatch ? orderIdMatch[1] : null;
 
-    // Verify 3 real payment options and NO simulation buttons
+    // Verify simplified payment options and NO simulation buttons
     await page.waitForSelector('#option-cod', { timeout: 10000 });
     const hasCod = await page.$('#option-cod');
     const hasUpi = await page.$('#option-upi');
     const hasCard = await page.$('#option-card');
-    assert(hasCod && hasUpi && hasCard, 'Three payment options (COD, UPI, Card) must be present');
+    assert(hasCod && hasUpi, 'UPI and Cash on Delivery payment options must be present');
+    assert(!hasCard, 'Card payment option must be removed in simplified payment flow');
 
     const simBtn = await page.$('#btn-simulate-success');
     assert(!simBtn, 'Simulation buttons must not exist in real customer UI');
-    console.log('  ✓ Payment page verified with real payment options and zero simulation UI');
+    console.log('  ✓ Payment page verified with simplified UPI QR & COD options and zero simulation UI');
 
     // F. Test Cash on Delivery placement
     await page.click('#option-cod');

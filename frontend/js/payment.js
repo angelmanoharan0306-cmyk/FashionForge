@@ -2,11 +2,13 @@
  * FashionForge — Payment Controller
  * frontend/js/payment.js
  *
- * Implements screenshot-style payment selection:
- * - Cash on Delivery
- * - Dynamic UPI QR with custom FashionForge Modal
- * - Secure Card payment via Cashfree JS SDK
- * - Server-authoritative polling and bag clearing
+ * Implements simplified UPI QR and Cash on Delivery payment flow:
+ * - Dynamic standard UPI QR code generation via Pure JS QRCodeSVG
+ * - Merchant UPI ID display with one-click Copy button
+ * - Mobile "Pay using UPI app" direct intent link
+ * - Customer "I've Completed Payment" manual confirmation
+ * - Cash on Delivery (COD) order confirmation
+ * - Cart / Bag clearance upon confirmed order
  */
 
 import { cartService } from './services/cart-service.js';
@@ -14,8 +16,8 @@ import { authService } from './services/auth-service.js';
 import { setupNavigationAuth } from './services/auth-nav.js';
 import { QRCodeSVG } from './renderer/qrcode.js';
 
-let statusPollInterval = null;
 let currentOrder = null;
+let currentUpiDetails = null;
 
 function showToast(message, type = 'info') {
   const container = document.getElementById('toast-container');
@@ -59,13 +61,6 @@ function escapeHtml(str) {
   }[tag] || tag));
 }
 
-function stopStatusPolling() {
-  if (statusPollInterval) {
-    clearInterval(statusPollInterval);
-    statusPollInterval = null;
-  }
-}
-
 document.addEventListener('DOMContentLoaded', async () => {
   setupNavigationAuth();
 
@@ -99,33 +94,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
-  // 4. If returning from gateway or already completed, check authoritative status with backend
-  try {
-    const statusCheck = await cartService.getPaymentStatus(orderId);
-    if (statusCheck && (statusCheck.isPaid || statusCheck.status === 'PAID')) {
-      currentOrder.paymentStatus = 'paid';
-      window.location.href = `order-confirmation.html?orderId=${encodeURIComponent(orderId)}`;
-      return;
-    }
-  } catch {}
-
-  // 5. Populate Order Review UI
+  // 4. Populate Order Review UI
   populateOrderUI(currentOrder);
 
   // If order was already paid
   if (currentOrder.paymentStatus === 'paid') {
-    showOutcome(true, currentOrder);
+    window.location.href = `order-confirmation.html?orderId=${encodeURIComponent(currentOrder.orderId)}`;
     return;
   }
 
-  // 6. Initialize Payment Method Radio Group
+  // 5. Initialize Payment Method Radio Group
   setupPaymentMethodSelector();
 
-  // 7. Wire UPI QR Modal Actions
-  setupUpiQrModal();
+  // 6. Load Dynamic UPI QR details
+  await loadUpiQrDetails();
 
-  // 8. Wire Cash on Delivery & Card Actions
-  setupCodAndCardActions();
+  // 7. Wire Payment Actions
+  setupPaymentActions();
 });
 
 /**
@@ -133,7 +118,6 @@ document.addEventListener('DOMContentLoaded', async () => {
  */
 function populateOrderUI(order) {
   const orderIdEl = document.getElementById('order-id-display');
-  const badgeEl = document.getElementById('payment-status-badge');
   const itemsEl = document.getElementById('payment-order-items');
   const deliveryEl = document.getElementById('payment-delivery-summary');
   const subtotalEl = document.getElementById('payment-subtotal-display');
@@ -189,36 +173,62 @@ function updateStatusBadge(status) {
 }
 
 /**
- * Handles selecting between COD, UPI, and Card
+ * Fetches dynamic UPI details and renders sharp SVG QR code
+ */
+async function loadUpiQrDetails() {
+  const qrTarget = document.getElementById('qr-image-target');
+  const upiAmount = document.getElementById('upi-amount-display');
+  const orderRefDisplay = document.getElementById('upi-order-ref-display');
+  const upiIdDisplay = document.getElementById('upi-id-display');
+  const mobileLink = document.getElementById('btn-open-upi-app');
+
+  if (upiAmount) upiAmount.textContent = formatCurrency(currentOrder.total);
+  if (orderRefDisplay) orderRefDisplay.textContent = `Order #${currentOrder.orderId}`;
+
+  try {
+    const details = await cartService.getUpiDetails(currentOrder.orderId);
+    currentUpiDetails = details;
+
+    if (upiIdDisplay && details.upiId) {
+      upiIdDisplay.textContent = details.upiId;
+    }
+
+    if (mobileLink && details.upiUri) {
+      mobileLink.href = details.upiUri;
+    }
+
+    if (qrTarget && details.upiUri) {
+      // Render crisp, standards-compliant SVG QR code
+      const svgMarkup = QRCodeSVG.createQRCodeSVG(details.upiUri, { size: 210, margin: 1 });
+      qrTarget.innerHTML = svgMarkup;
+    }
+  } catch (err) {
+    console.error('Failed to load UPI details:', err);
+    // Fallback: build standard client-side URI if endpoint fails
+    const fallbackUpiId = 'fashionforge@upi';
+    const fallbackUri = `upi://pay?pa=${encodeURIComponent(fallbackUpiId)}&pn=FashionForge&am=${Number(currentOrder.total).toFixed(2)}&cu=INR&tn=FashionForge%20Order%20${encodeURIComponent(currentOrder.orderId)}`;
+    
+    if (upiIdDisplay) upiIdDisplay.textContent = fallbackUpiId;
+    if (mobileLink) mobileLink.href = fallbackUri;
+    if (qrTarget) {
+      const svgMarkup = QRCodeSVG.createQRCodeSVG(fallbackUri, { size: 210, margin: 1 });
+      qrTarget.innerHTML = svgMarkup;
+    }
+  }
+}
+
+/**
+ * Handles selecting between UPI and COD
  */
 function setupPaymentMethodSelector() {
   const optionCod = document.getElementById('option-cod');
   const optionUpi = document.getElementById('option-upi');
-  const optionCard = document.getElementById('option-card');
-
   const codPanel = document.getElementById('cod-action-panel');
   const upiPanel = document.getElementById('upi-action-panel');
-  const cardPanel = document.getElementById('card-action-panel');
-
-  const btnShowQr = document.getElementById('btn-show-upi-qr');
-  const btnPayUpi = document.getElementById('btn-pay-upi');
-  const btnPayCard = document.getElementById('btn-pay-card');
-
-  let isGatewayConfigured = true;
 
   function selectMethod(method) {
-    // Dismiss any rogue Cashfree modal iframes from DOM immediately
-    document.querySelectorAll('iframe[src*="cashfree"], [id*="cf-checkout"], [class*="cashfree"]').forEach(el => el.remove());
-    const upiModal = document.getElementById('upi-qr-modal');
-    if (upiModal && method !== 'upi') upiModal.style.display = 'none';
-
-    // If online payment is unconfigured, prevent selecting online options
-    if (!isGatewayConfigured && (method === 'upi' || method === 'card')) {
-      showAlert('Online payment is temporarily unavailable. Please try Cash on Delivery.');
-      method = 'cod';
-    }
-
-    [optionCod, optionUpi, optionCard].forEach(el => {
+    hideAlert();
+    [optionCod, optionUpi].forEach(el => {
       if (el) {
         el.classList.remove('is-selected');
         el.setAttribute('aria-checked', 'false');
@@ -227,16 +237,11 @@ function setupPaymentMethodSelector() {
 
     if (codPanel) codPanel.style.display = 'none';
     if (upiPanel) upiPanel.style.display = 'none';
-    if (cardPanel) cardPanel.style.display = 'none';
 
     if (method === 'cod') {
       optionCod?.classList.add('is-selected');
       optionCod?.setAttribute('aria-checked', 'true');
       if (codPanel) codPanel.style.display = 'block';
-    } else if (method === 'card') {
-      optionCard?.classList.add('is-selected');
-      optionCard?.setAttribute('aria-checked', 'true');
-      if (cardPanel) cardPanel.style.display = 'block';
     } else {
       optionUpi?.classList.add('is-selected');
       optionUpi?.setAttribute('aria-checked', 'true');
@@ -244,83 +249,12 @@ function setupPaymentMethodSelector() {
     }
   }
 
-  // Check gateway availability on startup
-  fetch('/api/payments/config')
-    .then(r => r.json())
-    .then(cfg => {
-      if (cfg && cfg.cashfreeConfigured === false) {
-        isGatewayConfigured = false;
-
-        // Visually disable UPI & Card
-        [optionUpi, optionCard].forEach(el => {
-          if (el) {
-            el.classList.add('is-disabled');
-            const info = el.querySelector('.payment-method-info');
-            if (info && !info.querySelector('.payment-method-unavailable-tag')) {
-              const tag = document.createElement('span');
-              tag.className = 'payment-method-unavailable-tag';
-              tag.textContent = 'Temporarily Unavailable';
-              info.appendChild(tag);
-            }
-          }
-        });
-
-        if (btnShowQr) {
-          btnShowQr.disabled = true;
-          btnShowQr.title = 'Online payment is temporarily unavailable';
-        }
-        if (btnPayUpi) {
-          btnPayUpi.disabled = true;
-          btnPayUpi.textContent = 'Online UPI Unavailable';
-        }
-        if (btnPayCard) {
-          btnPayCard.disabled = true;
-          btnPayCard.textContent = 'Online Card Payment Unavailable';
-        }
-
-        const upiNote = upiPanel?.querySelector('p');
-        if (upiNote) {
-          upiNote.textContent = 'Online payment is temporarily unavailable. Please place your order using Cash on Delivery.';
-          upiNote.style.color = '#b45309';
-        }
-
-        const cardNote = cardPanel?.querySelector('p');
-        if (cardNote) {
-          cardNote.textContent = 'Online payment is temporarily unavailable. Please place your order using Cash on Delivery.';
-          cardNote.style.color = '#b45309';
-        }
-
-        // Activate Cash on Delivery cleanly
-        selectMethod('cod');
-      } else {
-        isGatewayConfigured = true;
-      }
-    })
-    .catch(() => {});
-
   optionCod?.addEventListener('click', () => selectMethod('cod'));
-  optionUpi?.addEventListener('click', () => {
-    if (!isGatewayConfigured) {
-      showAlert('Online payment is temporarily unavailable. Please try Cash on Delivery.');
-      selectMethod('cod');
-      return;
-    }
-    selectMethod('upi');
-  });
-  optionCard?.addEventListener('click', () => {
-    if (!isGatewayConfigured) {
-      showAlert('Online payment is temporarily unavailable. Please try Cash on Delivery.');
-      selectMethod('cod');
-      return;
-    }
-    selectMethod('card');
-  });
+  optionUpi?.addEventListener('click', () => selectMethod('upi'));
 
-  // Keyboard accessibility: Enter and Space to select radio option
   [
     { el: optionCod, method: 'cod' },
-    { el: optionUpi, method: 'upi' },
-    { el: optionCard, method: 'card' }
+    { el: optionUpi, method: 'upi' }
   ].forEach(({ el, method }) => {
     el?.addEventListener('keydown', (e) => {
       if (e.key === ' ' || e.key === 'Enter') {
@@ -332,218 +266,66 @@ function setupPaymentMethodSelector() {
 }
 
 /**
- * Configures the custom FashionForge UPI QR Modal
+ * Sets up buttons: Copy UPI ID, I've Completed Payment, and Place Order (COD)
  */
-function setupUpiQrModal() {
-  const btnShowQr = document.getElementById('btn-show-upi-qr');
-  const btnPayUpi = document.getElementById('btn-pay-upi');
-  const modal = document.getElementById('upi-qr-modal');
-  const closeBtn = document.getElementById('btn-close-qr-modal');
-  const cancelBtn = document.getElementById('btn-cancel-qr');
-  const verifyBtn = document.getElementById('btn-check-qr-status');
-  const retryBtn = document.getElementById('btn-retry-qr');
-  const closeFailBtn = document.getElementById('btn-close-qr-fail');
+function setupPaymentActions() {
+  const btnCopy = document.getElementById('btn-copy-upi');
+  const btnConfirmUpi = document.getElementById('btn-confirm-upi');
+  const btnConfirmCod = document.getElementById('btn-confirm-cod');
 
-  const activeContent = document.getElementById('qr-modal-active-content');
-  const successState = document.getElementById('qr-modal-success-state');
-  const failedState = document.getElementById('qr-modal-failed-state');
-
-  const amountDisplay = document.getElementById('qr-modal-amount-display');
-  const orderRefDisplay = document.getElementById('qr-modal-order-id-display');
-  const qrTarget = document.getElementById('qr-image-target');
-  const statusLabel = document.getElementById('qr-status-label');
-
-  // Open QR Modal
-  async function openUpiQrModal() {
-    if (!currentOrder) return;
-    hideAlert();
-    stopStatusPolling();
-
-    // Reset view states
-    if (activeContent) activeContent.style.display = 'flex';
-    if (successState) successState.style.display = 'none';
-    if (failedState) failedState.style.display = 'none';
-
-    if (amountDisplay) amountDisplay.textContent = formatCurrency(currentOrder.total);
-    if (orderRefDisplay) orderRefDisplay.textContent = `Order #${currentOrder.orderId}`;
-    if (statusLabel) statusLabel.textContent = 'Waiting for payment...';
-    if (qrTarget) {
-      qrTarget.innerHTML = `<span style="font-size: 13px; color: var(--color-text-muted);">Generating Dynamic QR...</span>`;
-    }
-
-    if (modal) modal.style.display = 'flex';
-
+  // Copy UPI ID button
+  btnCopy?.addEventListener('click', async () => {
+    const upiId = document.getElementById('upi-id-display')?.textContent?.trim() || 'fashionforge@upi';
     try {
-      // Call backend to generate transaction-specific dynamic QR code
-      const qrRes = await cartService.generateDynamicUpiQr(currentOrder.orderId);
-
-      if (qrRes.alreadyPaid) {
-        handlePaymentSuccess();
-        return;
-      }
-
-      if (qrRes.isConfigured === false) {
-        if (modal) modal.style.display = 'none';
-        showAlert('Online payment is temporarily unavailable. Please try Cash on Delivery.');
-        return;
-      }
-
-      // Render the real dynamic QR code
-      renderQrCode(qrRes.qrCode || qrRes.upiString);
-
-      // Setup mobile intent link if on mobile
-      const isMobile = window.innerWidth <= 768;
-      const intentWrap = document.getElementById('qr-mobile-intent-wrap');
-      const intentLink = document.getElementById('qr-mobile-intent-link');
-      if (isMobile && qrRes.intentUrl && intentWrap && intentLink) {
-        intentLink.href = qrRes.intentUrl;
-        intentWrap.style.display = 'block';
-      }
-
-      // Start secure server-authoritative polling every 2.5 seconds
-      startStatusPolling();
-    } catch (err) {
-      console.error('Failed to generate UPI QR:', err);
-      if (modal) modal.style.display = 'none';
-      showAlert('Online payment is temporarily unavailable. Please try Cash on Delivery.');
-    }
-  }
-
-  function renderQrCode(qrData) {
-    if (!qrTarget || !qrData) return;
-
-    if (typeof qrData === 'string' && (qrData.startsWith('data:image/') || qrData.startsWith('http'))) {
-      qrTarget.innerHTML = `<img src="${qrData}" alt="UPI Dynamic Payment QR Code" style="max-width: 200px; max-height: 200px; border-radius: 8px;" />`;
-    } else {
-      // Generate sharp SVG QR Code from UPI payment URI
-      const svgMarkup = QRCodeSVG.createQRCodeSVG(qrData, { size: 200, margin: 1 });
-      qrTarget.innerHTML = svgMarkup;
-    }
-  }
-
-  function startStatusPolling() {
-    stopStatusPolling();
-    statusPollInterval = setInterval(async () => {
-      try {
-        const res = await cartService.getPaymentStatus(currentOrder.orderId);
-        if (res.isPaid || res.status === 'PAID') {
-          stopStatusPolling();
-          handlePaymentSuccess();
-        } else if (res.isFailed || res.status === 'FAILED') {
-          stopStatusPolling();
-          handlePaymentFailed();
-        }
-      } catch (pollErr) {
-        console.warn('Status polling check notice:', pollErr.message);
-      }
-    }, 2500);
-  }
-
-  function handlePaymentSuccess() {
-    stopStatusPolling();
-    updateStatusBadge('paid');
-    if (activeContent) activeContent.style.display = 'none';
-    if (successState) {
-      successState.style.display = 'flex';
-      const successAmt = document.getElementById('qr-success-amount');
-      if (successAmt) successAmt.textContent = `Amount: ${formatCurrency(currentOrder.total)}`;
-    }
-    showToast('Payment Successful! Redirecting to confirmation...', 'success');
-    setTimeout(() => {
-      window.location.href = `order-confirmation.html?orderId=${encodeURIComponent(currentOrder.orderId)}`;
-    }, 1500);
-  }
-
-  function handlePaymentFailed() {
-    stopStatusPolling();
-    updateStatusBadge('failed');
-    if (activeContent) activeContent.style.display = 'none';
-    if (failedState) failedState.style.display = 'flex';
-  }
-
-  function closeAndCancelModal() {
-    stopStatusPolling();
-    if (modal) modal.style.display = 'none';
-    // Notify server of cancellation; preserves bag intact
-    cartService.cancelPayment(currentOrder.orderId).catch(() => {});
-    showAlert('Payment cancelled. Your Bag is still available.');
-
-    // Provide immediate actions: Pay with Cash on Delivery or Try Again
-    const alertEl = document.getElementById('payment-alert');
-    if (alertEl) {
-      const existingBtns = alertEl.querySelector('.payment-cancel-actions-wrap');
-      if (existingBtns) existingBtns.remove();
-
-      const btnWrap = document.createElement('div');
-      btnWrap.className = 'payment-cancel-actions-wrap';
-      btnWrap.innerHTML = `
-        <button type="button" class="payment-cancel-btn payment-cancel-btn-primary" id="btn-cancel-cod">Pay with Cash on Delivery</button>
-        <button type="button" class="payment-cancel-btn" id="btn-cancel-retry">Try Again</button>
-      `;
-      alertEl.appendChild(btnWrap);
-
-      document.getElementById('btn-cancel-cod')?.addEventListener('click', () => {
-        document.getElementById('option-cod')?.click();
-        document.getElementById('btn-confirm-cod')?.focus();
-      });
-      document.getElementById('btn-cancel-retry')?.addEventListener('click', () => {
-        openUpiQrModal();
-      });
-    }
-  }
-
-  btnShowQr?.addEventListener('click', openUpiQrModal);
-  btnPayUpi?.addEventListener('click', openUpiQrModal);
-  closeBtn?.addEventListener('click', closeAndCancelModal);
-  cancelBtn?.addEventListener('click', closeAndCancelModal);
-  closeFailBtn?.addEventListener('click', () => {
-    if (modal) modal.style.display = 'none';
-  });
-
-  retryBtn?.addEventListener('click', openUpiQrModal);
-
-  // "I've completed payment" manual trigger
-  verifyBtn?.addEventListener('click', async () => {
-    verifyBtn.disabled = true;
-    verifyBtn.textContent = 'Verifying with bank...';
-    try {
-      const res = await cartService.getPaymentStatus(currentOrder.orderId);
-      if (res.isPaid || res.status === 'PAID') {
-        handlePaymentSuccess();
-      } else if (res.isFailed || res.status === 'FAILED') {
-        handlePaymentFailed();
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(upiId);
       } else {
-        showToast('Payment is being confirmed. Please wait...', 'info');
-        verifyBtn.disabled = false;
-        verifyBtn.textContent = "I've completed payment";
+        const tempInput = document.createElement('input');
+        tempInput.value = upiId;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
       }
+      const label = btnCopy.querySelector('span');
+      if (label) {
+        const orig = label.textContent;
+        label.textContent = '✓ Copied!';
+        setTimeout(() => { label.textContent = orig; }, 2000);
+      }
+      showToast('UPI ID copied to clipboard!', 'success');
     } catch {
-      verifyBtn.disabled = false;
-      verifyBtn.textContent = "I've completed payment";
+      showToast(`UPI ID: ${upiId}`, 'info');
     }
   });
 
-  // Close when clicking modal backdrop
-  modal?.addEventListener('click', (e) => {
-    if (e.target === modal) {
-      closeAndCancelModal();
-    }
-  });
-}
-
-/**
- * Sets up Cash on Delivery and Card checkout actions
- */
-function setupCodAndCardActions() {
-  const btnCod = document.getElementById('btn-confirm-cod');
-  const btnCard = document.getElementById('btn-pay-card');
-
-  // Cash on Delivery
-  btnCod?.addEventListener('click', async () => {
+  // "I've Completed Payment" button
+  btnConfirmUpi?.addEventListener('click', async () => {
     if (!currentOrder) return;
-    document.querySelectorAll('iframe[src*="cashfree"], [id*="cf-checkout"], [class*="cashfree"]').forEach(el => el.remove());
-    btnCod.disabled = true;
-    btnCod.textContent = 'Placing Order...';
+    btnConfirmUpi.disabled = true;
+    const btnSpan = btnConfirmUpi.querySelector('span');
+    if (btnSpan) btnSpan.textContent = 'Confirming Order...';
+
+    try {
+      const res = await cartService.confirmUpi(currentOrder.orderId);
+      updateStatusBadge('paid');
+      showToast('Payment submitted! Redirecting to confirmation...', 'success');
+      setTimeout(() => {
+        window.location.href = `order-confirmation.html?orderId=${encodeURIComponent(currentOrder.orderId)}`;
+      }, 800);
+    } catch (err) {
+      showAlert(err.message || 'Failed to confirm UPI payment.');
+      btnConfirmUpi.disabled = false;
+      if (btnSpan) btnSpan.textContent = "I've Completed Payment";
+    }
+  });
+
+  // Cash on Delivery "Place Order" button
+  btnConfirmCod?.addEventListener('click', async () => {
+    if (!currentOrder) return;
+    btnConfirmCod.disabled = true;
+    const btnSpan = btnConfirmCod.querySelector('span');
+    if (btnSpan) btnSpan.textContent = 'Placing Order...';
 
     try {
       const res = await cartService.confirmCod(currentOrder.orderId);
@@ -553,127 +335,8 @@ function setupCodAndCardActions() {
       }, 800);
     } catch (err) {
       showAlert(err.message || 'Failed to place order with Cash on Delivery.');
-      btnCod.disabled = false;
-      btnCod.textContent = 'Place Order';
+      btnConfirmCod.disabled = false;
+      if (btnSpan) btnSpan.textContent = 'Place Order';
     }
   });
-
-  // Card Checkout via Cashfree JS SDK
-  btnCard?.addEventListener('click', async () => {
-    if (!currentOrder) return;
-    document.querySelectorAll('iframe[src*="cashfree"], [id*="cf-checkout"], [class*="cashfree"]').forEach(el => el.remove());
-    btnCard.disabled = true;
-    btnCard.textContent = 'Processing...';
-
-    const cardStatusMsg = document.getElementById('card-status-msg');
-    if (cardStatusMsg) cardStatusMsg.style.display = 'none';
-
-    try {
-      const cardRes = await cartService.getCardSession(currentOrder.orderId);
-
-      if (cardRes && cardRes.isConfigured === false) {
-        if (cardStatusMsg) {
-          cardStatusMsg.textContent = 'Online card payment is currently unavailable. Please try Cash on Delivery.';
-          cardStatusMsg.style.display = 'block';
-          cardStatusMsg.style.color = '#dc2626';
-        }
-        showAlert('Online card payment is currently unavailable. Please try Cash on Delivery.');
-        btnCard.disabled = true;
-        btnCard.textContent = 'Online Card Payment Unavailable';
-        btnCard.style.opacity = '0.6';
-        btnCard.style.cursor = 'not-allowed';
-        return;
-      }
-
-      if (typeof window.Cashfree !== 'undefined' && cardRes && cardRes.paymentSessionId && cardRes.isConfigured !== false) {
-        const cashfree = window.Cashfree({ mode: cardRes.cashfreeEnv || 'sandbox' });
-        cashfree.checkout({
-          paymentSessionId: cardRes.paymentSessionId,
-          redirectTarget: '_modal'
-        }).then(async (result) => {
-          btnCard.disabled = false;
-          btnCard.textContent = 'Pay with Card';
-
-          // Check server status after modal interaction
-          const statusRes = await cartService.getPaymentStatus(currentOrder.orderId);
-          if (statusRes.isPaid) {
-            window.location.href = `order-confirmation.html?orderId=${encodeURIComponent(currentOrder.orderId)}`;
-          }
-        });
-      } else {
-        if (cardStatusMsg) {
-          cardStatusMsg.textContent = 'Online card payment is currently unavailable. Please try Cash on Delivery.';
-          cardStatusMsg.style.display = 'block';
-          cardStatusMsg.style.color = '#dc2626';
-        }
-        showAlert('Online card payment is currently unavailable. Please try Cash on Delivery.');
-        btnCard.disabled = true;
-        btnCard.textContent = 'Online Card Payment Unavailable';
-        btnCard.style.opacity = '0.6';
-        btnCard.style.cursor = 'not-allowed';
-      }
-    } catch (err) {
-      if (cardStatusMsg) {
-        cardStatusMsg.textContent = 'Online card payment is currently unavailable. Please try Cash on Delivery.';
-        cardStatusMsg.style.display = 'block';
-        cardStatusMsg.style.color = '#dc2626';
-      }
-      showAlert('Online card payment is currently unavailable. Please try Cash on Delivery.');
-      btnCard.disabled = true;
-      btnCard.textContent = 'Online Card Payment Unavailable';
-      btnCard.style.opacity = '0.6';
-      btnCard.style.cursor = 'not-allowed';
-    }
-  });
-}
-
-/**
- * Outcome panel renderer for complete payment states
- */
-function showOutcome(isSuccess, updatedOrder) {
-  const outcomePanel = document.getElementById('payment-outcome-panel');
-  if (outcomePanel) {
-    outcomePanel.style.display = 'block';
-    const icon = document.getElementById('outcome-icon');
-    const title = document.getElementById('outcome-title');
-    const desc = document.getElementById('outcome-desc');
-    const navButtons = document.getElementById('outcome-nav-buttons');
-
-    if (isSuccess) {
-      if (icon) icon.innerHTML = `<span style="font-size: 40px;">✨</span>`;
-      if (title) {
-        title.textContent = 'Order Confirmed';
-        title.style.color = 'var(--color-brand)';
-      }
-      if (desc) {
-        desc.innerHTML = `Order <strong>${escapeHtml(updatedOrder.orderId)}</strong> has been placed. Your shopping bag has been cleared.`;
-      }
-      if (navButtons) {
-        navButtons.innerHTML = `
-          <a class="btn-primary" href="order-confirmation.html?orderId=${encodeURIComponent(updatedOrder.orderId)}" style="padding: 10px 18px; text-align: center;">
-            <span>View Order Confirmation</span>
-          </a>
-          <a class="btn-secondary" href="orders.html" style="padding: 10px 18px; text-align: center;">
-            <span>My Orders</span>
-          </a>
-        `;
-      }
-    } else {
-      if (icon) icon.innerHTML = `<span style="font-size: 40px;">⚠️</span>`;
-      if (title) {
-        title.textContent = 'Payment Failed';
-        title.style.color = '#ef4444';
-      }
-      if (desc) {
-        desc.innerHTML = `Order <strong>${escapeHtml(updatedOrder.orderId)}</strong> payment could not be completed. Your shopping bag remains intact.`;
-      }
-      if (navButtons) {
-        navButtons.innerHTML = `
-          <a class="btn-secondary" href="cart.html" style="padding: 10px 18px; text-align: center;">
-            <span>Return to Shopping Bag</span>
-          </a>
-        `;
-      }
-    }
-  }
 }

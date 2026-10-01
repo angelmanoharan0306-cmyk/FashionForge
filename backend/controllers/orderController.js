@@ -6,7 +6,6 @@
 
 const Order = require('../models/Order');
 const Cart = require('../models/Cart');
-const cashfreeService = require('../services/cashfreeService');
 
 const ORDER_LIFECYCLE = ['placed', 'processing', 'ready', 'shipped', 'delivered'];
 
@@ -128,26 +127,6 @@ async function checkout(req, res, next) {
         }
       ]
     });
-
-    // Create Cashfree Payment Order
-    try {
-      const cfOrder = await cashfreeService.createCashfreeOrder({
-        orderId: newOrder.orderId,
-        orderAmount: calculatedTotal,
-        customer: {
-          userId,
-          name: resolvedName,
-          email: customer.email.trim().toLowerCase(),
-          phone: customer.phone.trim()
-        }
-      });
-      if (cfOrder) {
-        newOrder.cashfreeOrderId = cfOrder.cf_order_id || cfOrder.order_id;
-        newOrder.cashfreePaymentSessionId = cfOrder.payment_session_id;
-      }
-    } catch (cfErr) {
-      console.warn('[Order Controller] Cashfree order initialization warning:', cfErr.message);
-    }
 
     const savedOrder = await newOrder.save();
 

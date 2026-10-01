@@ -275,7 +275,26 @@ export function getPaymentApiBaseUrl() {
 }
 
 /**
- * Generates transaction-specific Dynamic UPI QR code from Cashfree
+ * Retrieves transaction-specific Dynamic UPI QR details
+ */
+export async function getUpiDetails(orderId) {
+  const baseUrl = getPaymentApiBaseUrl();
+  const res = await fetch(`${baseUrl}/${encodeURIComponent(orderId)}/upi-details`, {
+    method: 'GET',
+    headers: getHeaders({ 'Accept': 'application/json' })
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const err = new Error(data.message || `Failed to fetch UPI details (${res.status})`);
+    err.status = res.status;
+    throw err;
+  }
+  return data;
+}
+
+/**
+ * Backward-compatible alias for fetching dynamic UPI details / QR
  */
 export async function generateDynamicUpiQr(orderId) {
   const baseUrl = getPaymentApiBaseUrl();
@@ -290,6 +309,28 @@ export async function generateDynamicUpiQr(orderId) {
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     const err = new Error(data.message || `Failed to generate UPI QR (${res.status})`);
+    err.status = res.status;
+    throw err;
+  }
+  return data;
+}
+
+/**
+ * Confirms manual UPI payment ("I've Completed Payment")
+ */
+export async function confirmUpi(orderId) {
+  const baseUrl = getPaymentApiBaseUrl();
+  const res = await fetch(`${baseUrl}/${encodeURIComponent(orderId)}/confirm-upi`, {
+    method: 'POST',
+    headers: getHeaders({
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    })
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const err = new Error(data.message || `Failed to confirm UPI payment (${res.status})`);
     err.status = res.status;
     throw err;
   }
@@ -316,7 +357,7 @@ export async function getPaymentStatus(orderId) {
 }
 
 /**
- * User cancels payment
+ * User cancels payment; preserves Bag
  */
 export async function cancelPayment(orderId) {
   const baseUrl = getPaymentApiBaseUrl();
@@ -359,28 +400,6 @@ export async function confirmCod(orderId) {
   return data;
 }
 
-/**
- * Retrieves Card checkout session for Cashfree JS SDK
- */
-export async function getCardSession(orderId) {
-  const baseUrl = getPaymentApiBaseUrl();
-  const res = await fetch(`${baseUrl}/${encodeURIComponent(orderId)}/card-session`, {
-    method: 'POST',
-    headers: getHeaders({
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    })
-  });
-
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    const err = new Error(data.message || `Failed to initiate card session (${res.status})`);
-    err.status = res.status;
-    throw err;
-  }
-  return data;
-}
-
 export const cartService = {
   getCart,
   addToCart,
@@ -392,11 +411,12 @@ export const cartService = {
   getUserOrders,
   simulatePayment,
   advanceOrderStatus,
+  getUpiDetails,
   generateDynamicUpiQr,
+  confirmUpi,
   getPaymentStatus,
   cancelPayment,
-  confirmCod,
-  getCardSession
+  confirmCod
 };
 
 export const orderService = cartService;

@@ -8,19 +8,17 @@ const router = express.Router();
 const paymentController = require('../controllers/paymentController');
 const { requireAuth } = require('../middleware/auth');
 
-// Gateway configuration status endpoint
+// Public gateway / merchant configuration
 router.get('/config', paymentController.getPaymentConfig);
 
-// Public Webhook Endpoint (verified cryptographically via HMAC-SHA256 signature)
-router.post('/cashfree/webhook', paymentController.handleCashfreeWebhook);
-
 // Protected Payment Endpoints (Strictly require authenticated JWT user)
+router.get('/:orderId/upi-details', requireAuth, paymentController.getUpiDetails);
 router.post('/:orderId/upi-qr', requireAuth, paymentController.generateDynamicUpiQr);
+router.post('/:orderId/confirm-upi', requireAuth, paymentController.confirmUpiPayment);
+router.post('/:orderId/cod', requireAuth, paymentController.confirmCod);
 router.get('/:orderId/status', requireAuth, paymentController.getPaymentStatus);
 router.post('/:orderId/cancel', requireAuth, paymentController.cancelPayment);
-router.post('/:orderId/cod', requireAuth, paymentController.confirmCod);
-router.post('/:orderId/card-session', requireAuth, paymentController.getCardSession);
 router.post('/:orderId/mock-status', paymentController.mockPaymentStatus);
-router.post('/test-mode', paymentController.setTestMode);
+router.post('/test-mode', (req, res) => res.status(200).json({ success: true }));
 
 module.exports = router;
