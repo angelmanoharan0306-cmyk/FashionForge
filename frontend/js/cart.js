@@ -75,11 +75,11 @@ export async function loadAndRenderCart() {
             <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
           </svg>
         </div>
-        <h3 class="empty-title">Sign In to Access Your Atelier Bag</h3>
-        <p class="empty-copy">Sign in or register an atelier account to view items placed in your shopping bag and proceed to checkout.</p>
+        <h3 class="empty-title">Sign In to View Your Shopping Bag</h3>
+        <p class="empty-copy">Sign in to view items placed in your shopping bag and proceed to checkout.</p>
         <div style="display: flex; gap: var(--space-3); margin-top: var(--space-4);">
           <a class="btn-primary" href="login.html?redirect=cart.html">
-            <span>Sign In to Atelier</span>
+            <span>Sign In</span>
           </a>
           <a class="btn-secondary" href="login.html?tab=register&redirect=cart.html">
             <span>Create Account</span>
@@ -236,7 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (confirm('Are you sure you want to clear your shopping bag?')) {
         try {
           await clearCart();
-          showToast('Atelier bag cleared');
+          showToast('Shopping bag cleared');
           await loadAndRenderCart();
         } catch (err) {
           showToast(err.message);

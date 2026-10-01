@@ -2,7 +2,7 @@
  * FashionForge — My Designs Portfolio Controller
  *
  * Implements the presentation, thumbnail rendering, duplicate, delete,
- * filtering, and restoration navigation for saved bespoke garment designs.
+ * filtering, and restoration navigation for saved custom garment designs.
  */
 
 import {
@@ -23,7 +23,7 @@ let currentSearch = '';
 let pendingDeleteId = null;
 
 /**
- * Formats ISO date into readable atelier format
+ * Formats ISO date into readable date format
  * e.g. "Oct 1, 2026 • 8:30 PM"
  */
 function formatDate(isoString) {
@@ -100,11 +100,11 @@ export async function renderDesignsGrid() {
               <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
             </svg>
           </div>
-          <h3 class="empty-title">Atelier Sign-In Required</h3>
-          <p class="empty-copy">Sign in to your FashionForge account to access your private collection of saved bespoke garments and CAD flats.</p>
+          <h3 class="empty-title">Sign In Required</h3>
+          <p class="empty-copy">Sign in to your FashionForge account to access your collection of saved custom garments.</p>
           <div style="display: flex; gap: var(--space-3); margin-top: var(--space-4);">
             <a class="btn-primary" href="login.html?redirect=my-designs.html">
-              <span>Sign In to Atelier</span>
+              <span>Sign In</span>
             </a>
             <a class="btn-secondary" href="login.html?tab=register&redirect=my-designs.html">
               <span>Create Account</span>
@@ -324,7 +324,7 @@ export function openDeleteModal(id, name) {
   const promptText = document.querySelector('#delete-design-prompt');
 
   if (promptText) {
-    promptText.textContent = `Are you sure you want to delete "${name}"? This action will permanently remove it from your atelier portfolio.`;
+    promptText.textContent = `Are you sure you want to delete "${name}"? This action will permanently remove it from your saved designs.`;
   }
 
   modal?.classList.add('is-open');
@@ -354,7 +354,7 @@ export async function confirmDeleteDesign() {
 
     if (success) {
       await renderDesignsGrid();
-      showToast(`Deleted "${targetName}" from atelier portfolio`);
+      showToast(`Deleted "${targetName}" from saved designs`);
     } else {
       showToast('Failed to delete design');
     }

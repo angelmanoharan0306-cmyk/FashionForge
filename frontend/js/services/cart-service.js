@@ -23,6 +23,7 @@ function getHeaders(extra = {}) {
 
 export function getCartApiBaseUrl() {
   if (typeof window !== 'undefined' && window.location && window.location.origin) {
+    if (window.API_BASE_URL) return `${window.API_BASE_URL.replace(/\/$/, '')}/api/cart`;
     return '/api/cart';
   }
   return (typeof process !== 'undefined' && process.env?.API_BASE_URL)
@@ -32,6 +33,7 @@ export function getCartApiBaseUrl() {
 
 export function getOrderApiBaseUrl() {
   if (typeof window !== 'undefined' && window.location && window.location.origin) {
+    if (window.API_BASE_URL) return `${window.API_BASE_URL.replace(/\/$/, '')}/api/orders`;
     return '/api/orders';
   }
   return (typeof process !== 'undefined' && process.env?.API_BASE_URL)
@@ -207,7 +209,7 @@ export async function simulatePayment(orderId, result = 'success') {
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
-    const err = new Error(data.message || `Payment simulation failed (${res.status})`);
+    const err = new Error(data.message || `Payment failed (${res.status})`);
     err.status = res.status;
     throw err;
   }
@@ -264,6 +266,7 @@ export async function advanceOrderStatus(orderId, nextStatus = null) {
 
 export function getPaymentApiBaseUrl() {
   if (typeof window !== 'undefined' && window.location && window.location.origin) {
+    if (window.API_BASE_URL) return `${window.API_BASE_URL.replace(/\/$/, '')}/api/payments`;
     return '/api/payments';
   }
   return (typeof process !== 'undefined' && process.env?.API_BASE_URL)

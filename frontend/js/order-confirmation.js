@@ -119,15 +119,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     const c = order.customer;
     const name = c.fullName || c.name || 'Recipient';
     const address = c.shippingAddress || c.address || '—';
+    const cleanPhone = (c.phone || '').replace(/\D/g, '');
     deliveryContainer.innerHTML = `
       <div style="font-size: var(--text-sm); line-height: 1.6; color: var(--color-text-secondary);">
-        <div style="font-weight: 600; color: var(--color-text-primary); margin-bottom: 2px;">${escapeHtml(name)}</div>
+        <div style="font-weight: 600; color: var(--color-text); margin-bottom: 2px;">${escapeHtml(name)}</div>
         <div>${escapeHtml(c.email || '')}</div>
-        <div>${escapeHtml(c.phone || '')}</div>
-        <div style="margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--color-border); font-size: var(--text-xs);">
-          <strong>Ship To:</strong><br>
+        <div>+91 ${escapeHtml(cleanPhone.length >= 10 ? cleanPhone.slice(-10) : c.phone || '')}</div>
+        <div style="margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--color-border-subtle); font-size: var(--text-xs); color: var(--color-text-muted);">
+          <strong style="color: var(--color-text);">Shipping Address:</strong><br>
           ${escapeHtml(address)}<br>
-          ${escapeHtml(c.city || '')}, ${escapeHtml(c.state || '')} ${escapeHtml(c.postalCode || '')}
+          ${escapeHtml(c.city || '')}, ${escapeHtml(c.state || '')} - ${escapeHtml(c.postalCode || '')}<br>
+          India
         </div>
       </div>
     `;

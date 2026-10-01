@@ -486,7 +486,7 @@ export function syncUIFromState() {
   const tpMeasArmhole = document.querySelector('#tp-meas-armhole');
 
   if (tpName) tpName.textContent = state.name;
-  if (tpStyleId) tpStyleId.innerHTML = `Style ID: ${state.styleId} | Size: <span id="tp-header-size">${state.size}</span> | Season: Bespoke SS26`;
+  if (tpStyleId) tpStyleId.innerHTML = `Style ID: ${state.styleId} | Size: <span id="tp-header-size">${state.size}</span> | Season: Spring/Summer 2026`;
   if (tpSizeLabel) tpSizeLabel.textContent = `Size ${state.size}`;
   if (tpFabric) tpFabric.textContent = `${fabricName} (Polished)`;
   if (tpColor) tpColor.textContent = `${valColour ? valColour.textContent : 'Rose Clay'} (${state.colour})`;
@@ -841,7 +841,7 @@ export async function handleConfirmSave() {
     } catch (e) {
       console.warn('Could not store pending design in sessionStorage:', e);
     }
-    showToast('Redirecting to Atelier sign-in... Your garment is preserved.');
+    showToast('Redirecting to sign-in... Your garment is preserved.');
     setTimeout(() => {
       window.location.href = 'login.html?redirect=design.html';
     }, 450);
@@ -849,7 +849,7 @@ export async function handleConfirmSave() {
   }
 
   const inputName = document.querySelector('#save-design-name');
-  const enteredName = inputName?.value.trim() || designState.name || 'Bespoke Atelier Design';
+  const enteredName = inputName?.value.trim() || designState.name || 'Custom Design';
   designState.name = enteredName;
 
   try {
@@ -861,7 +861,7 @@ export async function handleConfirmSave() {
 
       closeSaveModal();
       syncUIFromState();
-      showToast(`Design "${saved.name}" saved to atelier workspace`);
+      showToast(`Design "${saved.name}" saved to your designs`);
       return saved;
     }
   } catch (err) {
@@ -1237,7 +1237,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (err) {
         console.warn('Failed to store pending design:', err);
       }
-      showToast('Please sign in to add bespoke designs to your shopping bag.');
+      showToast('Please sign in to add your design to your shopping bag.');
       setTimeout(() => {
         window.location.href = 'login.html?redirect=' + encodeURIComponent('design.html');
       }, 1200);

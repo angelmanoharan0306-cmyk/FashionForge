@@ -12,11 +12,12 @@ import { GARMENT_CATALOG } from './renderer/garment-data.js';
 const ORDER_LIFECYCLE = ['placed', 'processing', 'ready', 'shipped', 'delivered'];
 
 const STATUS_LABELS = {
-  placed: 'Bespoke Order Placed',
-  processing: 'Artisan Workshop Cutting & Assembly',
-  ready: 'Garment Finishing & Quality Inspection',
-  shipped: 'Dispatched via Insured Atelier Courier',
-  delivered: 'Delivered to Recipient'
+  placed: 'Order Placed',
+  processing: 'Processing',
+  ready: 'Ready to Ship',
+  shipped: 'Shipped',
+  delivered: 'Delivered',
+  cancelled: 'Order Cancelled'
 };
 
 function formatCurrency(val) {
@@ -115,42 +116,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderPricing(currentOrder);
   renderGarmentItems(currentOrder);
 
-  // 5. Wire status advance simulation button
-  const advanceBtn = document.getElementById('btn-advance-status');
-  if (advanceBtn) {
-    advanceBtn.addEventListener('click', async () => {
-      const currentStatus = currentOrder.orderStatus || 'placed';
-      const currentIndex = ORDER_LIFECYCLE.indexOf(currentStatus);
-
-      if (currentIndex === -1 || currentIndex >= ORDER_LIFECYCLE.length - 1) {
-        showToast('Order is already at the final delivery stage.', 'info');
-        return;
-      }
-
-      const nextStatus = ORDER_LIFECYCLE[currentIndex + 1];
-
-      advanceBtn.disabled = true;
-      advanceBtn.textContent = 'Advancing Status...';
-
-      try {
-        const res = await orderService.advanceOrderStatus(currentOrder.orderId, nextStatus);
-        if (res.success && res.order) {
-          currentOrder = res.order;
-          showToast(`Advanced to "${nextStatus.toUpperCase()}"!`, 'success');
-          renderOrderHeader(currentOrder);
-          renderTrackingTimeline(currentOrder);
-        } else {
-          showToast(res.message || 'Failed to advance status', 'error');
-        }
-      } catch (err) {
-        showToast(err.message || 'Failed to advance status', 'error');
-      } finally {
-        advanceBtn.disabled = false;
-        updateAdvanceButtonState(currentOrder);
-      }
-    });
-  }
-
   function renderOrderHeader(order) {
     const titleEl = document.getElementById('det-order-title');
     const payBadge = document.getElementById('det-pay-badge');
@@ -173,66 +138,74 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function renderTrackingTimeline(order) {
     const currentStatus = order.orderStatus || 'placed';
-    const currentIndex = ORDER_LIFECYCLE.indexOf(currentStatus);
+    const isPaid = order.paymentStatus === 'paid';
+    const isCod = order.paymentMethod === 'cod';
+
+    // Map order progress through the 6 stages:
+    // 1: placed, 2: confirmed, 3: processing, 4: ready, 5: shipped, 6: delivered
+    const stageRank = {
+      placed: 1,
+      processing: 3,
+      ready: 4,
+      shipped: 5,
+      delivered: 6
+    };
+
+    let activeRank = stageRank[currentStatus] || 1;
+    if (activeRank === 1 && (isPaid || isCod)) {
+      activeRank = 2; // Payment confirmed or COD placed
+    }
 
     const steps = document.querySelectorAll('.timeline-step');
     steps.forEach(step => {
       const stepStatus = step.dataset.status;
-      const stepIndex = ORDER_LIFECYCLE.indexOf(stepStatus);
+      let stepRank = 1;
+      if (stepStatus === 'placed') stepRank = 1;
+      else if (stepStatus === 'confirmed') stepRank = 2;
+      else if (stepStatus === 'processing') stepRank = 3;
+      else if (stepStatus === 'ready') stepRank = 4;
+      else if (stepStatus === 'shipped') stepRank = 5;
+      else if (stepStatus === 'delivered') stepRank = 6;
 
       step.classList.remove('step-completed', 'step-active', 'step-pending');
 
-      if (stepIndex < currentIndex) {
+      if (stepRank < activeRank) {
         step.classList.add('step-completed');
-      } else if (stepIndex === currentIndex) {
+      } else if (stepRank === activeRank) {
         step.classList.add('step-active');
       } else {
         step.classList.add('step-pending');
       }
     });
 
+    // Update confirmed step label for COD
+    const stepDescConfirmed = document.getElementById('step-desc-confirmed');
+    if (stepDescConfirmed && isCod) {
+      stepDescConfirmed.textContent = 'Cash on delivery pending.';
+    }
+
     // Update latest event text
     const eventTimeEl = document.getElementById('tracking-event-time');
     const eventTextEl = document.getElementById('tracking-event-text');
 
-    const trackingList = order.tracking || [];
-    const latestEvent = trackingList[trackingList.length - 1];
+    const customerStatusMessages = {
+      placed: isPaid ? 'Payment received. Order placed.' : "We've received your order.",
+      processing: 'Your order is being prepared.',
+      ready: 'Your order is packed and ready to leave.',
+      shipped: 'Your order is on the way.',
+      delivered: 'Your order has been delivered.',
+      cancelled: 'Order has been cancelled.'
+    };
 
-    if (latestEvent) {
-      if (eventTimeEl) eventTimeEl.textContent = formatDate(latestEvent.timestamp);
-      if (eventTextEl) eventTextEl.textContent = latestEvent.label || STATUS_LABELS[currentStatus] || currentStatus;
-    } else {
-      if (eventTimeEl) eventTimeEl.textContent = formatDate(order.createdAt);
-      if (eventTextEl) eventTextEl.textContent = STATUS_LABELS[currentStatus] || 'Order registered in atelier queue.';
-    }
-
-    updateAdvanceButtonState(order);
-  }
-
-  function updateAdvanceButtonState(order) {
-    const advanceBtn = document.getElementById('btn-advance-status');
-    if (!advanceBtn) return;
-
-    const currentStatus = order.orderStatus || 'placed';
-    const currentIndex = ORDER_LIFECYCLE.indexOf(currentStatus);
-
-    if (currentIndex >= ORDER_LIFECYCLE.length - 1) {
-      advanceBtn.disabled = true;
-      advanceBtn.innerHTML = `<span>Delivered (Terminal Phase)</span>`;
-      advanceBtn.style.opacity = '0.6';
-      advanceBtn.style.cursor = 'not-allowed';
-    } else {
-      const nextStatus = ORDER_LIFECYCLE[currentIndex + 1];
-      advanceBtn.disabled = false;
-      advanceBtn.innerHTML = `
-        <span>Advance to "${nextStatus.toUpperCase()}" (Demo)</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-          <polyline points="12 5 19 12 12 19"></polyline>
-        </svg>
-      `;
-      advanceBtn.style.opacity = '1';
-      advanceBtn.style.cursor = 'pointer';
+    if (eventTimeEl) eventTimeEl.textContent = formatDate(order.updatedAt || order.createdAt);
+    if (eventTextEl) {
+      if (currentStatus === 'cancelled') {
+        eventTextEl.textContent = 'Order Cancelled';
+      } else if (activeRank === 2) {
+        eventTextEl.textContent = isCod ? 'Order placed with Cash on Delivery.' : 'Payment confirmed. Preparing order.';
+      } else {
+        eventTextEl.textContent = customerStatusMessages[currentStatus] || "We've received your order.";
+      }
     }
   }
 
@@ -243,16 +216,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     const c = order.customer;
     const name = c.fullName || c.name || 'Recipient';
     const address = c.shippingAddress || c.address || '—';
+    const cleanPhone = (c.phone || '').replace(/\D/g, '');
 
     container.innerHTML = `
       <div style="font-size: var(--text-sm); line-height: 1.6; color: var(--color-text-secondary);">
-        <div style="font-weight: 600; color: var(--color-text-primary); margin-bottom: 2px;">${escapeHtml(name)}</div>
+        <div style="font-weight: 600; color: var(--color-text); margin-bottom: 2px;">${escapeHtml(name)}</div>
         <div>${escapeHtml(c.email || '')}</div>
-        <div>${escapeHtml(c.phone || '')}</div>
-        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--color-border); font-size: var(--text-xs);">
-          <strong>Delivery Destination:</strong><br>
+        <div>+91 ${escapeHtml(cleanPhone.length >= 10 ? cleanPhone.slice(-10) : c.phone || '')}</div>
+        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--color-border-subtle); font-size: var(--text-xs); color: var(--color-text-muted);">
+          <strong style="color: var(--color-text);">Delivery Destination:</strong><br>
           ${escapeHtml(address)}<br>
-          ${escapeHtml(c.city || '')}, ${escapeHtml(c.state || '')} ${escapeHtml(c.postalCode || '')}
+          ${escapeHtml(c.city || '')}, ${escapeHtml(c.state || '')} - ${escapeHtml(c.postalCode || '')}<br>
+          India
         </div>
       </div>
     `;

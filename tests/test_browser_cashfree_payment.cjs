@@ -129,13 +129,13 @@ async function runCashfreeBrowserE2E() {
     await page.waitForSelector('#checkout-items-list .checkout-item-row');
 
     await page.evaluate(() => {
-      document.getElementById('cust-name').value = 'Madeleine Vionnet';
-      document.getElementById('cust-email').value = 'vionnet@haute-couture.test';
-      document.getElementById('cust-phone').value = '+91 98765 43210';
-      document.getElementById('cust-address').value = '50 Avenue Montaigne';
-      document.getElementById('cust-city').value = 'Paris';
-      document.getElementById('cust-state').value = 'IDF';
-      document.getElementById('cust-postal').value = '75008';
+      document.getElementById('cust-name').value = 'Sundaram Raman';
+      document.getElementById('cust-email').value = 'raman@fashionforge.test';
+      document.getElementById('cust-phone').value = '9876543210';
+      document.getElementById('cust-address').value = '12, Example Street';
+      document.getElementById('cust-city').value = 'Chennai';
+      document.getElementById('cust-state').value = 'Tamil Nadu';
+      document.getElementById('cust-postal').value = '600040';
     });
 
     // Submit Order

@@ -78,7 +78,7 @@ async function addItem(req, res, next) {
       return res.status(403).json({
         success: false,
         error: 'Forbidden',
-        message: "You cannot add another designer's bespoke garment to your cart."
+        message: "You cannot add another designer's garment to your cart."
       });
     }
 

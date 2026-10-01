@@ -77,7 +77,7 @@ function sanitizePhoneNumber(phone) {
 async function createCashfreeOrder({ orderId, orderAmount, customer, returnUrl, notifyUrl }) {
   const numericAmount = Number(Number(orderAmount).toFixed(2));
   const phone = sanitizePhoneNumber(customer.phone);
-  const email = (customer.email || 'customer@fashionforge.atelier').trim().toLowerCase();
+  const email = (customer.email || 'customer@fashionforge.com').trim().toLowerCase();
   const name = (customer.name || customer.fullName || 'FashionForge Client').trim();
   const customerId = (customer.userId || customer.customerId || `CUST_${orderId}`).replace(/[^a-zA-Z0-9_-]/g, '_');
 
@@ -95,7 +95,7 @@ async function createCashfreeOrder({ orderId, orderAmount, customer, returnUrl, 
       return_url: returnUrl || `http://localhost:5000/order-confirmation?orderId=${encodeURIComponent(orderId)}`,
       notify_url: notifyUrl || `http://localhost:5000/api/payments/cashfree/webhook`
     },
-    order_note: `FashionForge Bespoke Atelier Order ${orderId}`
+    order_note: `FashionForge Order ${orderId}`
   };
 
   // If live credentials are not configured, simulate Cashfree PG order at service boundary
@@ -154,7 +154,7 @@ async function createDynamicUpiQr({ paymentSessionId, orderId, amount }) {
   if (!isConfigured()) {
     const cfPaymentId = `cf_pay_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
     // NPCI standard dynamic UPI QR URI format tied specifically to this order and exact amount
-    const upiUri = `upi://pay?pa=fashionforge.cashfree@okhdfcbank&pn=FashionForge%20Atelier&tr=${encodeURIComponent(orderId)}&am=${numericAmount}&cu=INR&tn=FashionForge%20Order%20${encodeURIComponent(orderId)}`;
+    const upiUri = `upi://pay?pa=fashionforge.cashfree@okhdfcbank&pn=FashionForge&tr=${encodeURIComponent(orderId)}&am=${numericAmount}&cu=INR&tn=FashionForge%20Order%20${encodeURIComponent(orderId)}`;
 
     const mockRecord = mockOrderStore.get(orderId);
     if (mockRecord) {
@@ -227,7 +227,7 @@ async function createUpiIntent({ paymentSessionId, orderId, amount }) {
 
   if (!isConfigured()) {
     const cfPaymentId = `cf_intent_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
-    const intentUri = `upi://pay?pa=fashionforge.cashfree@okhdfcbank&pn=FashionForge%20Atelier&tr=${encodeURIComponent(orderId)}&am=${numericAmount}&cu=INR&tn=FashionForge%20Order%20${encodeURIComponent(orderId)}`;
+    const intentUri = `upi://pay?pa=fashionforge.cashfree@okhdfcbank&pn=FashionForge&tr=${encodeURIComponent(orderId)}&am=${numericAmount}&cu=INR&tn=FashionForge%20Order%20${encodeURIComponent(orderId)}`;
     return {
       cf_payment_id: cfPaymentId,
       payment_method: 'upi',

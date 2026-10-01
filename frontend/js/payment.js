@@ -116,9 +116,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 7. Wire Cash on Delivery & Card Actions
   setupCodAndCardActions();
-
-  // 8. Wire Sandbox Simulation Buttons for Test Compatibility
-  setupSandboxSimulationButtons();
 });
 
 /**
@@ -171,7 +168,7 @@ function updateStatusBadge(status) {
   badgeEl.className = '';
   if (status === 'paid') {
     badgeEl.className = 'badge-status-paid';
-    badgeEl.textContent = 'Paid (Placed)';
+    badgeEl.textContent = 'Paid';
   } else if (status === 'failed') {
     badgeEl.className = 'badge-status-failed';
     badgeEl.textContent = 'Payment Failed';
@@ -190,6 +187,7 @@ function setupPaymentMethodSelector() {
   const optionCard = document.getElementById('option-card');
 
   const codPanel = document.getElementById('cod-action-panel');
+  const upiPanel = document.getElementById('upi-action-panel');
   const cardPanel = document.getElementById('card-action-panel');
 
   function selectMethod(method) {
@@ -201,6 +199,7 @@ function setupPaymentMethodSelector() {
     });
 
     if (codPanel) codPanel.style.display = 'none';
+    if (upiPanel) upiPanel.style.display = 'none';
     if (cardPanel) cardPanel.style.display = 'none';
 
     if (method === 'cod') {
@@ -214,12 +213,27 @@ function setupPaymentMethodSelector() {
     } else {
       optionUpi?.classList.add('is-selected');
       optionUpi?.setAttribute('aria-checked', 'true');
+      if (upiPanel) upiPanel.style.display = 'block';
     }
   }
 
   optionCod?.addEventListener('click', () => selectMethod('cod'));
   optionUpi?.addEventListener('click', () => selectMethod('upi'));
   optionCard?.addEventListener('click', () => selectMethod('card'));
+
+  // Keyboard accessibility: Enter and Space to select radio option
+  [
+    { el: optionCod, method: 'cod' },
+    { el: optionUpi, method: 'upi' },
+    { el: optionCard, method: 'card' }
+  ].forEach(({ el, method }) => {
+    el?.addEventListener('keydown', (e) => {
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        selectMethod(method);
+      }
+    });
+  });
 }
 
 /**
@@ -227,6 +241,7 @@ function setupPaymentMethodSelector() {
  */
 function setupUpiQrModal() {
   const btnShowQr = document.getElementById('btn-show-upi-qr');
+  const btnPayUpi = document.getElementById('btn-pay-upi');
   const modal = document.getElementById('upi-qr-modal');
   const closeBtn = document.getElementById('btn-close-qr-modal');
   const cancelBtn = document.getElementById('btn-cancel-qr');
@@ -289,9 +304,9 @@ function setupUpiQrModal() {
     } catch (err) {
       console.error('Failed to generate UPI QR:', err);
       if (qrTarget) {
-        qrTarget.innerHTML = `<span style="font-size: 13px; color: #ef4444;">Failed to load QR code.</span>`;
+        qrTarget.innerHTML = `<span style="font-size: 13px; color: #ef4444; padding: 16px; text-align: center; line-height: 1.5;">Online payment is temporarily unavailable.<br>Please try Cash on Delivery.</span>`;
       }
-      showAlert(err.message || 'Unable to connect to Cashfree payment gateway.');
+      showAlert('Online payment is temporarily unavailable. Please try Cash on Delivery.');
     }
   }
 
@@ -356,6 +371,7 @@ function setupUpiQrModal() {
   }
 
   btnShowQr?.addEventListener('click', openUpiQrModal);
+  btnPayUpi?.addEventListener('click', openUpiQrModal);
   closeBtn?.addEventListener('click', closeAndCancelModal);
   cancelBtn?.addEventListener('click', closeAndCancelModal);
   closeFailBtn?.addEventListener('click', () => {
@@ -402,18 +418,18 @@ function setupCodAndCardActions() {
   btnCod?.addEventListener('click', async () => {
     if (!currentOrder) return;
     btnCod.disabled = true;
-    btnCod.textContent = 'Placing COD Order...';
+    btnCod.textContent = 'Placing Order...';
 
     try {
       const res = await cartService.confirmCod(currentOrder.orderId);
       showToast('Order confirmed with Cash on Delivery!', 'success');
       setTimeout(() => {
         window.location.href = `order-confirmation.html?orderId=${encodeURIComponent(currentOrder.orderId)}`;
-      }, 1000);
+      }, 800);
     } catch (err) {
-      showAlert(err.message || 'Failed to confirm COD order.');
+      showAlert(err.message || 'Failed to place order with Cash on Delivery.');
       btnCod.disabled = false;
-      btnCod.textContent = 'Confirm Order (Cash on Delivery)';
+      btnCod.textContent = 'Place Order';
     }
   });
 
@@ -421,19 +437,22 @@ function setupCodAndCardActions() {
   btnCard?.addEventListener('click', async () => {
     if (!currentOrder) return;
     btnCard.disabled = true;
-    btnCard.textContent = 'Launching Secure Card Checkout...';
+    btnCard.textContent = 'Processing...';
+
+    const cardStatusMsg = document.getElementById('card-status-msg');
+    if (cardStatusMsg) cardStatusMsg.style.display = 'none';
 
     try {
       const cardRes = await cartService.getCardSession(currentOrder.orderId);
 
-      if (typeof window.Cashfree !== 'undefined' && cardRes.paymentSessionId) {
+      if (typeof window.Cashfree !== 'undefined' && cardRes && cardRes.paymentSessionId) {
         const cashfree = window.Cashfree({ mode: cardRes.cashfreeEnv || 'sandbox' });
         cashfree.checkout({
           paymentSessionId: cardRes.paymentSessionId,
           redirectTarget: '_modal'
         }).then(async (result) => {
           btnCard.disabled = false;
-          btnCard.textContent = 'Pay Securely with Card';
+          btnCard.textContent = 'Pay with Card';
 
           // Check server status after modal interaction
           const statusRes = await cartService.getPaymentStatus(currentOrder.orderId);
@@ -442,81 +461,37 @@ function setupCodAndCardActions() {
           }
         });
       } else {
-        // Fallback if Cashfree JS SDK is blocked by browser extension
-        showToast('Cashfree Card Checkout session ready. Initializing...', 'info');
-        btnCard.disabled = false;
-        btnCard.textContent = 'Pay Securely with Card';
+        if (cardStatusMsg) {
+          cardStatusMsg.textContent = 'Online card payment is currently unavailable.';
+          cardStatusMsg.style.display = 'block';
+          cardStatusMsg.style.color = '#dc2626';
+        }
+        showAlert('Online card payment is currently unavailable.');
+        btnCard.disabled = true;
+        btnCard.textContent = 'Online Card Payment Unavailable';
+        btnCard.style.opacity = '0.6';
+        btnCard.style.cursor = 'not-allowed';
       }
     } catch (err) {
-      showAlert(err.message || 'Failed to initialize card checkout.');
-      btnCard.disabled = false;
-      btnCard.textContent = 'Pay Securely with Card';
+      if (cardStatusMsg) {
+        cardStatusMsg.textContent = 'Online card payment is currently unavailable.';
+        cardStatusMsg.style.display = 'block';
+        cardStatusMsg.style.color = '#dc2626';
+      }
+      showAlert('Online card payment is currently unavailable.');
+      btnCard.disabled = true;
+      btnCard.textContent = 'Online Card Payment Unavailable';
+      btnCard.style.opacity = '0.6';
+      btnCard.style.cursor = 'not-allowed';
     }
   });
 }
 
 /**
- * Preserves compatibility with existing test scripts (test_phase10, test_browser_responsive_pwa)
- */
-function setupSandboxSimulationButtons() {
-  const btnSuccess = document.getElementById('btn-simulate-success');
-  const btnFail = document.getElementById('btn-simulate-failure');
-
-  if (btnSuccess) {
-    btnSuccess.addEventListener('click', async () => {
-      hideAlert();
-      btnSuccess.disabled = true;
-      if (btnFail) btnFail.disabled = true;
-      btnSuccess.textContent = 'Simulating Approval...';
-
-      try {
-        const payRes = await cartService.simulatePayment(currentOrder.orderId, 'success');
-        const updatedOrd = payRes.order || currentOrder;
-        updateStatusBadge('paid');
-        showToast('Payment Simulation Succeeded! Redirecting to confirmation...', 'success');
-        setTimeout(() => {
-          window.location.href = `order-confirmation.html?orderId=${encodeURIComponent(updatedOrd.orderId)}`;
-        }, 1200);
-        showOutcome(true, updatedOrd);
-      } catch (err) {
-        showAlert(err.message || 'Network error.');
-        btnSuccess.disabled = false;
-        if (btnFail) btnFail.disabled = false;
-        btnSuccess.textContent = 'Simulate Successful Payment';
-      }
-    });
-  }
-
-  if (btnFail) {
-    btnFail.addEventListener('click', async () => {
-      hideAlert();
-      if (btnSuccess) btnSuccess.disabled = true;
-      btnFail.disabled = true;
-      btnFail.textContent = 'Simulating Decline...';
-
-      try {
-        const payRes = await cartService.simulatePayment(currentOrder.orderId, 'failure');
-        const updatedOrd = payRes.order || currentOrder;
-        updateStatusBadge('failed');
-        showToast('Payment Simulation Failed (Decline Recorded)', 'error');
-        showOutcome(false, updatedOrd);
-      } catch (err) {
-        showAlert(err.message || 'Network error.');
-        if (btnSuccess) btnSuccess.disabled = false;
-        btnFail.disabled = false;
-        btnFail.textContent = 'Simulate Failed Payment';
-      }
-    });
-  }
-}
-
-/**
- * Outcome panel renderer for complete simulation states
+ * Outcome panel renderer for complete payment states
  */
 function showOutcome(isSuccess, updatedOrder) {
-  const actionsGroup = document.getElementById('payment-actions-group');
   const outcomePanel = document.getElementById('payment-outcome-panel');
-  if (actionsGroup) actionsGroup.style.display = 'none';
   if (outcomePanel) {
     outcomePanel.style.display = 'block';
     const icon = document.getElementById('outcome-icon');
@@ -527,11 +502,11 @@ function showOutcome(isSuccess, updatedOrder) {
     if (isSuccess) {
       if (icon) icon.innerHTML = `<span style="font-size: 40px;">✨</span>`;
       if (title) {
-        title.textContent = 'Bespoke Order Confirmed';
+        title.textContent = 'Order Confirmed';
         title.style.color = 'var(--color-brand)';
       }
       if (desc) {
-        desc.innerHTML = `Order <strong>${escapeHtml(updatedOrder.orderId)}</strong> has been registered with status <em>placed</em>. Your shopping bag has been cleared.`;
+        desc.innerHTML = `Order <strong>${escapeHtml(updatedOrder.orderId)}</strong> has been placed. Your shopping bag has been cleared.`;
       }
       if (navButtons) {
         navButtons.innerHTML = `
@@ -550,7 +525,7 @@ function showOutcome(isSuccess, updatedOrder) {
         title.style.color = '#ef4444';
       }
       if (desc) {
-        desc.innerHTML = `Order <strong>${escapeHtml(updatedOrder.orderId)}</strong> status transitioned to <em>failed</em>. Your shopping bag remains intact so you can retry checkout.`;
+        desc.innerHTML = `Order <strong>${escapeHtml(updatedOrder.orderId)}</strong> payment could not be completed. Your shopping bag remains intact.`;
       }
       if (navButtons) {
         navButtons.innerHTML = `

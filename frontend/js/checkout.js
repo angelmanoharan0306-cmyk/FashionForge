@@ -110,28 +110,66 @@ document.addEventListener('DOMContentLoaded', async () => {
       e.preventDefault();
       hideAlert();
 
+      // Address composition
+      const line1 = document.getElementById('cust-address')?.value.trim() || '';
+      const line2 = document.getElementById('cust-address2')?.value.trim() || '';
+      const locality = document.getElementById('cust-locality')?.value.trim() || '';
+      const fullAddressParts = [line1, line2, locality].filter(Boolean);
+      const compositeAddress = fullAddressParts.join(', ');
+
+      const rawPhone = document.getElementById('cust-phone')?.value.trim() || '';
+      const cleanPhone = rawPhone.replace(/\D/g, ''); // Extract only digits
+      // Support 10-digit phone or 12-digit with 91 country code
+      const validPhone = (cleanPhone.length === 10) || (cleanPhone.length === 12 && cleanPhone.startsWith('91'));
+      if (!validPhone) {
+        showAlert('Enter a valid 10-digit mobile number.');
+        return;
+      }
+
+      const rawPostal = document.getElementById('cust-postal')?.value.trim() || '';
+      if (!/^\d{6}$/.test(rawPostal)) {
+        showAlert('Enter a valid 6-digit PIN code.');
+        return;
+      }
+
+      const stateVal = document.getElementById('cust-state')?.value.trim() || '';
+      if (!stateVal) {
+        showAlert('Please select your state.');
+        return;
+      }
+
       const customer = {
         name: document.getElementById('cust-name')?.value.trim(),
         email: document.getElementById('cust-email')?.value.trim(),
-        phone: document.getElementById('cust-phone')?.value.trim(),
-        address: document.getElementById('cust-address')?.value.trim(),
+        phone: cleanPhone.length === 12 ? cleanPhone.slice(2) : cleanPhone,
+        address: compositeAddress || line1,
         city: document.getElementById('cust-city')?.value.trim(),
-        state: document.getElementById('cust-state')?.value.trim(),
-        postalCode: document.getElementById('cust-postal')?.value.trim()
+        state: stateVal,
+        postalCode: rawPostal
       };
 
-      // Client validation
-      for (const [key, val] of Object.entries(customer)) {
-        if (!val) {
-          showAlert(`Please provide a valid ${key.replace(/([A-Z])/g, ' $1').toLowerCase()}.`);
-          return;
-        }
+      // Client validation for required fields
+      if (!customer.name) {
+        showAlert('Please enter your full name.');
+        return;
+      }
+      if (!customer.email || !/^\S+@\S+\.\S+$/.test(customer.email)) {
+        showAlert('Please enter a valid email address.');
+        return;
+      }
+      if (!customer.address) {
+        showAlert('Please enter your address.');
+        return;
+      }
+      if (!customer.city) {
+        showAlert('Please enter your city.');
+        return;
       }
 
       const submitBtn = document.getElementById('btn-submit-order');
       if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Generating Order...';
+        submitBtn.textContent = 'Processing Order...';
       }
 
       try {
@@ -143,14 +181,14 @@ document.addEventListener('DOMContentLoaded', async () => {
           showAlert((orderRes && orderRes.message) || 'Checkout failed. Please try again.');
           if (submitBtn) {
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Continue to Payment Simulation';
+            submitBtn.textContent = 'Continue to Payment';
           }
         }
       } catch (err) {
         showAlert(err.message || 'Network error during checkout.');
         if (submitBtn) {
           submitBtn.disabled = false;
-          submitBtn.textContent = 'Continue to Payment Simulation';
+          submitBtn.textContent = 'Continue to Payment';
         }
       }
     });

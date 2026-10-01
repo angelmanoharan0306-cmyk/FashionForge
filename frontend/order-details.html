@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FashionForge — Order Details & Tracking</title>
-  <meta name="description" content="Inspect bespoke order configuration, delivery details, and simulated atelier tailoring milestones.">
+  <meta name="description" content="Inspect order configuration, delivery details, and delivery tracking.">
 
   <!-- Google Fonts: Playfair Display + Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -65,9 +65,9 @@
       <!-- Top Header Row -->
       <div class="mydesigns-header-row" style="margin-bottom: var(--space-5);">
         <div>
-          <span style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-muted);">Bespoke Atelier Commission</span>
+          <span style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-muted);">Your Order</span>
           <h1 class="mydesigns-title" id="det-order-title">Order Loading...</h1>
-          <p class="mydesigns-subtitle" id="det-order-subtitle">Commission details and live artisan progress tracking.</p>
+          <p class="mydesigns-subtitle" id="det-order-subtitle">Order details and live progress tracking.</p>
         </div>
         <div style="display: flex; gap: 8px; align-items: center;">
           <span class="badge-status-pending" id="det-pay-badge">Pending</span>
@@ -75,27 +75,16 @@
         </div>
       </div>
 
-      <!-- Simulated Tracking Timeline Card -->
+      <!-- Customer Tracking Timeline Card -->
       <section class="tracking-card" aria-labelledby="tracking-heading">
         <div class="tracking-header">
           <div>
-            <div class="simulation-badge">DEMO SIMULATION</div>
-            <h2 class="tracking-title" id="tracking-heading">Atelier Production & Fulfillment Tracking</h2>
-            <p class="tracking-notice">Simulated milestone lifecycle. Demonstrates progressive bespoke tailoring states.</p>
-          </div>
-          <!-- Simulation Advance Button -->
-          <div id="advance-simulation-wrap">
-            <button class="btn-primary" id="btn-advance-status" type="button" style="font-size: var(--text-xs); padding: 8px 16px;">
-              <span>Advance Status (Demo)</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-                <polyline points="12 5 19 12 12 19"></polyline>
-              </svg>
-            </button>
+            <h2 class="tracking-title" id="tracking-heading">Order Tracking</h2>
+            <p class="tracking-notice" id="tracking-customer-desc">Real-time status updates on your order progress.</p>
           </div>
         </div>
 
-        <!-- 5-Step Visual Timeline -->
+        <!-- 6-Stage Customer Visual Timeline -->
         <div class="tracking-timeline" id="tracking-timeline" role="region" aria-label="Order progress timeline">
           <!-- Step 1: Placed -->
           <div class="timeline-step" data-status="placed">
@@ -104,64 +93,78 @@
               <span class="dot-number">1</span>
             </div>
             <div class="step-content">
-              <div class="step-label">Placed</div>
-              <div class="step-desc">Order Registered</div>
+              <div class="step-label">Order Placed</div>
+              <div class="step-desc">We've received your order.</div>
             </div>
           </div>
 
           <div class="timeline-connector"></div>
 
-          <!-- Step 2: Processing -->
-          <div class="timeline-step" data-status="processing">
+          <!-- Step 2: Payment Confirmed -->
+          <div class="timeline-step" data-status="confirmed">
             <div class="step-dot">
               <span class="dot-check">✓</span>
               <span class="dot-number">2</span>
             </div>
             <div class="step-content">
-              <div class="step-label">Processing</div>
-              <div class="step-desc">Pattern Drafting & Cutting</div>
+              <div class="step-label">Payment Confirmed</div>
+              <div class="step-desc" id="step-desc-confirmed">Your payment has been confirmed.</div>
             </div>
           </div>
 
           <div class="timeline-connector"></div>
 
-          <!-- Step 3: Ready -->
-          <div class="timeline-step" data-status="ready">
+          <!-- Step 3: Processing -->
+          <div class="timeline-step" data-status="processing">
             <div class="step-dot">
               <span class="dot-check">✓</span>
               <span class="dot-number">3</span>
             </div>
             <div class="step-content">
-              <div class="step-label">Ready</div>
-              <div class="step-desc">Quality Passed</div>
+              <div class="step-label">Processing</div>
+              <div class="step-desc">Your order is being prepared.</div>
             </div>
           </div>
 
           <div class="timeline-connector"></div>
 
-          <!-- Step 4: Shipped -->
-          <div class="timeline-step" data-status="shipped">
+          <!-- Step 4: Ready to Ship -->
+          <div class="timeline-step" data-status="ready">
             <div class="step-dot">
               <span class="dot-check">✓</span>
               <span class="dot-number">4</span>
             </div>
             <div class="step-content">
-              <div class="step-label">Shipped</div>
-              <div class="step-desc">Courier Dispatched</div>
+              <div class="step-label">Ready to Ship</div>
+              <div class="step-desc">Your order is packed and ready.</div>
             </div>
           </div>
 
           <div class="timeline-connector"></div>
 
-          <!-- Step 5: Delivered -->
-          <div class="timeline-step" data-status="delivered">
+          <!-- Step 5: Shipped -->
+          <div class="timeline-step" data-status="shipped">
             <div class="step-dot">
               <span class="dot-check">✓</span>
               <span class="dot-number">5</span>
             </div>
             <div class="step-content">
+              <div class="step-label">Shipped</div>
+              <div class="step-desc">Your order is on the way.</div>
+            </div>
+          </div>
+
+          <div class="timeline-connector"></div>
+
+          <!-- Step 6: Delivered -->
+          <div class="timeline-step" data-status="delivered">
+            <div class="step-dot">
+              <span class="dot-check">✓</span>
+              <span class="dot-number">6</span>
+            </div>
+            <div class="step-content">
               <div class="step-label">Delivered</div>
-              <div class="step-desc">Received by Client</div>
+              <div class="step-desc">Your order has been delivered.</div>
             </div>
           </div>
         </div>
@@ -169,19 +172,19 @@
         <!-- Latest Event Banner -->
         <div class="tracking-latest-event" id="tracking-latest-event">
           <span class="event-time" id="tracking-event-time">—</span>
-          <span class="event-text" id="tracking-event-text">Order placed and registered in atelier queue.</span>
+          <span class="event-text" id="tracking-event-text">We've received your order.</span>
         </div>
       </section>
 
       <!-- Layout Grid: Garments Left + Customer & Pricing Right -->
       <div class="order-details-grid">
         
-        <!-- Left: Commissioned Garments List -->
+        <!-- Left: Ordered Garments List -->
         <section class="order-items-section" aria-labelledby="order-items-heading">
-          <h2 class="cart-summary-title" id="order-items-heading" style="margin-bottom: var(--space-4);">Commissioned Garments</h2>
+          <h2 class="cart-summary-title" id="order-items-heading" style="margin-bottom: var(--space-4);">Order Items</h2>
           
           <div class="order-items-container" id="det-items-list">
-            <p style="color: var(--color-text-muted); font-size: var(--text-sm);">Loading garments...</p>
+            <p style="color: var(--color-text-muted); font-size: var(--text-sm);">Loading items...</p>
           </div>
         </section>
 
@@ -190,7 +193,7 @@
           
           <!-- Recipient & Shipping Address -->
           <div class="cart-summary-card" style="margin-bottom: var(--space-4); position: static;">
-            <h3 class="cart-summary-title" style="font-size: var(--text-md); margin-bottom: var(--space-3);">Atelier Delivery</h3>
+            <h3 class="cart-summary-title" style="font-size: var(--text-md); margin-bottom: var(--space-3);">Delivery Address</h3>
             <div class="det-customer-block" id="det-customer-block">
               <!-- Populated by JS -->
             </div>
@@ -198,18 +201,18 @@
 
           <!-- Total Breakdown Card -->
           <div class="cart-summary-card" style="position: static;">
-            <h3 class="cart-summary-title" style="font-size: var(--text-md); margin-bottom: var(--space-3);">Financial Breakdown</h3>
+            <h3 class="cart-summary-title" style="font-size: var(--text-md); margin-bottom: var(--space-3);">Order Summary</h3>
 
             <div class="cart-summary-row">
               <span>BOM Subtotal</span>
               <span id="det-subtotal" style="font-weight: 600;">₹0</span>
             </div>
             <div class="cart-summary-row">
-              <span>Bespoke Tailoring Fee</span>
+              <span>Custom Tailoring</span>
               <span style="color: var(--color-brand); font-weight: 600;">Included</span>
             </div>
             <div class="cart-summary-row">
-              <span>Atelier Insured Delivery</span>
+              <span>Delivery</span>
               <span style="color: var(--color-brand); font-weight: 600;">Complimentary</span>
             </div>
 
@@ -226,7 +229,7 @@
                 <span>Back to My Orders</span>
               </a>
               <a class="btn-ghost" href="design.html" style="justify-content: center; padding: 10px 16px;">
-                <span>Design New Garment</span>
+                <span>Continue Shopping</span>
               </a>
             </div>
           </div>
@@ -242,7 +245,7 @@
   <footer class="site-footer" role="contentinfo">
     <div class="footer-inner">
       <div class="footer-copy">
-        &copy; 2026 FashionForge Atelier. All rights reserved. Interactive Digital Fashion Design Studio.
+        &copy; 2026 FashionForge. All rights reserved. Interactive Digital Fashion Design Studio.
       </div>
       <nav class="footer-nav" aria-label="Footer navigation">
         <a href="index.html">Home</a>

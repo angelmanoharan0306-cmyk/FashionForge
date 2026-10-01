@@ -53,7 +53,7 @@ async function getDesignById(req, res, next) {
     if (!design) {
       return res.status(404).json({
         error: 'Not Found',
-        message: `Design with ID "${id}" was not found in atelier records.`
+        message: `Design with ID "${id}" was not found.`
       });
     }
 

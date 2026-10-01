@@ -91,7 +91,7 @@ try {
   const resPayment = await fetch(`${API_ROOT}/payment`);
   assert(resPayment.status === 200, `Step 6: Payment (/payment) returns HTTP 200 (got ${resPayment.status})`);
   const textPayment = await resPayment.text();
-  assert(textPayment.includes('Payment Simulation'), 'Payment page rendered');
+  assert(textPayment.includes('Payment') && textPayment.includes('Payment Method'), 'Payment page rendered');
   console.log('[PASS] 6. Payment available');
 
   // 7. Order Confirmation available
@@ -105,7 +105,7 @@ try {
   const resOrders = await fetch(`${API_ROOT}/orders`);
   assert(resOrders.status === 200, `Step 8: My Orders (/orders) returns HTTP 200 (got ${resOrders.status})`);
   const textOrders = await resOrders.text();
-  assert(textOrders.includes('My Bespoke Orders') || textOrders.includes('Orders'), 'My Orders page rendered');
+  assert(textOrders.includes('My Orders') || textOrders.includes('Orders'), 'My Orders page rendered');
   console.log('[PASS] 8. My Orders available');
 
   // 9. Order Details available

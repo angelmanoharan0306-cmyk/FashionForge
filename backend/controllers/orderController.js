@@ -11,11 +11,11 @@ const cashfreeService = require('../services/cashfreeService');
 const ORDER_LIFECYCLE = ['placed', 'processing', 'ready', 'shipped', 'delivered'];
 
 const STATUS_LABELS = {
-  placed: 'Bespoke Order Placed',
-  processing: 'Artisan Workshop Cutting & Assembly',
-  ready: 'Garment Finishing & Quality Inspection',
-  shipped: 'Dispatched via Insured Atelier Courier',
-  delivered: 'Delivered to Recipient'
+  placed: 'Order Placed',
+  processing: 'Processing',
+  ready: 'Ready to Ship',
+  shipped: 'Shipped',
+  delivered: 'Delivered'
 };
 
 /**

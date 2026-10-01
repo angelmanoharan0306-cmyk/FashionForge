@@ -75,8 +75,8 @@ document.addEventListener('DOMContentLoaded', () => {
       tabLogin?.setAttribute('aria-selected', 'false');
       if (formRegister) formRegister.style.display = 'block';
       if (formLogin) formLogin.style.display = 'none';
-      if (titleEl) titleEl.textContent = 'Join the Fashion Atelier';
-      if (subtitleEl) subtitleEl.textContent = 'Create your account to design, store, and manage your bespoke couture collections.';
+      if (titleEl) titleEl.textContent = 'Create an Account';
+      if (subtitleEl) subtitleEl.textContent = 'Create your account to design, store, and manage your custom garments.';
     } else {
       tabLogin?.classList.add('is-active');
       tabLogin?.setAttribute('aria-selected', 'true');
@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (formLogin) formLogin.style.display = 'block';
       if (formRegister) formRegister.style.display = 'none';
       if (titleEl) titleEl.textContent = 'Welcome to FashionForge';
-      if (subtitleEl) subtitleEl.textContent = 'Sign in to save bespoke garments, manage your portfolio, and access couture flats.';
+      if (subtitleEl) subtitleEl.textContent = 'Sign in to save custom garments, manage your designs, and access orders.';
     }
   }
 
@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (btnSubmit) {
         btnSubmit.disabled = false;
         btnSubmit.innerHTML = `
-          <span>Sign In to Atelier</span>
+          <span>Sign In</span>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <line x1="5" y1="12" x2="19" y2="12"></line>
             <polyline points="12 5 19 12 12 19"></polyline>
@@ -171,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const res = await register(name, email, password);
-      showToast(`Welcome to FashionForge, ${res.user?.name || 'Artisan'}!`);
+      showToast(`Welcome to FashionForge, ${res.user?.name || 'Designer'}!`);
 
       setTimeout(() => {
         window.location.href = getRedirectUrl();
@@ -182,7 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (btnSubmit) {
         btnSubmit.disabled = false;
         btnSubmit.innerHTML = `
-          <span>Create Atelier Account</span>
+          <span>Create Account</span>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <polyline points="20 6 9 17 4 12"></polyline>
           </svg>

@@ -37,6 +37,7 @@ export function getAuthHeaders(extraHeaders = {}) {
  */
 export function getApiBaseUrl() {
   if (typeof window !== 'undefined' && window.location && window.location.origin) {
+    if (window.API_BASE_URL) return `${window.API_BASE_URL.replace(/\/$/, '')}/api/designs`;
     return '/api/designs';
   }
   return (typeof process !== 'undefined' && process.env?.API_BASE_URL)
@@ -66,7 +67,7 @@ export function normalizeDesignSchema(raw) {
   if (!raw || typeof raw !== 'object') return null;
 
   const id = raw.id || raw.designId || generateDesignId();
-  const name = (raw.name || 'Untitled Atelier Design').trim();
+  const name = (raw.name || 'Untitled Design').trim();
   const gender = (raw.gender === 'male' || raw.figure === 'male' || raw.croquis === 'male') ? 'male' : 'female';
   const size = raw.size || 'M';
   const top = raw.top || 'basic';

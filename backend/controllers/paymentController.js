@@ -88,7 +88,7 @@ async function generateDynamicUpiQr(req, res, next) {
       upiQrData.data?.payload?.upi_string ||
       upiQrData.data?.url ||
       upiQrData.qrCode ||
-      `upi://pay?pa=fashionforge.cashfree@okhdfcbank&pn=FashionForge%20Atelier&tr=${encodeURIComponent(order.orderId)}&am=${Number(order.total).toFixed(2)}&cu=INR&tn=FashionForge%20Order%20${encodeURIComponent(order.orderId)}`;
+      `upi://pay?pa=fashionforge.cashfree@okhdfcbank&pn=FashionForge&tr=${encodeURIComponent(order.orderId)}&am=${Number(order.total).toFixed(2)}&cu=INR&tn=FashionForge%20Order%20${encodeURIComponent(order.orderId)}`;
 
     // Also attempt mobile intent URI for mobile support
     let intentUrl = null;
@@ -181,7 +181,7 @@ async function getPaymentStatus(req, res, next) {
         order.tracking = [
           {
             status: 'placed',
-            label: 'Bespoke Order Placed',
+            label: 'Order Placed',
             timestamp: new Date()
           }
         ];
@@ -310,7 +310,7 @@ async function confirmCod(req, res, next) {
       order.tracking = [
         {
           status: 'placed',
-          label: 'Bespoke Order Placed',
+          label: 'Order Placed',
           timestamp: new Date()
         }
       ];
@@ -462,7 +462,7 @@ async function handleCashfreeWebhook(req, res, next) {
         order.tracking = [
           {
             status: 'placed',
-            label: 'Bespoke Order Placed',
+            label: 'Order Placed',
             timestamp: new Date()
           }
         ];

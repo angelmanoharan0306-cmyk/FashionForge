@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FashionForge — Bespoke Atelier Checkout</title>
-  <meta name="description" content="Provide shipping details and review order totals before proceeding to simulated payment.">
+  <title>FashionForge — Checkout</title>
+  <meta name="description" content="Provide delivery details and review order totals before proceeding to payment.">
 
   <!-- Google Fonts: Playfair Display + Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -56,7 +56,7 @@
       <nav class="checkout-stepper" aria-label="Order progress">
         <a class="stepper-step is-complete" href="cart.html"><span class="stepper-step-num">1</span> Bag</a>
         <span class="stepper-divider">&rarr;</span>
-        <span class="stepper-step is-active"><span class="stepper-step-num">2</span> Checkout</span>
+        <span class="stepper-step is-active"><span class="stepper-step-num">2</span> Delivery</span>
         <span class="stepper-divider">&rarr;</span>
         <span class="stepper-step"><span class="stepper-step-num">3</span> Payment</span>
         <span class="stepper-divider">&rarr;</span>
@@ -65,8 +65,8 @@
 
       <div class="mydesigns-header-row" style="margin-bottom: var(--space-6);">
         <div>
-          <h1 class="mydesigns-title">Atelier Bespoke Checkout</h1>
-          <p class="mydesigns-subtitle">Provide your delivery address. Orders are handmade-to-order following CAD flat specifications.</p>
+          <h1 class="mydesigns-title">Checkout</h1>
+          <p class="mydesigns-subtitle">Provide your delivery address and review order details.</p>
         </div>
       </div>
 
@@ -84,47 +84,96 @@
         <!-- Left: Customer Information Form -->
         <section class="checkout-form-section" aria-labelledby="shipping-heading">
           <form class="checkout-form" id="form-checkout">
-            <h2 class="cart-summary-title" id="shipping-heading" style="margin-bottom: var(--space-4);">Delivery & Artisan Contact</h2>
+            <h2 class="cart-summary-title" id="shipping-heading" style="margin-bottom: var(--space-4);">Delivery Address</h2>
 
             <div class="form-group">
-              <label class="form-label" for="cust-name">Full Recipient Name</label>
-              <input class="form-input" id="cust-name" type="text" placeholder="Eleanor Vance" required>
+              <label class="form-label" for="cust-name">Full Name</label>
+              <input class="form-input" id="cust-name" type="text" placeholder="John Doe" required>
             </div>
 
             <div class="form-row-2col">
               <div class="form-group">
-                <label class="form-label" for="cust-email">Email Address</label>
-                <input class="form-input" id="cust-email" type="email" placeholder="couture@fashionforge.atelier" required>
+                <label class="form-label" for="cust-phone">Phone Number</label>
+                <input class="form-input" id="cust-phone" type="tel" placeholder="98765 43210" pattern="[0-9]{10}" title="Enter a valid 10-digit mobile number" required>
               </div>
               <div class="form-group">
-                <label class="form-label" for="cust-phone">Phone Number</label>
-                <input class="form-input" id="cust-phone" type="tel" placeholder="+91 98765 43210" required>
+                <label class="form-label" for="cust-email">Email Address</label>
+                <input class="form-input" id="cust-email" type="email" placeholder="customer@example.com" required>
               </div>
             </div>
 
             <div class="form-group">
-              <label class="form-label" for="cust-address">Street Shipping Address</label>
-              <input class="form-input" id="cust-address" type="text" placeholder="42 Haute Couture Boulevard, Suite 500" required>
+              <label class="form-label" for="cust-address">Address Line 1</label>
+              <input class="form-input" id="cust-address" type="text" placeholder="12, Example Street" required>
+            </div>
+
+            <div class="form-row-2col">
+              <div class="form-group">
+                <label class="form-label" for="cust-address2">Address Line 2 (Optional)</label>
+                <input class="form-input" id="cust-address2" type="text" placeholder="Apartment, suite, unit (optional)">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="cust-locality">Area / Locality</label>
+                <input class="form-input" id="cust-locality" type="text" placeholder="Anna Nagar">
+              </div>
             </div>
 
             <div class="form-row-3col">
               <div class="form-group">
                 <label class="form-label" for="cust-city">City</label>
-                <input class="form-input" id="cust-city" type="text" placeholder="Mumbai" required>
+                <input class="form-input" id="cust-city" type="text" placeholder="Chennai" required>
               </div>
               <div class="form-group">
-                <label class="form-label" for="cust-state">State / Province</label>
-                <input class="form-input" id="cust-state" type="text" placeholder="Maharashtra" required>
+                <label class="form-label" for="cust-state">State</label>
+                <select class="form-input" id="cust-state" required style="background: var(--color-surface); cursor: pointer;">
+                  <option value="" disabled selected>Select State</option>
+                  <option value="Tamil Nadu">Tamil Nadu</option>
+                  <option value="Andhra Pradesh">Andhra Pradesh</option>
+                  <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                  <option value="Assam">Assam</option>
+                  <option value="Bihar">Bihar</option>
+                  <option value="Chhattisgarh">Chhattisgarh</option>
+                  <option value="Goa">Goa</option>
+                  <option value="Gujarat">Gujarat</option>
+                  <option value="Haryana">Haryana</option>
+                  <option value="Himachal Pradesh">Himachal Pradesh</option>
+                  <option value="Jharkhand">Jharkhand</option>
+                  <option value="Karnataka">Karnataka</option>
+                  <option value="Kerala">Kerala</option>
+                  <option value="Madhya Pradesh">Madhya Pradesh</option>
+                  <option value="Maharashtra">Maharashtra</option>
+                  <option value="Manipur">Manipur</option>
+                  <option value="Meghalaya">Meghalaya</option>
+                  <option value="Mizoram">Mizoram</option>
+                  <option value="Nagaland">Nagaland</option>
+                  <option value="Odisha">Odisha</option>
+                  <option value="Punjab">Punjab</option>
+                  <option value="Rajasthan">Rajasthan</option>
+                  <option value="Sikkim">Sikkim</option>
+                  <option value="Telangana">Telangana</option>
+                  <option value="Tripura">Tripura</option>
+                  <option value="Uttar Pradesh">Uttar Pradesh</option>
+                  <option value="Uttarakhand">Uttarakhand</option>
+                  <option value="West Bengal">West Bengal</option>
+                  <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
+                  <option value="Chandigarh">Chandigarh</option>
+                  <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
+                  <option value="Delhi">Delhi</option>
+                  <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+                  <option value="Ladakh">Ladakh</option>
+                  <option value="Lakshadweep">Lakshadweep</option>
+                  <option value="Puducherry">Puducherry</option>
+                </select>
               </div>
               <div class="form-group">
-                <label class="form-label" for="cust-postal">Postal Code</label>
-                <input class="form-input" id="cust-postal" type="text" placeholder="400001" required>
+                <label class="form-label" for="cust-postal">PIN Code</label>
+                <input class="form-input" id="cust-postal" type="text" placeholder="600040" pattern="[0-9]{6}" title="Enter a valid 6-digit PIN code" required>
               </div>
             </div>
 
             <div style="margin-top: var(--space-6);">
               <button class="btn-primary auth-submit-btn" id="btn-submit-order" type="submit" style="padding: 14px 20px;">
-                <span>Continue to Payment Simulation</span>
+                <span>Continue to Payment</span>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="5" y1="12" x2="19" y2="12"></line>
                   <polyline points="12 5 19 12 12 19"></polyline>
@@ -152,12 +201,12 @@
             </div>
 
             <div class="cart-summary-row">
-              <span>Bespoke Tailoring Fee</span>
+              <span>Custom Tailoring</span>
               <span style="color: var(--color-brand); font-weight: 600;">Included</span>
             </div>
 
             <div class="cart-summary-row">
-              <span>Atelier Insured Delivery</span>
+              <span>Delivery</span>
               <span style="color: var(--color-brand); font-weight: 600;">Complimentary</span>
             </div>
 
@@ -178,7 +227,7 @@
   <footer class="site-footer" role="contentinfo">
     <div class="footer-inner">
       <div class="footer-copy">
-        &copy; 2026 FashionForge Atelier. All rights reserved. Interactive Digital Fashion Design Studio.
+        &copy; 2026 FashionForge. All rights reserved. Interactive Digital Fashion Design Studio.
       </div>
       <nav class="footer-nav" aria-label="Footer navigation">
         <a href="index.html">Home</a>

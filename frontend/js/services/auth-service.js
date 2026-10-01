@@ -16,6 +16,7 @@ let memoryUser = null;
  */
 export function getAuthApiBaseUrl() {
   if (typeof window !== 'undefined' && window.location && window.location.origin) {
+    if (window.API_BASE_URL) return `${window.API_BASE_URL.replace(/\/$/, '')}/api/auth`;
     return '/api/auth';
   }
   return (typeof process !== 'undefined' && process.env?.API_BASE_URL)

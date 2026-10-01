@@ -164,14 +164,15 @@ async function runBrowserJourney() {
     await page.evaluate(() => {
       const name = document.getElementById('cust-name');
       const email = document.getElementById('cust-email');
-      if (name && !name.value) name.value = 'Madeleine Vionnet';
-      if (email && !email.value) email.value = 'vionnet@fashionforge.test';
+      if (name && !name.value) name.value = 'Sundaram Raman';
+      if (email && !email.value) email.value = 'raman@fashionforge.test';
+      document.getElementById('cust-phone').value = '9876543210';
+      document.getElementById('cust-address').value = '12, Example Street';
+      document.getElementById('cust-locality').value = 'Anna Nagar';
+      document.getElementById('cust-city').value = 'Chennai';
+      document.getElementById('cust-state').value = 'Tamil Nadu';
+      document.getElementById('cust-postal').value = '600040';
     });
-    await page.type('#cust-phone', '+33 1 40 20 50 50');
-    await page.type('#cust-address', '50 Avenue Montaigne');
-    await page.type('#cust-city', 'Paris');
-    await page.type('#cust-state', 'Île-de-France');
-    await page.type('#cust-postal', '75008');
 
     await page.click('#btn-submit-order');
     await page.waitForFunction(() => window.location.href.includes('payment.html'), { timeout: 15000 });
@@ -180,51 +181,31 @@ async function runBrowserJourney() {
     console.log(`[PASS] 8. Order created: ${orderIdParam}`);
 
     // -------------------------------------------------------------------------
-    // STEP 9: Simulate Failed Payment -> Verify Decline & Cart Preserved
+    // STEP 9: Verify 3 Payment Options & Confirm Zero Simulation UI
     // -------------------------------------------------------------------------
-    console.log('\n9. Testing Payment Simulation: Failure...');
-    await page.waitForSelector('#btn-simulate-failure');
-    await page.click('#btn-simulate-failure');
-    await page.waitForSelector('#payment-outcome-panel[style*="block"]');
-    const failOutcome = await page.$eval('#outcome-title', el => el.textContent.trim());
-    assert(failOutcome.includes('Declined'), `Declined outcome rendered: "${failOutcome}"`);
-    console.log('[PASS] 9. Payment failure simulated, outcome panel active');
+    console.log('\n9. Verifying real Payment options and zero simulation UI...');
+    await page.waitForSelector('.payment-methods-card', { timeout: 10000 });
+    const hasCod = await page.$('#option-cod');
+    const hasUpi = await page.$('#option-upi');
+    const hasCard = await page.$('#option-card');
+    assert(hasCod && hasUpi && hasCard, 'Three payment options (COD, UPI, Card) must be present');
+
+    const simSuccess = await page.$('#btn-simulate-success');
+    const simFail = await page.$('#btn-simulate-failure');
+    assert(!simSuccess && !simFail, 'Zero simulation buttons must be present in customer UI');
+    console.log('[PASS] 9. Three real payment methods verified; Zero simulation UI confirmed');
 
     // -------------------------------------------------------------------------
-    // STEP 10: Simulate Successful Payment -> Redirect to Confirmation
+    // STEP 10: Cash on Delivery Checkout Flow -> Redirect to Confirmation
     // -------------------------------------------------------------------------
-    console.log('\n10. Testing Payment Simulation: Success...');
-    // Reopen payment with a new checkout or reload to retry
-    await page.goto(`${BASE_URL}/cart.html`, { waitUntil: 'networkidle0' });
-    // Verify bag was preserved
-    const cartHasItems = await page.$('.cart-item-card');
-    assert(cartHasItems, 'Bag remains intact following payment failure');
-    console.log('[PASS] 10a. Bag verified intact after failed payment');
-
-    // Proceed again to payment
-    await page.goto(`${BASE_URL}/checkout.html`, { waitUntil: 'networkidle0' });
-    await page.waitForSelector('#cust-phone');
-    await page.evaluate(() => {
-      const name = document.getElementById('cust-name');
-      const email = document.getElementById('cust-email');
-      if (name && !name.value) name.value = 'Madeleine Vionnet';
-      if (email && !email.value) email.value = 'vionnet@fashionforge.test';
-    });
-    await page.type('#cust-phone', '+33 1 40 20 50 50');
-    await page.type('#cust-address', '50 Avenue Montaigne');
-    await page.type('#cust-city', 'Paris');
-    await page.type('#cust-state', 'Île-de-France');
-    await page.type('#cust-postal', '75008');
-    await page.click('#btn-submit-order');
-    await page.waitForFunction(() => window.location.href.includes('payment.html'), { timeout: 15000 });
-
-    // Click Simulate Success
-    await page.waitForSelector('#btn-simulate-success');
-    await page.click('#btn-simulate-success');
+    console.log('\n10. Testing Cash on Delivery placement...');
+    await page.click('#option-cod');
+    await page.waitForSelector('#btn-confirm-cod', { visible: true, timeout: 5000 });
+    await page.click('#btn-confirm-cod');
     await page.waitForFunction(() => window.location.href.includes('order-confirmation.html'), { timeout: 15000 });
     const confirmedOrderId = new URL(page.url()).searchParams.get('orderId');
-    assert(confirmedOrderId, `Order Confirmation active for ${confirmedOrderId}`);
-    console.log(`[PASS] 10b. Payment succeeded, redirected to Order Confirmation (${confirmedOrderId})`);
+    assert(confirmedOrderId === orderIdParam, `Order Confirmation active for ${confirmedOrderId}`);
+    console.log(`[PASS] 10. COD Order placed, landed on Order Confirmation (${confirmedOrderId})`);
 
     // -------------------------------------------------------------------------
     // STEP 11: Order Confirmation Details & Navigation to Order Details
@@ -232,7 +213,7 @@ async function runBrowserJourney() {
     console.log('\n11. Inspecting Order Confirmation & Navigating to Details...');
     await page.waitForFunction(() => {
       const badge = document.getElementById('conf-payment-badge');
-      return badge && badge.textContent.trim().toUpperCase() === 'PAID';
+      return badge && badge.textContent.trim().length > 0;
     }, { timeout: 6000 });
 
     await page.waitForFunction(() => {
@@ -241,28 +222,26 @@ async function runBrowserJourney() {
     }, { timeout: 6000 });
 
     const confBadge = await page.$eval('#conf-payment-badge', el => el.textContent.trim());
-    assert(confBadge.toUpperCase() === 'PAID', `Confirmation reflects status: ${confBadge}`);
+    assert(confBadge.toUpperCase() === 'PENDING', `Confirmation reflects status: ${confBadge}`);
 
     await page.click('#btn-track-order');
     await page.waitForFunction(() => window.location.href.includes('order-details.html'), { timeout: 15000 });
     console.log('[PASS] 11. Order Confirmation -> Order Details navigation works');
 
     // -------------------------------------------------------------------------
-    // STEP 12: Order Details Tracking Simulation (placed -> delivered)
+    // STEP 12: Order Details Customer Tracking Timeline (No Simulation Controls)
     // -------------------------------------------------------------------------
-    console.log('\n12. Advancing tracking milestones to terminal "DELIVERED"...');
-    await page.waitForSelector('#btn-advance-status');
+    console.log('\n12. Validating customer tracking timeline and absence of simulation controls...');
+    const advanceBtn = await page.$('#btn-advance-status');
+    assert(advanceBtn === null, 'Developer advance status button must NOT exist in customer UI');
 
-    for (let i = 0; i < 4; i++) {
-      const btnText = await page.$eval('#btn-advance-status', el => el.textContent.trim());
-      if (btnText.includes('Delivered (Terminal Phase)')) break;
-      await page.click('#btn-advance-status');
-      await new Promise(r => setTimeout(r, 600));
-    }
+    await page.waitForSelector('.timeline-step');
+    const timelineSteps = await page.$$eval('.timeline-step', els => els.length);
+    assert(timelineSteps === 6, `Customer timeline has 6 stages (found ${timelineSteps})`);
 
-    const finalStatus = await page.$eval('#det-ord-badge', el => el.textContent.trim());
-    assert(finalStatus === 'DELIVERED', `Terminal status reached: ${finalStatus}`);
-    console.log('[PASS] 12. Tracking successfully advanced to DELIVERED');
+    const detOrdBadge = await page.$eval('#det-ord-badge', el => el.textContent.trim());
+    assert(detOrdBadge.toUpperCase() === 'PLACED', `Order status badge displays: ${detOrdBadge}`);
+    console.log('[PASS] 12. Customer tracking timeline rendered properly with zero simulation UI');
 
     // -------------------------------------------------------------------------
     // STEP 13: Order Details -> My Orders
@@ -275,7 +254,7 @@ async function runBrowserJourney() {
     await page.waitForSelector('.order-history-card');
     const orderCount = await page.$$eval('.order-history-card', els => els.length);
     assert(orderCount >= 1, `Order history displays ${orderCount} order(s)`);
-    console.log(`[PASS] 13. My Orders lists ${orderCount} bespoke order(s)`);
+    console.log(`[PASS] 13. My Orders lists ${orderCount} customer order(s)`);
 
     // -------------------------------------------------------------------------
     // STEP 14: Sign Out -> Guest Navigation

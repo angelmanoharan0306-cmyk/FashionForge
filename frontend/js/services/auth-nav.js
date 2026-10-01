@@ -101,7 +101,7 @@ export function setupNavigationAuth(mountSelector) {
         <div class="user-account-badge" id="nav-user-account" title="Signed in as ${user.email || displayName}" aria-label="Account">
           <span class="user-avatar-circle" aria-hidden="true">${initials}</span>
           <span class="user-account-label" style="font-weight: 600;">${displayName}</span>
-          <button class="btn-auth-logout" id="btn-header-logout" type="button" title="Sign out of atelier">Sign Out</button>
+          <button class="btn-auth-logout" id="btn-header-logout" type="button" title="Sign out">Sign Out</button>
         </div>
       `;
 
@@ -149,7 +149,7 @@ export function setupNavigationAuth(mountSelector) {
         <span class="user-avatar-circle" aria-hidden="true">${initials}</span>
         <span class="user-account-label" style="font-weight: 600;">Account</span>
         <span class="user-name" style="color: var(--color-text-secondary); font-size: var(--text-xs); margin-left: 2px;">(${displayName})</span>
-        <button class="btn-auth-logout" id="btn-header-logout" type="button" title="Sign out of atelier">Sign Out</button>
+        <button class="btn-auth-logout" id="btn-header-logout" type="button" title="Sign out">Sign Out</button>
       </div>
     `;
 
@@ -172,7 +172,7 @@ export function setupNavigationAuth(mountSelector) {
       <a class="btn-ghost" href="login.html?redirect=${redirectParam}" style="font-size: var(--text-xs); padding: 6px 12px;" title="Sign into FashionForge">
         <span>Sign In</span>
       </a>
-      <a class="btn-primary" href="login.html?tab=register&redirect=${redirectParam}" style="font-size: var(--text-xs); padding: 6px 12px;" title="Register Atelier Account">
+      <a class="btn-primary" href="login.html?tab=register&redirect=${redirectParam}" style="font-size: var(--text-xs); padding: 6px 12px;" title="Register Account">
         <span>Register</span>
       </a>
     `;

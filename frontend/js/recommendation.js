@@ -244,7 +244,7 @@ export const RECOMMENDATION_RULES = [
     priority: 80,
     condition: (state) => state.pattern === 'checks' && (state.lastChanged === 'pattern' || !state.lastChanged),
     title: 'Sartorial Heritage Styling',
-    explanation: 'Windowpane checks evoke bespoke tailoring tradition. Best complemented by clean neckline framing and structured sleeve hems.',
+    explanation: 'Windowpane checks evoke classic tailoring tradition. Best complemented by clean neckline framing and structured sleeve hems.',
     ruleLogic: 'IF pattern = checks THEN recommend structured tailored details.'
   },
   {
@@ -278,7 +278,7 @@ export const RECOMMENDATION_RULES = [
       return isMale && state.bottom === 'trousers';
     },
     title: 'Masculine Sartorial Guidance',
-    explanation: 'Tailored trousers paired with a relaxed shirt deliver a sharp, balanced menswear silhouette with clean vertical breaks. Ideal for modern bespoke tailoring.',
+    explanation: 'Tailored trousers paired with a relaxed shirt deliver a sharp, balanced menswear silhouette with clean vertical breaks. Ideal for modern tailored fashion.',
     ruleLogic: 'IF male AND bottom = trousers THEN provide appropriate masculine styling guidance.'
   },
   {
@@ -379,7 +379,7 @@ export const RECOMMENDATION_RULES = [
     priority: 50,
     condition: (state) => state.sleeves === 'long',
     title: 'Tailored Linear Coverage',
-    explanation: 'Full-length sleeves provide structural refinement and formal elegance, ideal for tailored bespoke ensembles.',
+    explanation: 'Full-length sleeves provide structural refinement and formal elegance, ideal for tailored ensembles.',
     ruleLogic: 'IF sleeves = long THEN highlight elegant formal coverage.'
   },
   {

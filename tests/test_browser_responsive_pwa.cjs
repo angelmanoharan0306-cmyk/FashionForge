@@ -251,57 +251,45 @@ async function runBrowserE2E() {
 
     await page.evaluate(() => {
       document.getElementById('cust-name').value = 'Angel Tester';
-      document.getElementById('cust-email').value = 'tester@fashionforge.atelier';
-      document.getElementById('cust-phone').value = '+91 98765 43210';
-      document.getElementById('cust-address').value = '100 Haute Couture Blvd';
-      document.getElementById('cust-city').value = 'Paris';
-      document.getElementById('cust-state').value = 'Ile-de-France';
-      document.getElementById('cust-postal').value = '75001';
+      document.getElementById('cust-email').value = 'tester@fashionforge.test';
+      document.getElementById('cust-phone').value = '9876543210';
+      document.getElementById('cust-address').value = '12, Example Street';
+      document.getElementById('cust-locality').value = 'Anna Nagar';
+      document.getElementById('cust-city').value = 'Chennai';
+      document.getElementById('cust-state').value = 'Tamil Nadu';
+      document.getElementById('cust-postal').value = '600040';
     });
 
-    // E. Proceed to Payment Simulation
+    // E. Proceed to Payment
     await page.click('#btn-submit-order');
     await page.waitForFunction(() => window.location.href.includes('payment'), { timeout: 15000 });
-    await page.waitForSelector('#btn-simulate-success', { timeout: 10000 });
     const paymentUrl = page.url();
+    assert(paymentUrl.includes('orderId='), 'Payment URL missing orderId');
+    const orderIdMatch = paymentUrl.match(/orderId=([^&]+)/);
+    const orderId = orderIdMatch ? orderIdMatch[1] : null;
 
-    // Verify Payment Sandbox Notice
-    const sandboxNotice = await page.$eval('.payment-simulation-notice, .sandbox-banner, h1, .page-title', el => el.innerText);
-    assert(sandboxNotice.toLowerCase().includes('payment') || sandboxNotice.toLowerCase().includes('simulation') || sandboxNotice.toLowerCase().includes('sandbox'), 'Payment simulation indicator missing');
-    console.log('  ✓ Payment Sandbox page verified');
+    // Verify 3 real payment options and NO simulation buttons
+    await page.waitForSelector('#option-cod', { timeout: 10000 });
+    const hasCod = await page.$('#option-cod');
+    const hasUpi = await page.$('#option-upi');
+    const hasCard = await page.$('#option-card');
+    assert(hasCod && hasUpi && hasCard, 'Three payment options (COD, UPI, Card) must be present');
 
-    // F. Test Payment Failure state
-    const failBtn = await page.$('#btn-simulate-failure');
-    if (failBtn) {
-      await failBtn.click();
-      await page.waitForSelector('#payment-outcome-panel', { visible: true, timeout: 5000 });
-      const failStateMsg = await page.$eval('#payment-outcome-panel', el => el.innerText).catch(() => 'Failed');
-      console.log(`  ✓ Simulated Payment Failure handled properly: "${failStateMsg.trim().slice(0, 50)}..."`);
-      
-      // Verify Bag remains intact
-      await page.goto(`${BASE_URL}/cart`, { waitUntil: 'networkidle0' });
-      const cartItemCount = await page.$$eval('.cart-item, .cart-item-card, .bag-item', els => els.length).catch(() => 1);
-      assert(cartItemCount >= 1, 'Cart items should remain intact after failed payment');
-      console.log('  ✓ Customer Bag remained intact after payment failure');
-      
-      // Return to Payment
-      await page.goto(paymentUrl, { waitUntil: 'networkidle0' });
-    }
+    const simBtn = await page.$('#btn-simulate-success');
+    assert(!simBtn, 'Simulation buttons must not exist in real customer UI');
+    console.log('  ✓ Payment page verified with real payment options and zero simulation UI');
 
-    // G. Simulate Payment Success
-    const successBtn = await page.waitForSelector('#btn-simulate-success', { timeout: 10000 });
-    assert(successBtn, 'Simulate Success button not found');
-    await successBtn.click();
+    // F. Test Cash on Delivery placement
+    await page.click('#option-cod');
+    await page.waitForSelector('#btn-confirm-cod', { visible: true, timeout: 5000 });
+    await page.click('#btn-confirm-cod');
     await page.waitForFunction(() => window.location.href.includes('order-confirmation'), { timeout: 15000 });
-    await new Promise(r => setTimeout(r, 800));
 
     // Verify Order Confirmation URL
     const currentUrl = page.url();
     assert(currentUrl.includes('order-confirmation'), `Expected order-confirmation URL, got: ${currentUrl}`);
-    const orderIdMatch = currentUrl.match(/orderId=([^&]+)/);
-    const orderId = orderIdMatch ? orderIdMatch[1] : null;
-    assert(orderId, 'Order confirmation page did not preserve orderId parameter');
-    console.log(`  ✓ Order confirmed successfully! Order ID: ${orderId}`);
+    assert(currentUrl.includes(orderId), 'Order confirmation page did not preserve orderId parameter');
+    console.log(`  ✓ COD Order confirmed successfully! Order ID: ${orderId}`);
 
     // H. Navigate to Order History
     await page.goto(`${BASE_URL}/orders`, { waitUntil: 'networkidle0' });

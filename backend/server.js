@@ -24,6 +24,19 @@ app.use(express.json({
     req.rawBody = buf ? buf.toString() : '';
   }
 }));
+
+// CORS Configuration for decoupling frontend and backend
+app.use((req, res, next) => {
+  const allowedOrigin = process.env.FRONTEND_URL || '*';
+  res.header('Access-Control-Allow-Origin', allowedOrigin);
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, x-webhook-signature, x-webhook-timestamp');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 app.use(express.static(frontendPath));
 
 // Health Check Endpoint
@@ -121,7 +134,7 @@ const startServer = async () => {
   }
 
   server = app.listen(PORT, () => {
-    console.log(`FashionForge atelier backend is running on http://localhost:${PORT}`);
+    console.log(`FashionForge backend is running on http://localhost:${PORT}`);
   });
   return server;
 };
