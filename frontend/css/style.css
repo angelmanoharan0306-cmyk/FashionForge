@@ -459,6 +459,26 @@ img, svg {
   gap: var(--space-3);
 }
 
+@media (max-width: 480px) {
+  .home-nav-inner {
+    padding: 0 12px;
+  }
+  .home-nav-actions {
+    gap: 6px;
+  }
+  .home-nav-actions .btn-primary {
+    padding: 0 10px;
+    height: 2.25rem;
+    font-size: var(--text-xs);
+  }
+  .home-nav-actions .btn-primary svg {
+    display: none;
+  }
+  .home-brand-title {
+    font-size: 1.2rem;
+  }
+}
+
 /* 4.2 Home Hero (2-Column Editorial) */
 .home-hero-section {
   padding: var(--space-12) 0 var(--space-16);
@@ -967,6 +987,24 @@ img, svg {
   gap: var(--space-4);
 }
 
+@media (max-width: 1080px) {
+  .blueprint-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .blueprint-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .blueprint-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .blueprint-card {
   background: #ffffff;
   border: 1px solid var(--color-border);
@@ -1172,6 +1210,7 @@ img, svg {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-6);
+  flex-wrap: wrap;
 }
 
 .atelier-banner-brand h2 {
@@ -1195,6 +1234,8 @@ img, svg {
   align-items: center;
   gap: var(--space-5);
   text-align: center;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .atelier-banner-text {
@@ -1225,6 +1266,16 @@ img, svg {
   gap: var(--space-4);
   font-size: 0.75rem;
   color: #eed5cc;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .atelier-banner-inner {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--space-4);
+  }
 }
 
 /* Left Studio Panel: Trigger Cards & Swatch Active Bars */
@@ -2402,7 +2453,7 @@ img, svg {
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   z-index: 200;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   padding: var(--space-4);
@@ -2412,6 +2463,7 @@ img, svg {
 }
 
 .modal-backdrop.is-open {
+  display: flex;
   opacity: 1;
   pointer-events: auto;
 }
@@ -2421,8 +2473,9 @@ img, svg {
   border-radius: var(--radius-xl);
   border: 1px solid var(--color-border);
   box-shadow: var(--shadow-lg);
-  max-width: 32rem;
+  max-width: min(32rem, calc(100vw - 32px));
   width: 100%;
+  box-sizing: border-box;
   padding: var(--space-6);
   transform: translateY(12px);
   transition: transform var(--transition-base);
@@ -2653,12 +2706,20 @@ img, svg {
   }
 }
 
-/* 11.2 Tablet (768px - 1023px): Controls & Inspector as Drawers */
-@media (max-width: 1023px) {
+/* 11.2 Tablet (768px - 1080px): Drawers & Compact Top Bar */
+@media (max-width: 1080px) {
   .home-hero-grid,
   .spotlight-card {
     grid-template-columns: 1fr;
     gap: var(--space-8);
+  }
+
+  .studio-header-center {
+    display: none;
+  }
+
+  .studio-top-header {
+    padding: 0 var(--space-4);
   }
 
   .studio-app-layout {
@@ -2687,8 +2748,8 @@ img, svg {
   }
 }
 
-/* 11.3 Mobile (< 768px): Bottom Sheets / Stacked Experience */
-@media (max-width: 767px) {
+/* 11.3 Mobile & Tablet Portrait (<= 800px): Compact Headers & Stacked Experience */
+@media (max-width: 800px) {
   .capability-cards-grid,
   .workflow-steps-grid {
     grid-template-columns: 1fr;
@@ -2703,32 +2764,116 @@ img, svg {
     display: none;
   }
 
-  .studio-header-center {
+  .studio-header-center,
+  .header-design-name,
+  .studio-header-divider,
+  .studio-brand-sub,
+  .header-right .btn-ghost,
+  .studio-badge {
     display: none;
+  }
+
+  .btn-header-orders span,
+  .btn-header-cart span:not(.nav-bag-count),
+  .user-account-label,
+  .user-name {
+    display: none;
+  }
+
+  .studio-top-header {
+    padding: 0 var(--space-3);
+  }
+
+  .header-right,
+  .studio-header-right {
+    gap: 4px;
+  }
+
+  .user-account-badge {
+    padding: 3px 6px;
+    gap: 4px;
+  }
+
+  .header-action-btn {
+    padding: 4px 6px !important;
+  }
+
+  .studio-header-right a.btn-primary span {
+    display: none;
+  }
+
+  .studio-header-right a.btn-primary {
+    padding: 0 8px;
+    height: 2.1rem;
   }
 }
 
 /* ==========================================================================
-   12. MY DESIGNS ATELIER PORTFOLIO STYLES (PHASE 7)
+   12. GLOBAL APPLICATION PAGE SHELL (NATURAL SCROLLING)
    ========================================================================== */
 
-.mydesigns-page-body {
-  background: var(--color-surface-subtle);
+.app-page-body,
+.mydesigns-page-body,
+.cart-page-body,
+.checkout-page-body,
+.payment-page-body,
+.order-confirmation-page-body,
+.orders-page-body,
+.order-details-page-body,
+.auth-page-body {
   min-height: 100vh;
+  height: auto !important;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-surface-subtle);
+  color: var(--color-text-primary);
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto !important;
+  -webkit-font-smoothing: antialiased;
 }
 
-.mydesigns-main-layout {
-  flex: 1;
-  padding: var(--space-8) 0 var(--space-16);
-  overflow-y: auto;
+.app-page-shell,
+.mydesigns-main-layout,
+.mydesigns-main-container {
+  flex: 1 0 auto;
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-8) var(--space-16);
+  box-sizing: border-box;
+  overflow: visible !important;
+}
+
+@media (max-width: 1080px) {
+  .app-page-shell,
+  .mydesigns-main-layout,
+  .mydesigns-main-container {
+    padding: var(--space-6) 24px var(--space-12);
+  }
+}
+
+@media (max-width: 600px) {
+  .app-page-shell,
+  .mydesigns-main-layout,
+  .mydesigns-main-container {
+    padding: var(--space-4) 16px var(--space-8);
+  }
+}
+
+.mydesigns-content-wrap {
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .mydesigns-container {
-  max-width: 1200px;
+  max-width: 1240px;
   margin: 0 auto;
-  padding: 0 var(--space-6);
+  padding: 0;
 }
 
 .mydesigns-hero-section {
@@ -3235,6 +3380,13 @@ img, svg {
   color: var(--color-text-primary);
 }
 
+.user-account-label {
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .user-avatar-circle {
   width: 22px;
   height: 22px;
@@ -3271,12 +3423,12 @@ img, svg {
 /* Cart Layout */
 .cart-layout-grid {
   display: grid;
-  grid-template-columns: 1fr 380px;
+  grid-template-columns: 1fr minmax(280px, 360px);
   gap: var(--space-6);
   align-items: start;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1040px) {
   .cart-layout-grid {
     grid-template-columns: 1fr;
   }
@@ -3532,12 +3684,12 @@ img, svg {
 /* Checkout Layout & Forms */
 .checkout-layout-grid {
   display: grid;
-  grid-template-columns: 1fr 380px;
+  grid-template-columns: 1fr minmax(280px, 360px);
   gap: var(--space-6);
   align-items: start;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1040px) {
   .checkout-layout-grid {
     grid-template-columns: 1fr;
   }
@@ -4137,13 +4289,149 @@ img, svg {
 /* 15.4 Order Details Layout Grid */
 .order-details-grid {
   display: grid;
-  grid-template-columns: 1fr 340px;
-  gap: var(--space-6);
+  grid-template-columns: 1fr 360px;
+  gap: var(--space-8);
   align-items: start;
 }
 
-@media (max-width: 860px) {
+@media (max-width: 960px) {
   .order-details-grid {
     grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+}
+
+/* ==========================================================================
+   16. CHECKOUT PROGRESS STEPPER
+   ========================================================================== */
+
+.checkout-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-8);
+  padding: 6px var(--space-5);
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: var(--shadow-sm);
+}
+
+.stepper-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  transition: all 150ms ease;
+}
+
+.stepper-step.is-active {
+  background: var(--color-brand);
+  color: #ffffff;
+}
+
+.stepper-step.is-complete {
+  color: var(--color-text-primary);
+}
+
+.stepper-step.is-complete:hover {
+  color: var(--color-brand);
+}
+
+.stepper-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.08);
+  font-size: 10px;
+}
+
+.stepper-step.is-active .stepper-step-num {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+.stepper-divider {
+  color: var(--color-border);
+  font-size: 11px;
+}
+
+@media (max-width: 600px) {
+  .checkout-stepper {
+    padding: 4px 8px;
+    gap: 4px;
+    overflow-x: auto;
+    max-width: 100%;
+  }
+  .stepper-step {
+    padding: 3px 6px;
+    font-size: 11px;
+  }
+}
+
+/* ==========================================================================
+   17. GLOBAL SITE FOOTER
+   ========================================================================== */
+
+.site-footer {
+  margin-top: auto;
+  background: #ffffff;
+  border-top: 1px solid var(--color-border-subtle);
+  padding: var(--space-6) 0;
+  width: 100%;
+}
+
+.footer-inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 var(--space-8);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.footer-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.footer-nav a {
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+
+.footer-nav a:hover {
+  color: var(--color-brand);
+}
+
+@media (max-width: 768px) {
+  .footer-inner {
+    padding: 0 var(--space-4);
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .footer-nav {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
   }
 }

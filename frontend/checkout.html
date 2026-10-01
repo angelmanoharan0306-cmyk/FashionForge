@@ -12,10 +12,15 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✂️</text></svg>">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="theme-color" content="#b96b61">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
   <link rel="stylesheet" href="css/style.css">
   <script type="module" src="js/checkout.js"></script>
 </head>
-<body class="studio-app-body mydesigns-page-body checkout-page-body">
+<body class="app-page-body checkout-page-body">
 
   <div class="studio-toast-container" id="toast-container" aria-live="polite"></div>
 
@@ -44,9 +49,20 @@
     </div>
   </header>
 
-  <main class="mydesigns-main-container" role="main">
+  <main class="app-page-shell" role="main">
     <div class="mydesigns-content-wrap">
       
+      <!-- Order Progress Stepper -->
+      <nav class="checkout-stepper" aria-label="Order progress">
+        <a class="stepper-step is-complete" href="cart.html"><span class="stepper-step-num">1</span> Bag</a>
+        <span class="stepper-divider">&rarr;</span>
+        <span class="stepper-step is-active"><span class="stepper-step-num">2</span> Checkout</span>
+        <span class="stepper-divider">&rarr;</span>
+        <span class="stepper-step"><span class="stepper-step-num">3</span> Payment</span>
+        <span class="stepper-divider">&rarr;</span>
+        <span class="stepper-step"><span class="stepper-step-num">4</span> Confirmation</span>
+      </nav>
+
       <div class="mydesigns-header-row" style="margin-bottom: var(--space-6);">
         <div>
           <h1 class="mydesigns-title">Atelier Bespoke Checkout</h1>
@@ -157,6 +173,22 @@
 
     </div>
   </main>
+
+  <!-- Global Footer -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="footer-inner">
+      <div class="footer-copy">
+        &copy; 2026 FashionForge Atelier. All rights reserved. Interactive Digital Fashion Design Studio.
+      </div>
+      <nav class="footer-nav" aria-label="Footer navigation">
+        <a href="index.html">Home</a>
+        <a href="design.html">Design Studio</a>
+        <a href="my-designs.html">My Designs</a>
+        <a href="cart.html">Bag</a>
+        <a href="orders.html">My Orders</a>
+      </nav>
+    </div>
+  </footer>
 
 </body>
 </html>

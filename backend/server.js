@@ -87,6 +87,19 @@ app.get('/register', (req, res) => {
   res.sendFile(path.join(frontendPath, 'login.html'));
 });
 
+app.get('/offline', (req, res) => {
+  res.sendFile(path.join(frontendPath, 'offline.html'));
+});
+
+// PWA Static Endpoints with explicit MIME types
+app.get('/manifest.webmanifest', (req, res) => {
+  res.type('application/manifest+json').sendFile(path.join(frontendPath, 'manifest.webmanifest'));
+});
+
+app.get('/service-worker.js', (req, res) => {
+  res.type('application/javascript').sendFile(path.join(frontendPath, 'service-worker.js'));
+});
+
 // Global Error Handler
 app.use(errorHandler);
 

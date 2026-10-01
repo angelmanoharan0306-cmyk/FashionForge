@@ -4,6 +4,12 @@
  */
 
 import { isAuthenticated, getCurrentUser, logout } from './auth-service.js';
+import { registerServiceWorker } from './pwa.js';
+
+// Auto-register PWA service worker across all pages
+if (typeof window !== 'undefined') {
+  registerServiceWorker();
+}
 
 export async function updateNavBagCount() {
   const badge = document.querySelector('#nav-bag-count');
@@ -52,9 +58,13 @@ export function setupNavigationAuth(mountSelector) {
   }
   if (!mountEl) return;
 
+  const isHome = mountEl.classList.contains('home-nav-actions') ||
+                 window.location.pathname === '/' ||
+                 window.location.pathname.endsWith('index.html');
+
   // If mounting into .home-nav-actions on index.html, remove stale static login link
   const staticLogin = mountEl.querySelector('a.home-nav-link[href="login.html"], a[href="login.html"]');
-  if (staticLogin && mountEl.classList.contains('home-nav-actions')) {
+  if (staticLogin && isHome) {
     staticLogin.remove();
   }
 
@@ -69,7 +79,7 @@ export function setupNavigationAuth(mountSelector) {
 
     // In .home-nav-actions, place before the primary "Start Designing" CTA button
     const startDesigningBtn = mountEl.querySelector('a.btn-primary[href="design.html"]');
-    if (startDesigningBtn) {
+    if (startDesigningBtn && isHome) {
       mountEl.insertBefore(authWidget, startDesigningBtn);
     } else {
       mountEl.appendChild(authWidget);
@@ -79,32 +89,43 @@ export function setupNavigationAuth(mountSelector) {
   const authenticated = isAuthenticated();
   const user = getCurrentUser() || { name: 'Account' };
 
+  if (isHome) {
+    // -------------------------------------------------------------
+    // MARKETING HEADER (Home Page): Clean, No internal app clutter
+    // -------------------------------------------------------------
+    if (authenticated) {
+      const displayName = user.name || 'Account';
+      const initials = displayName.charAt(0).toUpperCase();
+
+      authWidget.innerHTML = `
+        <div class="user-account-badge" id="nav-user-account" title="Signed in as ${user.email || displayName}" aria-label="Account">
+          <span class="user-avatar-circle" aria-hidden="true">${initials}</span>
+          <span class="user-account-label" style="font-weight: 600;">${displayName}</span>
+          <button class="btn-auth-logout" id="btn-header-logout" type="button" title="Sign out of atelier">Sign Out</button>
+        </div>
+      `;
+
+      const btnLogout = authWidget.querySelector('#btn-header-logout');
+      if (btnLogout) {
+        btnLogout.addEventListener('click', () => {
+          logout();
+          window.location.href = 'index.html';
+        });
+      }
+    } else {
+      authWidget.innerHTML = `
+        <a class="home-nav-link" href="login.html" style="font-size: var(--text-sm); margin-right: var(--space-2);">Sign In</a>
+      `;
+    }
+    return;
+  }
+
+  // -----------------------------------------------------------------
+  // APPLICATION & STUDIO HEADER: My Orders, Bag, Account, Sign Out
+  // -----------------------------------------------------------------
   if (authenticated) {
     const displayName = user.name || 'Account';
     const initials = displayName.charAt(0).toUpperCase();
-
-    // If on index.html, also add My Orders and Bag links to .home-nav-links
-    const homeNavLinks = document.querySelector('.home-nav-links');
-    if (homeNavLinks && !homeNavLinks.querySelector('a[href="orders.html"]')) {
-      const ordersLink = document.createElement('a');
-      ordersLink.className = 'home-nav-link nav-auth-link';
-      ordersLink.href = 'orders.html';
-      ordersLink.textContent = 'My Orders';
-
-      const bagLink = document.createElement('a');
-      bagLink.className = 'home-nav-link nav-auth-link';
-      bagLink.href = 'cart.html';
-      bagLink.textContent = 'Bag';
-
-      const capLink = homeNavLinks.querySelector('a[href="#capabilities"]');
-      if (capLink) {
-        homeNavLinks.insertBefore(ordersLink, capLink);
-        homeNavLinks.insertBefore(bagLink, capLink);
-      } else {
-        homeNavLinks.appendChild(ordersLink);
-        homeNavLinks.appendChild(bagLink);
-      }
-    }
 
     authWidget.innerHTML = `
       <a class="header-action-btn btn-header-orders" href="orders.html" title="My Orders & Tracking" aria-label="My Orders" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; padding: 4px 10px; font-size: var(--text-xs); color: inherit;">
