@@ -1,6 +1,6 @@
 /**
  * FashionForge — Order Mongoose Model
- * Represents an authenticated placed/pending bespoke couture order.
+ * Represents an authenticated placed/confirmed order.
  */
 
 const mongoose = require('mongoose');

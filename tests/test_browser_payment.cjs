@@ -1,6 +1,6 @@
 /**
- * FashionForge — Browser E2E Test Suite for Simplified UPI QR & COD
- * tests/test_browser_cashfree_payment.cjs
+ * FashionForge — Browser E2E Test Suite for UPI QR & COD
+ * tests/test_browser_payment.cjs
  *
  * Exercises the complete real user flow using Puppeteer & local Google Chrome:
  * 1. Register & Login

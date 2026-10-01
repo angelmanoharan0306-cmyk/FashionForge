@@ -1,95 +1,94 @@
-# FashionForge — Interactive Digital Costume Design Studio & Atelier
+﻿# FashionForge — Interactive Digital Fashion Design Studio
 
-FashionForge is an end-to-end interactive digital costume design studio and bespoke fashion platform. It bridges the gap between artistic fashion design, parametric manufacturing estimation (Bill of Materials), and direct consumer ordering.
-
----
-
-## Key Features
-
-- **2.5D Layered Canvas Studio:** Custom rendering engine for real-time garment visualization with male and female croquis figures, neckline/collar variations, sleeve styles, fabric textures, and dynamic HSL color blending.
-- **Dynamic Bill of Materials (BOM):** Real-time parametric cost calculation based on garment complexity, fabric multipliers, and bespoke hardware accents.
-- **CAD & Specification Export:** High-precision orthographic 2D Technical Flat rendering and comprehensive industry-standard Tech Pack generation (specifications, measurements, care guides, and BOM).
-- **End-to-End Bespoke Ordering & Cashfree Payment Gateway:**
-  - Save / Load / Update designs with MongoDB persistence.
-  - Customer Bag with real-time quantity and BOM adjustments.
-  - Multi-step checkout with recipient validation.
-  - **Screenshot-Style Branded Payment UI:** Cash on Delivery, Dynamic UPI QR, and Card payments.
-  - **Cashfree Payment Infrastructure:** FashionForge uses Cashfree Payment Gateway for online payment processing. The customer-facing checkout remains branded as FashionForge. UPI payments use transaction-specific QR/payment flows, while payment status is verified server-side. Card details are handled by the payment provider and are not stored by FashionForge.
-  - **Sandbox / Test Mode:** Default development/demo environment with zero real charges and service-boundary simulation.
-  - **Production Mode:** Requires Cashfree merchant onboarding, account activation, and production API credentials.
-  - Order Confirmation with unique order tracking reference.
-  - My Orders history and simulated multi-stage manufacturing & delivery tracking (`Placed` &rarr; `Processing` &rarr; `Ready` &rarr; `Shipped` &rarr; `Delivered`).
-- **Progressive Web App (PWA):**
-  - Installable home screen app with `manifest.webmanifest`.
-  - Service worker with versioned cache management (`fashionforge-v1.0.0`).
-  - Offline fallback experience (`/offline.html`).
-  - Standard & maskable icons (192×192 and 512×512).
-- **Responsive Haute Couture Design System:**
-  - Curated luxury editorial palette (`#faf8f5`, `#1d1918`, `#b96b61`, `#c59b27`).
-  - Responsive layouts tested across 1440px, 1280px, 1024px, 768px, 480px, and 375px viewports with zero horizontal overflow.
-  - Distinct marketing header on Home and dedicated workflow headers across internal application tools.
+FashionForge is a full-stack interactive fashion design platform. It lets customers design garments on a 2.5D canvas studio, review a real-time Bill of Materials, save designs, and place orders with UPI or Cash on Delivery.
 
 ---
 
-## Architecture & Technology Stack
+## Features
+
+- **2.5D Design Studio** — Real-time garment visualization on male and female croquis figures. Customize necklines, collars, sleeve styles, fabric textures, and HSL color blending using an HTML5 Canvas rendering engine.
+- **Dynamic Bill of Materials (BOM)** — Parametric cost estimation based on garment complexity, fabric type, and hardware accents, recalculated on every design change.
+- **CAD Export** — 2D orthographic technical flat view and full Tech Pack generation (measurements, specifications, care guide, BOM).
+- **End-to-End Order Flow:**
+  - Save, load, and update designs with MongoDB persistence.
+  - Shopping Bag with quantity management and real-time BOM recalculation.
+  - Multi-step checkout with delivery address validation.
+  - **Payment Page:** UPI QR code (scan with PhonePe, Google Pay, Paytm, BHIM) and Cash on Delivery.
+  - Order Confirmation with a unique tracking reference.
+  - Order History and multi-stage manufacturing/delivery tracking.
+- **Progressive Web App (PWA)** — Installable, with service worker caching and offline fallback.
+- **Responsive Design** — Tested across 1440px, 1280px, 1024px, 768px, 480px, and 375px viewports.
+
+---
+
+## Tech Stack
 
 | Layer | Technologies |
 | :--- | :--- |
-| **Frontend** | Vanilla HTML5, CSS3 Custom Properties (Design Tokens), Modular ES6+ JavaScript |
-| **Graphics** | HTML5 2D Canvas API (Painter's Algorithm, HSL color compositing, vector CAD paths) |
-| **Payment Gateway** | Cashfree PG Web Integration (Dynamic UPI QR, Mobile UPI Intent, Cashfree.js v3 SDK, HMAC-SHA256 Webhook Verification) |
-| **PWA** | Service Worker API (Cache-First with Network fallback), Web App Manifest |
+| **Frontend** | Vanilla HTML5, CSS3 Custom Properties, Modular ES6+ JavaScript |
+| **Graphics** | HTML5 2D Canvas API (HSL compositing, vector paths, painter''s algorithm) |
+| **Payment** | UPI QR (static merchant QR image) + Cash on Delivery |
+| **PWA** | Service Worker (Cache-First + Network fallback), Web App Manifest |
 | **Backend** | Node.js (v18+), Express REST API |
-| **Database** | MongoDB with Mongoose ODM (Strict schemas, compound indexes) |
-| **Authentication** | Stateless JWT (JSON Web Tokens) with `bcrypt` password hashing |
-| **Testing** | Node.js native test runner (363 tests) + Puppeteer headless browser E2E test suite |
+| **Database** | MongoDB with Mongoose ODM |
+| **Auth** | Stateless JWT with bcrypt password hashing |
+| **Testing** | Node.js native test runner + Puppeteer browser E2E suite |
 
 ---
 
 ## Directory Structure
 
-```
+``````
 FashionForge/
 ├── backend/
-│   ├── config/              # Database connection & environment configuration
-│   ├── controllers/         # REST API business logic (auth, designs, cart, orders)
-│   ├── middleware/          # JWT auth, error handling, static serving
-│   ├── models/              # Mongoose database models (User, Design, Cart, Order)
-│   ├── routes/              # Express API route declarations
-│   └── server.js            # Express server initialization & PWA route endpoints
+│   ├── config/              # Database connection (db.js)
+│   ├── controllers/         # Business logic — auth, designs, cart, orders, payment
+│   ├── middleware/          # JWT auth, error handler, design validation
+│   ├── models/              # Mongoose models — User, Design, Cart, Order
+│   ├── routes/              # Express route declarations
+│   ├── services/            # upiService.js — UPI merchant config
+│   └── server.js            # Express app entry point, static serving, PWA routes
 ├── frontend/
-│   ├── assets/              # SVG illustrations, textures, and PWA icon sets
-│   ├── css/                 # Comprehensive bespoke design system (style.css)
-│   ├── js/                  # ES6+ modular client controllers and services
-│   │   ├── services/        # auth-service, cart-service, pwa, auth-nav
+│   ├── assets/
+│   │   ├── icons/           # PWA icons (192px, 512px, maskable)
+│   │   ├── images/          # upi-qr.png — merchant UPI QR code
+│   │   ├── models/          # Male/Female croquis model images (XS–4XL)
+│   │   └── svg/             # SVG garment part overlays
+│   ├── css/
+│   │   └── style.css        # Full design system — tokens, layout, components
+│   ├── js/
+│   │   ├── renderer/        # 2.5D canvas engine (geometry, materials, lighting)
+│   │   ├── services/        # auth-service, cart-service, design-storage, pwa
 │   │   ├── app.js           # Design Studio coordinator
-│   │   ├── canvas-view.js   # 2.5D Canvas rendering engine
-│   │   ├── flat-view.js     # 2D Orthographic CAD flat renderer
-│   │   ├── techpack-view.js # Specification & BOM Tech Pack generator
-│   │   ├── cart.js          # Customer Bag controller
-│   │   ├── checkout.js      # Multi-step checkout controller
-│   │   ├── payment.js       # Payment simulation sandbox controller
-│   │   ├── confirmation.js  # Order confirmation controller
-│   │   ├── orders.js        # Order history controller
-│   │   └── tracking.js      # Order tracking timeline controller
-│   ├── index.html           # Marketing Home page
-│   ├── design.html          # Interactive Design Studio
-│   ├── cart.html            # Customer Bag
+│   │   ├── payment.js       # Payment page controller
+│   │   ├── cart.js          # Shopping Bag controller
+│   │   ├── checkout.js      # Checkout flow controller
+│   │   └── ...              # order-confirmation, order-details, orders, my-designs
+│   ├── index.html           # Home page
+│   ├── design.html          # Design Studio
+│   ├── cart.html            # Shopping Bag
 │   ├── checkout.html        # Checkout
-│   ├── payment.html         # Payment Simulation Sandbox
-│   ├── order-confirmation.html # Order Confirmation
-│   ├── orders.html          # Order History
-│   ├── order-details.html   # Order Details & Tracking Timeline
-│   ├── my-designs.html      # Saved Designs Gallery
-│   ├── login.html           # Authentication (Sign In / Register)
-│   ├── offline.html         # PWA Offline Fallback
-│   ├── manifest.webmanifest # PWA Web App Manifest
-│   └── service-worker.js    # PWA Service Worker (Cache & Offline)
+│   ├── payment.html         # Payment (UPI QR + COD)
+│   ├── order-confirmation.html
+│   ├── orders.html
+│   ├── order-details.html
+│   ├── my-designs.html
+│   ├── login.html
+│   ├── offline.html         # PWA offline fallback
+│   ├── manifest.webmanifest # PWA manifest
+│   └── service-worker.js
 ├── docs/
-│   ├── VIVA_NOTES.md        # Technical viva voce notes & system architecture
-│   └── VIVA_QA.md           # Comprehensive viva examination Q&A guide
-└── tests/                   # Automated unit, integration, and browser E2E suites
-```
+│   ├── DEPLOYMENT.md        # Deployment guide (Render + MongoDB Atlas)
+│   ├── VIVA_NOTES.md        # Technical architecture notes
+│   ├── VIVA_QA.md           # Viva voce Q&A reference
+│   └── archive/             # Development planning documents (not required at runtime)
+├── scripts/
+│   └── generate_default_qr.cjs  # Utility to regenerate upi-qr.png placeholder
+├── tests/                   # Unit, API integration, and browser E2E test suites
+├── .env.example             # Environment variable reference
+├── .gitignore
+└── package.json
+``````
 
 ---
 
@@ -97,48 +96,75 @@ FashionForge/
 
 ### Prerequisites
 
-- Node.js (v18+ recommended)
-- MongoDB instance running locally (default: `mongodb://127.0.0.1:27017/fashionforge`)
+- Node.js v18 or later
+- MongoDB (local or MongoDB Atlas)
 
-### Installation & Execution
+### Local Setup
 
 1. **Install dependencies:**
    ```bash
    npm install
    ```
 
-2. **Configure environment variables:**
-   Ensure a `.env` file exists with:
+2. **Copy and configure the environment file:**
+   ```bash
+   cp .env.example .env
+   ```
+   Minimum required variables:
    ```env
    PORT=5000
    MONGODB_URI=mongodb://127.0.0.1:27017/fashionforge
-   JWT_SECRET=fashionforge_jwt_secret_dev
+   JWT_SECRET=your_secure_secret_here
+   UPI_ID=your_upi_id@bank
+   MERCHANT_NAME=FashionForge
    ```
 
-3. **Start the backend server:**
+3. **Add your UPI QR code image:**
+   Replace `frontend/assets/images/upi-qr.png` with your actual merchant UPI QR image.
+
+4. **Start the server:**
    ```bash
    npm start
    ```
-   Open `http://localhost:5000` in your web browser.
+   Open http://localhost:5000 in your browser.
 
 ---
 
-## Running Automated Tests
+## Payment
 
-Run the complete test suite (314 unit, API, and PWA integrity tests):
+FashionForge supports two payment methods:
+
+| Method | Behaviour |
+| :--- | :--- |
+| **UPI** | Displays a static merchant QR code. Customer scans with any UPI app and clicks "I''ve Completed Payment." |
+| **Cash on Delivery** | Order is placed immediately; payment is collected on delivery. |
+
+To update the UPI QR code, replace `frontend/assets/images/upi-qr.png` with your new QR image and redeploy.
+
+---
+
+## Running Tests
+
+Run the full unit and API test suite:
 ```bash
 npm test
 ```
 
-Run the end-to-end multi-viewport browser QA test suite:
+Run the Puppeteer browser E2E suite:
 ```bash
+node tests/test_browser_e2e_journey.cjs
 node tests/test_browser_responsive_pwa.cjs
 ```
 
 ---
 
+## Deployment
+
+See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for a step-by-step guide on deploying to Render with MongoDB Atlas.
+
+---
+
 ## Academic Documentation
 
-For viva voce examination preparation and technical defense:
-- **Architecture & System Deep-Dive:** [docs/VIVA_NOTES.md](file:///c:/Users/Angel.ENOCH/Project%20Folder/FashionForge/docs/VIVA_NOTES.md)
-- **Comprehensive Viva Questions & Answers:** [docs/VIVA_QA.md](file:///c:/Users/Angel.ENOCH/Project%20Folder/FashionForge/docs/VIVA_QA.md)
+- **Architecture and System Design:** [docs/VIVA_NOTES.md](docs/VIVA_NOTES.md)
+- **Viva Voce Q and A Reference:** [docs/VIVA_QA.md](docs/VIVA_QA.md)

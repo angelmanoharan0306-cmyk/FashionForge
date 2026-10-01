@@ -1,15 +1,15 @@
 {
   "name": "fashionforge",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Interactive digital fashion design studio with 2.5D canvas, real-time BOM, and end-to-end order flow.",
+  "main": "backend/server.js",
   "scripts": {
     "dev": "node backend/server.js",
     "start": "node backend/server.js",
-    "test": "node tests/test_phase7.js && node tests/test_phase8.js && node tests/test_phase9.js && node tests/test_phase10.js && node tests/test_phase11.js && node tests/test_workflow.js && node tests/test_ui_pwa.js && node tests/test_cashfree_payment.js"
+    "test": "node tests/test_phase7.js && node tests/test_phase8.js && node tests/test_phase9.js && node tests/test_phase10.js && node tests/test_phase11.js && node tests/test_workflow.js && node tests/test_ui_pwa.js && node tests/test_payment.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["fashion", "design", "ecommerce", "canvas", "pwa"],
+  "author": "FashionForge",
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^3.0.3",

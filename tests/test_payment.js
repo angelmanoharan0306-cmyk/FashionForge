@@ -1,6 +1,6 @@
 /**
  * FashionForge — Simplified UPI QR & COD Payment Test Suite
- * tests/test_cashfree_payment.js
+ * tests/test_payment.js
  *
  * Verifies the simplified UPI QR & COD payment flow:
  * 1. Unauthenticated checkout rejected (HTTP 401)
