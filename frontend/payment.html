@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FashionForge — Payment Simulation</title>
-  <meta name="description" content="Simulated payment testing screen for FashionForge bespoke orders.">
+  <meta name="description" content="Simulated and Cashfree payment processing for FashionForge bespoke orders.">
 
   <!-- Google Fonts: Playfair Display + Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,6 +18,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
   <link rel="stylesheet" href="css/style.css">
+
+  <!-- Cashfree Official JS SDK v3 -->
+  <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
   <script type="module" src="js/payment.js"></script>
 </head>
 <body class="app-page-body payment-page-body">
@@ -31,7 +34,7 @@
         <span class="logo-mark" aria-hidden="true">✂</span>
         <span class="logo-text">Fashion<span>Forge</span></span>
       </a>
-      <span class="studio-badge" style="background: rgba(234, 179, 8, 0.15); border-color: rgba(234, 179, 8, 0.35); color: #eab308;">Payment Simulation</span>
+      <span class="studio-badge">Payment</span>
     </div>
     <div class="header-right">
       <a class="btn-ghost" href="index.html" title="FashionForge Home">
@@ -50,7 +53,7 @@
   </header>
 
   <main class="app-page-shell" role="main">
-    <div class="mydesigns-content-wrap" style="max-width: 680px; margin: 0 auto;">
+    <div class="mydesigns-content-wrap" style="max-width: 1040px; margin: 0 auto;">
       
       <!-- Order Progress Stepper -->
       <nav class="checkout-stepper" aria-label="Order progress">
@@ -62,13 +65,6 @@
         <span class="stepper-divider">&rarr;</span>
         <span class="stepper-step"><span class="stepper-step-num">4</span> Confirmation</span>
       </nav>
-      
-      <!-- Prominent Simulation Notice -->
-      <div class="payment-simulation-notice" role="note">
-        <div class="simulation-badge">TEST SANDBOX</div>
-        <h3>Simulated Payment Processing</h3>
-        <p>No real payment gateway is integrated. Never enter real card or banking credentials. Select an action below to simulate order payment outcomes.</p>
-      </div>
 
       <!-- Alert Banner -->
       <div class="auth-alert-banner" id="payment-alert" style="display: none;" role="alert">
@@ -80,73 +76,234 @@
         <span id="payment-alert-message">Error</span>
       </div>
 
-      <!-- Order Details Card -->
-      <div class="cart-summary-card payment-card" id="payment-card">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-4);">
-          <div>
-            <span style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-muted);">Bespoke Order</span>
-            <h2 id="order-id-display" style="font-family: var(--font-heading); font-size: var(--text-xl); color: var(--color-text); margin-top: 4px;">Loading Order...</h2>
+      <div class="payment-layout-grid">
+        
+        <!-- Left: Payment Method Selection (Screenshot-Style) -->
+        <section class="payment-methods-section" aria-labelledby="payment-methods-heading">
+          <div class="payment-methods-card">
+            <h2 class="payment-section-title" id="payment-methods-heading">
+              <span>Payment Method</span>
+            </h2>
+
+            <div class="payment-methods-list" role="radiogroup" aria-label="Available payment methods">
+              
+              <!-- Option 1: Cash on Delivery -->
+              <div class="payment-method-item" id="option-cod" role="radio" aria-checked="false" tabindex="0">
+                <div class="payment-method-left">
+                  <div class="payment-radio-custom" aria-hidden="true">
+                    <div class="payment-radio-dot"></div>
+                  </div>
+                  <div class="payment-method-info">
+                    <div class="payment-method-name">Cash on Delivery</div>
+                    <div class="payment-method-desc">Pay when your order arrives</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- COD Action Expandable -->
+              <div id="cod-action-panel" style="display: none; padding: 0 24px 20px 24px; background: #fffaf8; border-bottom: 1px solid var(--color-border-subtle);">
+                <button type="button" class="payment-btn-action" id="btn-confirm-cod">
+                  <span>Confirm Order (Cash on Delivery)</span>
+                </button>
+              </div>
+
+              <!-- Option 2: UPI (Selected by default) -->
+              <div class="payment-method-item is-selected" id="option-upi" role="radio" aria-checked="true" tabindex="0">
+                <div class="payment-method-left">
+                  <div class="payment-radio-custom" aria-hidden="true">
+                    <div class="payment-radio-dot"></div>
+                  </div>
+                  <div class="payment-method-info">
+                    <div class="payment-method-name">UPI</div>
+                    <div class="payment-method-desc">Pay using Google Pay / PhonePe / Paytm</div>
+                  </div>
+                </div>
+                <div class="payment-method-action">
+                  <button type="button" class="upi-btn-show-qr" id="btn-show-upi-qr">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="3" width="7" height="7"></rect>
+                      <rect x="14" y="3" width="7" height="7"></rect>
+                      <rect x="14" y="14" width="7" height="7"></rect>
+                      <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    <span>Show QR</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Option 3: Card -->
+              <div class="payment-method-item" id="option-card" role="radio" aria-checked="false" tabindex="0">
+                <div class="payment-method-left">
+                  <div class="payment-radio-custom" aria-hidden="true">
+                    <div class="payment-radio-dot"></div>
+                  </div>
+                  <div class="payment-method-info">
+                    <div class="payment-method-name">Card</div>
+                    <div class="payment-method-desc">Pay securely using your credit/debit card</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card Action Expandable -->
+              <div id="card-action-panel" style="display: none; padding: 0 24px 20px 24px; background: #fffaf8;">
+                <button type="button" class="payment-btn-action" id="btn-pay-card">
+                  <span>Pay Securely with Card</span>
+                </button>
+              </div>
+
+            </div>
           </div>
-          <div id="payment-status-badge" class="badge-status-pending">
-            Pending Payment
+
+          <!-- Sandbox Dev Helper Drawer (preserves compatibility with browser tests) -->
+          <div class="payment-simulation-notice" id="sandbox-dev-panel" style="margin-top: var(--space-5); opacity: 0.9;" role="note">
+            <div class="simulation-badge">SANDBOX TEST CONTROLS</div>
+            <p style="margin-bottom: 12px; font-size: 12px;">Test simulated payment status transitions:</p>
+            <div class="payment-actions-group" id="payment-actions-group" style="display: flex; gap: 8px;">
+              <button class="btn-primary payment-btn-success" id="btn-simulate-success" type="button" style="padding: 8px 12px; font-size: 12px;">
+                <span>Simulate Successful Payment</span>
+              </button>
+              <button class="btn-secondary payment-btn-fail" id="btn-simulate-failure" type="button" style="padding: 8px 12px; font-size: 12px;">
+                <span>Simulate Failed Payment</span>
+              </button>
+            </div>
           </div>
-        </div>
+        </section>
 
-        <div class="cart-summary-divider"></div>
+        <!-- Right: Order Details & Total Summary Card -->
+        <aside class="payment-sidebar" aria-label="Order summary breakdown">
+          <div class="cart-summary-card payment-card" id="payment-card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-4);">
+              <div>
+                <span style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-muted);">Bespoke Order</span>
+                <h2 id="order-id-display" style="font-family: var(--font-heading); font-size: var(--text-xl); color: var(--color-text); margin-top: 4px;">Loading Order...</h2>
+              </div>
+              <div id="payment-status-badge" class="badge-status-pending">
+                Pending Payment
+              </div>
+            </div>
 
-        <!-- Order Items -->
-        <div class="payment-order-items" id="payment-order-items">
-          <!-- Populated by JS -->
-        </div>
+            <div class="cart-summary-divider"></div>
 
-        <div class="cart-summary-divider"></div>
+            <!-- Order Items List -->
+            <div class="payment-order-items" id="payment-order-items">
+              <!-- Populated by JS -->
+            </div>
 
-        <!-- Recipient & Delivery info -->
-        <div class="payment-delivery-summary" id="payment-delivery-summary" style="font-size: var(--text-sm); color: var(--color-text-muted); line-height: 1.6; margin-bottom: var(--space-4);">
-          <!-- Delivery details -->
-        </div>
+            <div class="cart-summary-divider"></div>
 
-        <div class="cart-summary-divider"></div>
+            <!-- Recipient & Delivery info -->
+            <div class="payment-delivery-summary" id="payment-delivery-summary" style="font-size: var(--text-sm); color: var(--color-text-muted); line-height: 1.6; margin-bottom: var(--space-4);">
+              <!-- Delivery details -->
+            </div>
 
-        <!-- Total row -->
-        <div class="cart-summary-total-row" style="margin-bottom: var(--space-6);">
-          <span>Authoritative Total</span>
-          <span class="cart-summary-total-price" id="payment-total-display">₹0</span>
-        </div>
+            <div class="cart-summary-divider"></div>
 
-        <!-- Simulation Action Controls -->
-        <div class="payment-actions-group" id="payment-actions-group">
-          <button class="btn-primary payment-btn-success" id="btn-simulate-success" type="button">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-            <span>Simulate Successful Payment</span>
-          </button>
+            <!-- Total Breakdown Rows -->
+            <div class="cart-summary-row" style="margin-bottom: 6px;">
+              <span>BOM Subtotal</span>
+              <span id="payment-subtotal-display" style="font-weight: 600;">₹0</span>
+            </div>
+            <div class="cart-summary-row" style="margin-bottom: 6px;">
+              <span>Atelier Insured Delivery</span>
+              <span style="color: var(--color-brand); font-weight: 600;">Complimentary</span>
+            </div>
 
-          <button class="btn-secondary payment-btn-fail" id="btn-simulate-failure" type="button">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="15" y1="9" x2="9" y2="15"></line>
-              <line x1="9" y1="9" x2="15" y2="15"></line>
-            </svg>
-            <span>Simulate Failed Payment</span>
-          </button>
-        </div>
+            <div class="cart-summary-divider"></div>
 
-        <!-- Outcome Confirmation Section (Hidden Initially) -->
-        <div class="payment-outcome-panel" id="payment-outcome-panel" style="display: none;">
-          <div class="outcome-icon" id="outcome-icon"></div>
-          <h3 id="outcome-title">Outcome Title</h3>
-          <p id="outcome-desc" style="color: var(--color-text-muted); font-size: var(--text-sm); margin-top: 8px; margin-bottom: 24px;">Outcome description</p>
-          <div class="outcome-nav-buttons" id="outcome-nav-buttons" style="display: flex; gap: 12px; justify-content: center;">
-            <!-- Rendered by JS -->
+            <div class="cart-summary-total-row" style="margin-bottom: var(--space-4);">
+              <span>Total Payable</span>
+              <span class="cart-summary-total-price" id="payment-total-display">₹0</span>
+            </div>
+
+            <!-- Outcome Confirmation Section (Shown on success/failure) -->
+            <div class="payment-outcome-panel" id="payment-outcome-panel" style="display: none;">
+              <div class="outcome-icon" id="outcome-icon"></div>
+              <h3 id="outcome-title">Outcome Title</h3>
+              <p id="outcome-desc" style="color: var(--color-text-muted); font-size: var(--text-sm); margin-top: 8px; margin-bottom: 24px;">Outcome description</p>
+              <div class="outcome-nav-buttons" id="outcome-nav-buttons" style="display: flex; gap: 12px; justify-content: center; flex-direction: column;">
+                <!-- Rendered by JS -->
+              </div>
+            </div>
+
           </div>
-        </div>
+        </aside>
 
       </div>
 
     </div>
   </main>
+
+  <!-- =========================================================================
+       CUSTOM FASHIONFORGE UPI QR MODAL (MATCHES REFERENCE SCREENSHOT)
+       ========================================================================= -->
+  <div class="qr-modal-backdrop" id="upi-qr-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="qr-modal-title">
+    <div class="qr-modal-card">
+      <button class="qr-modal-close-btn" id="btn-close-qr-modal" type="button" aria-label="Close modal">&times;</button>
+      
+      <div id="qr-modal-active-content" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+        <h3 class="qr-modal-title" id="qr-modal-title">Pay via UPI</h3>
+        <p class="qr-modal-subtitle">Scan this QR code using any UPI app</p>
+
+        <!-- Centered QR Box -->
+        <div class="qr-modal-qr-frame" id="qr-frame-container">
+          <div id="qr-image-target" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
+            <!-- Dynamically injected real QR image/SVG -->
+            <span style="font-size: 13px; color: var(--color-text-muted);">Generating Dynamic QR...</span>
+          </div>
+        </div>
+
+        <div class="qr-modal-upi-label">UPI Payment</div>
+        <div class="qr-modal-amount" id="qr-modal-amount-display">₹0</div>
+        <div class="qr-modal-order-ref" id="qr-modal-order-id-display">Order #FF-ORD-XXXX</div>
+
+        <!-- Waiting Status Pulse -->
+        <div class="qr-modal-status-indicator" id="qr-status-indicator">
+          <span class="qr-status-pulse-dot" aria-hidden="true"></span>
+          <span id="qr-status-label">Waiting for payment...</span>
+        </div>
+
+        <!-- Mobile Intent Link (Visible on mobile screens) -->
+        <div id="qr-mobile-intent-wrap" style="display: none; width: 100%; margin-bottom: 12px;">
+          <a class="payment-btn-action" id="qr-mobile-intent-link" href="#" style="margin-top: 0; text-decoration: none;">
+            <span>Open in UPI App</span>
+          </a>
+        </div>
+
+        <!-- Modal Actions -->
+        <div class="qr-modal-actions">
+          <button type="button" class="qr-modal-btn-cancel" id="btn-cancel-qr">Cancel</button>
+          <button type="button" class="qr-modal-btn-verify" id="btn-check-qr-status">I've completed payment</button>
+        </div>
+
+        <div class="qr-modal-app-badges">
+          <span>Google Pay</span>
+          <span>PhonePe</span>
+          <span>Paytm</span>
+          <span>BHIM</span>
+        </div>
+      </div>
+
+      <!-- Verified Success State within Modal -->
+      <div class="qr-modal-success-state" id="qr-modal-success-state" style="display: none;">
+        <div class="qr-modal-success-icon" aria-hidden="true">✓</div>
+        <h4 class="qr-modal-success-title">✓ Payment Successful</h4>
+        <p style="font-size: 18px; font-weight: 700; color: #18181b; margin: 4px 0 16px 0;" id="qr-success-amount">Amount: ₹0</p>
+        <p style="font-size: 13px; color: var(--color-text-muted);">Redirecting to order confirmation...</p>
+      </div>
+
+      <!-- Payment Failed State within Modal -->
+      <div class="qr-modal-failed-state" id="qr-modal-failed-state" style="display: none;">
+        <div class="qr-modal-failed-icon" aria-hidden="true">✕</div>
+        <h4 class="qr-modal-failed-title">Payment unsuccessful</h4>
+        <p style="font-size: 13px; color: var(--color-text-muted); margin: 6px 0 20px 0;">Your Bag has been preserved.</p>
+        <div style="display: flex; gap: 10px; width: 100%;">
+          <button type="button" class="btn-primary" id="btn-retry-qr" style="flex: 1; padding: 10px 16px;">Try Again</button>
+          <button type="button" class="btn-secondary" id="btn-close-qr-fail" style="flex: 1; padding: 10px 16px;">Close</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
 
   <!-- Global Footer -->
   <footer class="site-footer" role="contentinfo">

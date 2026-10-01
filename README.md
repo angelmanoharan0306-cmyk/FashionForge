@@ -9,13 +9,16 @@ FashionForge is an end-to-end interactive digital costume design studio and besp
 - **2.5D Layered Canvas Studio:** Custom rendering engine for real-time garment visualization with male and female croquis figures, neckline/collar variations, sleeve styles, fabric textures, and dynamic HSL color blending.
 - **Dynamic Bill of Materials (BOM):** Real-time parametric cost calculation based on garment complexity, fabric multipliers, and bespoke hardware accents.
 - **CAD & Specification Export:** High-precision orthographic 2D Technical Flat rendering and comprehensive industry-standard Tech Pack generation (specifications, measurements, care guides, and BOM).
-- **End-to-End Bespoke Ordering:**
+- **End-to-End Bespoke Ordering & Cashfree Payment Gateway:**
   - Save / Load / Update designs with MongoDB persistence.
   - Customer Bag with real-time quantity and BOM adjustments.
   - Multi-step checkout with recipient validation.
-  - Realistic Payment Simulation Sandbox with instant approval/decline state handling.
+  - **Screenshot-Style Branded Payment UI:** Cash on Delivery, Dynamic UPI QR, and Card payments.
+  - **Cashfree Payment Infrastructure:** FashionForge uses Cashfree Payment Gateway for online payment processing. The customer-facing checkout remains branded as FashionForge. UPI payments use transaction-specific QR/payment flows, while payment status is verified server-side. Card details are handled by the payment provider and are not stored by FashionForge.
+  - **Sandbox / Test Mode:** Default development/demo environment with zero real charges and service-boundary simulation.
+  - **Production Mode:** Requires Cashfree merchant onboarding, account activation, and production API credentials.
   - Order Confirmation with unique order tracking reference.
-  - My Orders history and simulated multi-stage manufacturing & delivery tracking (`Placed` &rarr; `Pattern Cutting` &rarr; `Tailoring` &rarr; `Quality Inspection` &rarr; `Dispatched` &rarr; `Delivered`).
+  - My Orders history and simulated multi-stage manufacturing & delivery tracking (`Placed` &rarr; `Processing` &rarr; `Ready` &rarr; `Shipped` &rarr; `Delivered`).
 - **Progressive Web App (PWA):**
   - Installable home screen app with `manifest.webmanifest`.
   - Service worker with versioned cache management (`fashionforge-v1.0.0`).
@@ -34,11 +37,12 @@ FashionForge is an end-to-end interactive digital costume design studio and besp
 | :--- | :--- |
 | **Frontend** | Vanilla HTML5, CSS3 Custom Properties (Design Tokens), Modular ES6+ JavaScript |
 | **Graphics** | HTML5 2D Canvas API (Painter's Algorithm, HSL color compositing, vector CAD paths) |
+| **Payment Gateway** | Cashfree PG Web Integration (Dynamic UPI QR, Mobile UPI Intent, Cashfree.js v3 SDK, HMAC-SHA256 Webhook Verification) |
 | **PWA** | Service Worker API (Cache-First with Network fallback), Web App Manifest |
 | **Backend** | Node.js (v18+), Express REST API |
 | **Database** | MongoDB with Mongoose ODM (Strict schemas, compound indexes) |
 | **Authentication** | Stateless JWT (JSON Web Tokens) with `bcrypt` password hashing |
-| **Testing** | Node.js native test runner + Puppeteer headless browser E2E test suite |
+| **Testing** | Node.js native test runner (363 tests) + Puppeteer headless browser E2E test suite |
 
 ---
 

@@ -147,4 +147,32 @@ $$\text{Total Price} = \text{Base Garment Fee} + \text{Fabric Cost} + \text{Deta
 - **`User`**: `userId` (UUID), `name` (String), `email` (String, unique, lowercase), `passwordHash` (String), timestamps.
 - **`Design`**: `designId` (UUID), `userId` (UUID), `name` (String), `figure` (Enum), `top` (String), `bottom` (String), `sleeves` (String), `collar` (String), `fabric` (String), `colour` (Hex), `price` (Number), `snapshot` (Base64/SVG preview), timestamps.
 - **`Cart`**: `userId` (UUID, unique index), `items` [ { `designId` (UUID), `quantity` (Number), `addedAt` (Date) } ], `updatedAt`.
-- **`Order`**: `orderId` (UUID), `userId` (UUID), `items` [ ... ], `shippingAddress` { `name`, `email`, `phone`, `address`, `city`, `state`, `postalCode` }, `subtotal` (Number), `tax` (Number), `shipping` (Number), `total` (Number), `paymentStatus` (Enum: `pending`, `success`, `failed`), `orderStatus` (Enum: `Placed`, `Pattern Cutting`, `Tailoring`, `Quality Inspection`, `Dispatched`, `Delivered`), `trackingTimeline` [ { `status`, `timestamp`, `note` } ], timestamps.
+- **`Order`**: `orderId` (UUID), `userId` (UUID), `items` [ ... ], `customer` { `name`, `email`, `phone`, `address`, `city`, `state`, `postalCode` }, `subtotal` (Number), `total` (Number), `paymentStatus` (Enum: `pending`, `paid`, `failed`), `paymentMethod` (String: `upi`, `card`, `cod`), `cashfreeOrderId` (String), `cashfreePaymentSessionId` (String), `cashfreePaymentId` (String), `paidAt` (Date), `orderStatus` (Enum: `placed`, `processing`, `ready`, `shipped`, `delivered`), `tracking` [ { `status`, `label`, `timestamp` } ], timestamps.
+
+---
+
+## 8. Cashfree Payment Gateway Architecture & Dynamic UPI QR Experience
+
+FashionForge uses Cashfree Payment Gateway for online payment processing. The customer-facing checkout remains branded as FashionForge. UPI payments use transaction-specific QR/payment flows, while payment status is verified server-side. Card details are handled by the payment provider and are not stored by FashionForge.
+
+### 1. Payment Methods Supported
+- **Cash on Delivery (COD):** Preserves traditional e-commerce fulfillment. Bypasses payment gateways; sets `paymentStatus = "pending"` and `orderStatus = "placed"`. Clears cart upon order placement.
+- **UPI (Dynamic QR & Mobile Intent):**
+  - Desktop / Web: Click "Show QR" to launch a custom FashionForge modal displaying a real, dynamic transaction-specific UPI QR code. Pre-associated with the exact order ID and authoritative order amount in INR.
+  - Mobile: Renders intent links for installed UPI apps (Google Pay, PhonePe, Paytm, BHIM) where supported.
+- **Card Payment:** Launches Cashfree's secure payment flow (`cashfree.checkout({ paymentSessionId, redirectTarget: '_modal' })`). FashionForge never prompts for, transmits, or stores sensitive card numbers, CVVs, or OTPs.
+
+### 2. Transaction Flow & Security Invariants
+1. **Server-Authoritative Pricing:** The client never sets or overrides payment amounts. The backend queries the persisted MongoDB cart, calculates the exact subtotal and delivery fee, and transmits that exact total to Cashfree.
+2. **Session Generation:** The backend creates a Cashfree PG Order (`POST /pg/orders`) and persists `cashfreeOrderId` and `cashfreePaymentSessionId` onto the FashionForge Order document.
+3. **Dynamic QR Generation:** Generated on-demand via Cashfree PG Order Pay session API (`channel: 'qrcode'`). Rendered on the frontend as an SVG or image without exposing merchant secret keys.
+4. **Status Polling:** The frontend polls `GET /api/payments/:orderId/status` every 2.5s. The server securely checks payment status against Cashfree's PG API or database.
+5. **Bag Preservation Guarantee:** The customer's Bag is preserved if payment fails or if the customer cancels the payment modal. The Bag is cleared **only after verified payment success**.
+6. **Webhook Signature Verification & Idempotency:**
+   - Cashfree webhooks (`POST /api/payments/cashfree/webhook`) verify cryptographic HMAC-SHA256 signatures (`signedPayload = x-webhook-timestamp + rawBody`) using the secret key.
+   - Repeated webhook events are strictly idempotent; they never duplicate orders or double-clear shopping bags.
+
+### 3. Environments: Sandbox vs. Production
+- **Sandbox / Test Mode:** Default development/demo environment (`CASHFREE_ENV=sandbox`). Uses test facilities and service-boundary simulation. No real funds are debited.
+- **Production Mode:** Requires formal Cashfree merchant onboarding, KYC verification, bank account activation, and production API credentials (`CASHFREE_APP_ID`, `CASHFREE_SECRET_KEY`, `CASHFREE_ENV=production`). Live payments are enabled only after merchant activation.
+

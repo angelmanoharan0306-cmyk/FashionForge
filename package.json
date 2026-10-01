@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "node backend/server.js",
     "start": "node backend/server.js",
-    "test": "node tests/test_phase7.js && node tests/test_phase8.js && node tests/test_phase9.js && node tests/test_phase10.js && node tests/test_phase11.js && node tests/test_workflow.js && node tests/test_ui_pwa.js"
+    "test": "node tests/test_phase7.js && node tests/test_phase8.js && node tests/test_phase9.js && node tests/test_phase10.js && node tests/test_phase11.js && node tests/test_workflow.js && node tests/test_ui_pwa.js && node tests/test_cashfree_payment.js"
   },
   "keywords": [],
   "author": "",

@@ -11,14 +11,19 @@ const authRoutes = require('./routes/authRoutes');
 const designRoutes = require('./routes/designRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const orderRoutes = require('./routes/orderRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 const frontendPath = path.join(__dirname, '..', 'frontend');
 
-// Core Middleware
-app.use(express.json());
+// Core Middleware with rawBody capture for webhook verification
+app.use(express.json({
+  verify: (req, res, buf) => {
+    req.rawBody = buf ? buf.toString() : '';
+  }
+}));
 app.use(express.static(frontendPath));
 
 // Health Check Endpoint
@@ -37,6 +42,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/designs', designRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // HTML Page Route Handlers
 app.get('/', (req, res) => {

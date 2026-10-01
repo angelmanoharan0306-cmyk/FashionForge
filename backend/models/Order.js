@@ -139,6 +139,26 @@ const orderSchema = new mongoose.Schema(
       default: 'pending',
       index: true
     },
+    paymentMethod: {
+      type: String,
+      trim: true,
+      default: 'upi'
+    },
+    cashfreeOrderId: {
+      type: String,
+      trim: true
+    },
+    cashfreePaymentSessionId: {
+      type: String,
+      trim: true
+    },
+    cashfreePaymentId: {
+      type: String,
+      trim: true
+    },
+    paidAt: {
+      type: Date
+    },
     orderStatus: {
       type: String,
       enum: ['placed', 'processing', 'ready', 'shipped', 'delivered', 'completed', 'cancelled'],
