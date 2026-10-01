@@ -34,6 +34,7 @@ function getPaymentConfig(req, res) {
     success: true,
     upiId: upiService.getMerchantUpiId(),
     merchantName: upiService.getMerchantName(),
+    qrImageUrl: upiService.getQrImageUrl(),
     environment: 'production'
   });
 }
@@ -91,6 +92,7 @@ async function getUpiDetails(req, res, next) {
       merchantName,
       upiUri,
       qrCode: upiUri,
+      qrImageUrl: upiService.getQrImageUrl(),
       upiString: upiUri,
       intentUrl: upiUri,
       paymentStatus: order.paymentStatus

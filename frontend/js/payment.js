@@ -173,10 +173,12 @@ function updateStatusBadge(status) {
 }
 
 /**
- * Fetches dynamic UPI details and renders sharp SVG QR code
+ * Loads UPI details (amount, order reference, merchant UPI ID, mobile link)
+ * and preserves the linked QR image space in assets/images/upi-qr.png
  */
 async function loadUpiQrDetails() {
   const qrTarget = document.getElementById('qr-image-target');
+  const upiImg = document.getElementById('upi-qr-image');
   const upiAmount = document.getElementById('upi-amount-display');
   const orderRefDisplay = document.getElementById('upi-order-ref-display');
   const upiIdDisplay = document.getElementById('upi-id-display');
@@ -184,6 +186,15 @@ async function loadUpiQrDetails() {
 
   if (upiAmount) upiAmount.textContent = formatCurrency(currentOrder.total);
   if (orderRefDisplay) orderRefDisplay.textContent = `Order #${currentOrder.orderId}`;
+
+  // Graceful fallback if user removes or mistypes the custom image file
+  if (upiImg && qrTarget) {
+    upiImg.onerror = () => {
+      console.warn('QR image not found at', upiImg.src, '- rendering SVG fallback');
+      const fallbackUri = currentUpiDetails?.upiUri || `upi://pay?pa=fashionforge@upi&pn=FashionForge&am=${Number(currentOrder.total).toFixed(2)}&cu=INR`;
+      qrTarget.innerHTML = QRCodeSVG.createQRCodeSVG(fallbackUri, { size: 210, margin: 1 });
+    };
+  }
 
   try {
     const details = await cartService.getUpiDetails(currentOrder.orderId);
@@ -197,23 +208,17 @@ async function loadUpiQrDetails() {
       mobileLink.href = details.upiUri;
     }
 
-    if (qrTarget && details.upiUri) {
-      // Render crisp, standards-compliant SVG QR code
-      const svgMarkup = QRCodeSVG.createQRCodeSVG(details.upiUri, { size: 210, margin: 1 });
-      qrTarget.innerHTML = svgMarkup;
+    // Allow dynamic override from server config if specified
+    if (details.qrImageUrl && upiImg) {
+      upiImg.src = details.qrImageUrl;
     }
   } catch (err) {
     console.error('Failed to load UPI details:', err);
-    // Fallback: build standard client-side URI if endpoint fails
     const fallbackUpiId = 'fashionforge@upi';
     const fallbackUri = `upi://pay?pa=${encodeURIComponent(fallbackUpiId)}&pn=FashionForge&am=${Number(currentOrder.total).toFixed(2)}&cu=INR&tn=FashionForge%20Order%20${encodeURIComponent(currentOrder.orderId)}`;
     
     if (upiIdDisplay) upiIdDisplay.textContent = fallbackUpiId;
     if (mobileLink) mobileLink.href = fallbackUri;
-    if (qrTarget) {
-      const svgMarkup = QRCodeSVG.createQRCodeSVG(fallbackUri, { size: 210, margin: 1 });
-      qrTarget.innerHTML = svgMarkup;
-    }
   }
 }
 

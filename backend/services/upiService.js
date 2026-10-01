@@ -34,8 +34,13 @@ function buildUpiUri({ amount, orderId }) {
   return `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(name)}&am=${numericAmount}&cu=INR&tn=${encodeURIComponent(transactionNote)}`;
 }
 
+function getQrImageUrl() {
+  return (process.env.UPI_QR_IMAGE || '/assets/images/upi-qr.png').trim();
+}
+
 module.exports = {
   getMerchantUpiId,
   getMerchantName,
+  getQrImageUrl,
   buildUpiUri
 };

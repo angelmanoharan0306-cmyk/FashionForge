@@ -156,21 +156,21 @@ async function runBrowserPaymentE2E() {
     assert(hasCod, 'Cash on Delivery option missing');
     console.log('  ✓ Payment options match specifications (UPI Payment and Cash on Delivery)');
 
-    // Verify Dynamic QR SVG Rendered
+    // Verify QR Code Image Space Rendered
     await page.waitForFunction(() => {
       const target = document.getElementById('qr-image-target');
       if (!target) return false;
-      return target.querySelector('svg') !== null;
+      return target.querySelector('img, svg') !== null;
     }, { timeout: 10000 });
 
     const qrDimensions = await page.evaluate(() => {
-      const svg = document.querySelector('#qr-image-target svg');
-      if (!svg) return null;
-      const rect = svg.getBoundingClientRect();
-      return { width: rect.width, height: rect.height, tag: svg.tagName };
+      const el = document.querySelector('#qr-image-target img, #qr-image-target svg');
+      if (!el) return null;
+      const rect = el.getBoundingClientRect();
+      return { width: rect.width, height: rect.height, tag: el.tagName, src: el.src || null };
     });
-    assert(qrDimensions && qrDimensions.width > 50, 'QR Code did not render with valid dimensions');
-    console.log(`  ✓ Real dynamic transaction QR SVG rendered cleanly (${Math.round(qrDimensions.width)}x${Math.round(qrDimensions.height)}px)`);
+    assert(qrDimensions && qrDimensions.width > 50, 'QR Code image space did not render with valid dimensions');
+    console.log(`  ✓ QR code image space rendered cleanly (${Math.round(qrDimensions.width)}x${Math.round(qrDimensions.height)}px, tag: <${qrDimensions.tag.toLowerCase()}>)`);
 
     // Verify Amount Displayed
     const amountText = await page.$eval('#upi-amount-display', el => el.textContent.trim());
