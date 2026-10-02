@@ -94,7 +94,7 @@ After checkout, the payment page offers two options:
 - **UPI:** Displays a merchant QR code and UPI ID. The user scans with any UPI app and clicks "I've Completed Payment" to confirm.
 - **Cash on Delivery (COD):** The order is placed immediately with payment collected on delivery.
 
-No third-party payment gateway (such as Razorpay or Stripe) is integrated. Payment confirmation is manual.
+No third-party payment gateway is integrated. Payment confirmation is manual.
 
 ### Orders and Tracking
 After payment, users see an order confirmation page with a unique order ID. The **Orders** page lists all past orders. The **Order Details** page shows the full order with items, delivery address, payment status, and a multi-stage tracking timeline (Placed → Processing → Ready to Ship → Shipped → Delivered).
@@ -258,23 +258,23 @@ The price updates instantly as the user changes any component. All prices are de
 FashionForge uses a standard email/password authentication system.
 
 ### Registration
-Users create an account by providing a name, email address, and password (minimum 6 characters). The password is hashed using **bcrypt** (with 10 salt rounds) before being stored in MongoDB. Plaintext passwords are never stored.
+Users create an account by providing a name, email address, and password (minimum 6 characters). The password is hashed using **bcryptjs** (with 10 salt rounds) before being stored in MongoDB. Plaintext passwords are never stored.
 
 ### Login
-Users log in with their email and password. The server verifies the credentials by comparing the submitted password against the stored bcrypt hash. On success, a **JSON Web Token (JWT)** is issued.
+Users log in with their email and password. The server verifies the credentials by comparing the submitted password against the stored hash using `bcryptjs.compare()`. On success, a **JSON Web Token (JWT)** is issued.
 
 ### JWT Authentication
-The JWT contains the user's ID, email, and name. It is sent with each API request in the `Authorization: Bearer <token>` header. The server verifies the token on every protected endpoint. Tokens expire after a configurable period (default: 7 days).
+The JWT contains the user's ID, email, and name. It is sent with each API request in the `Authorization: Bearer <token>` header. The server verifies the token on every protected endpoint. Tokens expire after a configurable period (default: 7 days, controlled by `JWT_EXPIRES_IN`).
 
 ### Protected Operations
 The following operations require a valid JWT:
-- Saving, loading, editing, duplicating, and deleting designs
-- Viewing and modifying the shopping bag
-- Placing orders and making payments
-- Viewing order history and order details
+- Saving, loading, editing, duplicating, and deleting designs (`/api/designs`)
+- Viewing and modifying the shopping bag (`/api/cart`)
+- Placing orders, checkout, and making payments (`/api/orders`, `/api/payments`)
+- Viewing order history and individual order details
 
 ### Guest Mode
-Users can freely use the Design Studio without logging in. When a guest tries to save a design or add to bag, the current design is preserved in the browser's session storage, the user is redirected to log in, and the design is restored after authentication.
+Users can freely use the Design Studio without logging in. When a guest tries to save a design or add to bag, the current studio configuration is preserved in the browser's `sessionStorage` (under `fashionforge_pending_design`), the user is redirected to `login.html`, and upon successful authentication, the pending design is restored into the studio canvas.
 
 ---
 
@@ -335,21 +335,24 @@ Each status transition is recorded in the order's tracking array with a timestam
 FashionForge implements a simplified payment system with two methods:
 
 ### UPI QR Payment
-1. The payment page displays the merchant's UPI ID and a QR code image.
-2. A dynamic UPI URI is generated in the standard NPCI format: `upi://pay?pa=<UPI_ID>&pn=FashionForge&am=<AMOUNT>&cu=INR&tn=FashionForge Order <ORDER_ID>`.
-3. The user scans the QR code with any UPI app (PhonePe, Google Pay, Paytm, BHIM, etc.) and completes the payment externally.
-4. The user clicks "I've Completed Payment" to confirm.
-5. The order is marked as paid and the bag is cleared.
+1. The payment page displays the merchant's UPI ID and a static QR code image (`frontend/assets/images/upi-qr.png`, configurable via `UPI_QR_IMAGE`).
+2. A dynamic UPI URI is generated in the standard NPCI format: `upi://pay?pa=<UPI_ID>&pn=FashionForge&am=<AMOUNT>&cu=INR&tn=FashionForge%20Order%20<ORDER_ID>`.
+3. On mobile devices, a direct "Pay using UPI app" intent link is provided using this dynamic URI.
+4. As a client-side fallback, if the static QR code image fails to load, `payment.js` dynamically renders an inline SVG QR code using `qrcode.js`.
+5. The user scans the QR code or opens the mobile intent link with any UPI app (PhonePe, Google Pay, Paytm, BHIM, etc.) and completes the payment externally.
+6. The user clicks "I've Completed Payment" to confirm.
+7. The order is marked as paid (`paymentStatus: 'paid'`, `orderStatus: 'placed'`), tracking is initialized, and the user's bag is cleared.
 
 ### Cash on Delivery (COD)
 1. The user selects Cash on Delivery on the payment page.
-2. The order is confirmed immediately with payment status "pending".
-3. The bag is cleared.
+2. The order is confirmed immediately with payment status "pending" and order status "placed".
+3. The user's bag is cleared.
 
 ### Important Notes
-- There is **no third-party payment gateway** integrated (no Razorpay, Stripe, Cashfree, etc.).
-- UPI payment confirmation is based on the user's self-declaration ("I've Completed Payment"). The system does not verify the payment with the bank.
-- The UPI QR code image is a static file that must be replaced with the merchant's actual QR code for real use.
+- There is **no third-party payment gateway** integrated.
+- UPI payment confirmation is based on the customer's manual declaration ("I've Completed Payment"). The application does not connect to bank APIs or payment aggregators to verify transaction status.
+- The displayed QR code is a static image asset (`frontend/assets/images/upi-qr.png`) that can be replaced with the merchant's actual QR code for real use. In contrast, the payment deep link and URI data are dynamically generated per order.
+- If a user cancels payment or encounters an error, their bag remains intact.
 
 ---
 
@@ -482,13 +485,13 @@ FashionForge/
 │   │   │   ├── size-data.js         # Size chart measurements (XS–4XL)
 │   │   │   ├── body-profiles.js     # Body landmark coordinates for rendering
 │   │   │   ├── croquis-calibration.js # Calibration utilities for figure alignment
-│   │   │   └── qrcode.js           # QR code generation utility
+│   │   │   └── qrcode.js           # SVG QR code generator (in-browser fallback in payment.js)
 │   │   ├── services/
 │   │   │   ├── auth-service.js      # Login, registration, JWT token management
 │   │   │   ├── auth-nav.js          # Navigation bar authentication state
 │   │   │   ├── design-storage.js    # Design save, load, update, delete, duplicate
 │   │   │   ├── cart-service.js      # Bag API client (add, update, remove, clear)
-│   │   │   └── pwa.js              # Service worker registration
+│   │   │   └── pwa.js              # PWA service worker registration helper
 │   │   ├── app.js                   # Design Studio controller (state, UI, events)
 │   │   ├── recommendation.js        # Rule-based recommendation engine
 │   │   ├── auth.js                  # Login/register page controller
@@ -512,14 +515,15 @@ FashionForge/
 │   ├── offline.html                 # PWA offline fallback page
 │   ├── manifest.webmanifest         # PWA manifest
 │   └── service-worker.js            # Service worker for caching
-├── tests/                           # Automated test suites
+├── tests/                           # Automated unit, integration, and browser test suites
 ├── docs/
 │   ├── DEPLOYMENT.md                # Deployment guide (Render + MongoDB Atlas)
 │   ├── VIVA_NOTES.md                # Technical architecture notes
 │   ├── VIVA_QA.md                   # Viva voce Q&A reference
+│   ├── reference/                   # Reference UI design mockups
 │   └── archive/                     # Development planning documents
 ├── scripts/
-│   └── generate_default_qr.cjs     # Utility to generate a placeholder UPI QR image
+│   └── generate_default_qr.cjs     # Utility script used to generate placeholder UPI QR image
 ├── .env.example                     # Environment variable template
 ├── .gitignore                       # Git ignore rules
 ├── vercel.json                      # Vercel deployment configuration
@@ -626,7 +630,7 @@ FashionForge uses MongoDB with four collections, each defined by a Mongoose mode
 | `customer` | Object | Delivery details (name, email, phone, address, city, state, postalCode) |
 | `paymentStatus` | String | `pending`, `paid`, or `failed` |
 | `paymentMethod` | String | `upi` or `cod` |
-| `orderStatus` | String | `placed`, `processing`, `ready`, `shipped`, or `delivered` |
+| `orderStatus` | String | `placed`, `processing`, `ready`, `shipped`, `delivered`, `completed`, or `cancelled` |
 | `tracking` | Array | Status history entries with timestamps |
 | `paidAt` | Date | Payment confirmation timestamp |
 
@@ -677,6 +681,7 @@ FashionForge uses MongoDB with four collections, each defined by a Mongoose mode
 | GET | `/api/orders/:orderId` | Get a specific order by ID |
 | POST | `/api/orders/:orderId/pay` | Simulate payment processing |
 | POST | `/api/orders/:orderId/advance-status` | Advance order to the next lifecycle stage |
+| POST | `/api/orders/:orderId/status` | Alias to advance order lifecycle status |
 
 ### Payments
 
@@ -684,11 +689,13 @@ FashionForge uses MongoDB with four collections, each defined by a Mongoose mode
 |:---|:---|:---|:---|
 | GET | `/api/payments/config` | No | Get public merchant UPI configuration |
 | GET | `/api/payments/:orderId/upi-details` | Yes | Get UPI details and dynamic URI for an order |
-| POST | `/api/payments/:orderId/upi-qr` | Yes | Generate dynamic UPI QR data for an order |
+| POST | `/api/payments/:orderId/upi-qr` | Yes | Generate dynamic UPI payment data (alias) |
 | POST | `/api/payments/:orderId/confirm-upi` | Yes | Confirm UPI payment ("I've Completed Payment") |
 | POST | `/api/payments/:orderId/cod` | Yes | Confirm Cash on Delivery |
 | GET | `/api/payments/:orderId/status` | Yes | Check payment status for an order |
 | POST | `/api/payments/:orderId/cancel` | Yes | Cancel payment (bag is preserved) |
+| POST | `/api/payments/:orderId/mock-status` | No | Test helper to simulate order payment status transitions |
+| POST | `/api/payments/test-mode` | No | Test mode health verification endpoint |
 
 ---
 
@@ -756,6 +763,7 @@ FashionForge uses MongoDB with four collections, each defined by a Mongoose mode
 | `JWT_SECRET` | Yes | Secret key used to sign and verify JWTs. Use a long random string. |
 | `JWT_EXPIRES_IN` | No | JWT expiry duration (default: `7d`) |
 | `UPI_ID` | Yes | Merchant UPI ID displayed on the payment page (e.g., `yourname@upi`) |
+| `UPI_QR_IMAGE` | No | Custom static QR image path or URL (default: `/assets/images/upi-qr.png`) |
 | `MERCHANT_NAME` | No | Merchant display name (default: `FashionForge`) |
 | `FRONTEND_URL` | No | Allowed CORS origin for the frontend |
 | `API_BASE_URL` | No | Base URL for API calls (leave empty if frontend and backend share the same origin) |
@@ -778,7 +786,7 @@ FRONTEND_URL=<your-deployed-url>
 
 ## 23. Testing
 
-FashionForge includes automated test suites that cover design persistence, cart operations, order workflows, payment flows, and UI/PWA verification.
+FashionForge includes automated test suites covering design persistence, MongoDB persistence, authentication security, cart operations, order workflows, payment flows, UI/PWA verification, and end-to-end browser journeys.
 
 ### Running the Test Suite
 
@@ -789,25 +797,37 @@ npm test
 ```
 
 This executes the following test files sequentially:
-- `tests/test_phase7.js` — Design persistence, saved schema, My Designs operations
-- `tests/test_phase8.js` — Additional design and rendering tests
-- `tests/test_phase9.js` — Cart and checkout operations
-- `tests/test_phase10.js` — Order workflow and lifecycle
-- `tests/test_phase11.js` — Extended order and integration tests
-- `tests/test_workflow.js` — End-to-end workflow verification
-- `tests/test_ui_pwa.js` — UI structure and PWA manifest validation
-- `tests/test_payment.js` — Payment flow (UPI and COD) tests
+- `tests/test_phase7.js` — Design persistence, saved schema normalization, My Designs CRUD operations, restoration, and data integrity against the storage interface
+- `tests/test_phase8.js` — REST API endpoints (`/api/designs`), MongoDB persistence, input validation, and schema fidelity
+- `tests/test_phase9.js` — User registration, authentication, password security (bcrypt hashing), design ownership enforcement, cross-user access isolation (HTTP 403), and authenticated round-trip integrity
+- `tests/test_phase10.js` — Shopping bag operations (`/api/cart`), checkout flow (`/api/orders/checkout`), authoritative server-side pricing security (rejecting client price tampering), payment simulation, and cross-user cart isolation (Tests A through T)
+- `tests/test_phase11.js` — Order confirmation, order history (`/api/orders`), order details retrieval, lifecycle stage transitions (`advance-status`), tracking timeline, and cross-user order isolation (Tests A through V)
+- `tests/test_workflow.js` — Complete application workflow: page availability for all 9 application pages, user registration, studio design creation and saving, bag management, checkout, payment failure handling (verifying failed status and bag preservation), payment success handling (verifying paid status and bag clearance), order confirmation, order history, and lifecycle advancement to delivered
+- `tests/test_ui_pwa.js` — UI shell and PWA validation: web app manifest structure, service worker caching strategies, offline fallback page availability, natural scrolling behavior, and header/footer layout structure
+- `tests/test_payment.js` — Simplified UPI QR & COD payment test suite: unauthenticated checkout rejection (HTTP 401), merchant UPI config retrieval, dynamic standard UPI URI generation, SVG QR code generation, mobile intent link verification, cross-user payment isolation (HTTP 403), customer manual confirmation, bag clearance on confirmed UPI payment, idempotent confirmation, failed/cancelled payment bag preservation, and Cash on Delivery order processing
 
 ### Browser End-to-End Tests (Puppeteer)
 
-Additional browser-based tests require Puppeteer and a running server:
+Additional browser-based tests use Puppeteer with Google Chrome to test real browser interactions:
 
 ```bash
+# Run complete user journey in real Chrome
 node tests/test_browser_e2e_journey.cjs
+
+# Run multi-device responsive and PWA layout tests
 node tests/test_browser_responsive_pwa.cjs
+
+# Run comprehensive multi-page load and element audit
+node tests/test_browser_audit.cjs
+
+# Run authenticated multi-page session navigation
+node tests/test_browser_authenticated.cjs
+
+# Run UPI QR and COD payment interaction verification
+node tests/test_browser_payment.cjs
 ```
 
-These tests automate browser interactions to verify the full user journey and responsive behaviour across different viewport sizes.
+These tests automate Chrome browser interactions to verify the full user journey, payment modal behaviors, and responsive behaviour across mobile, tablet, and desktop viewports.
 
 ---
 
@@ -830,7 +850,7 @@ FashionForge can be deployed as a single Node.js service that serves both the AP
 
 For a detailed step-by-step guide, see [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
 
-> **Note:** On Render free tier, the service spins down after 15 minutes of inactivity. The first request after idle will take approximately 30 seconds.
+> **Note:** On the Render free tier, the service spins down after a period of inactivity. The first request after idle may take some time to wake the service.
 
 ---
 
@@ -856,7 +876,7 @@ FashionForge is an academic project with a defined scope. The following are expl
 The following are potential future improvements, clearly labeled as **not currently implemented**:
 
 - **Real 3D garment simulation** with physics-based cloth draping using WebGL or Three.js.
-- **AI-assisted design recommendations** using machine learning trained on fashion datasets.
+- **Machine learning design recommendations** using models trained on fashion styling datasets.
 - **Third-party payment gateway integration** (Razorpay, Stripe) for verified online payments.
 - **Inventory and shipping integration** with real carrier APIs for live tracking.
 - **Measurement-based body fitting** using user-entered measurements for personalised garment sizing.
