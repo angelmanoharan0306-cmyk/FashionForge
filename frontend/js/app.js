@@ -30,7 +30,7 @@ import {
   saveDesignToCart
 } from './services/design-storage.js';
 
-import { isAuthenticated, getCurrentUser } from './services/auth-service.js';
+import { isAuthenticated, getCurrentUser, logout } from './services/auth-service.js';
 import { setupNavigationAuth } from './services/auth-nav.js';
 import { cartService } from './services/cart-service.js';
 
@@ -71,6 +71,31 @@ export const designState = {
   notes: 'Fitted bodice with natural waist connection and structured A-line drape.',
   lastChanged: null
 };
+
+const STUDIO_PREFERENCES_KEY = 'fashionforge_studio_preferences';
+const DEFAULT_STUDIO_PREFERENCES = {
+  defaultWorkspace: 'design',
+  defaultView: 'front',
+  defaultZoom: 100,
+  reducedMotion: false
+};
+
+function loadStudioPreferences() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(STUDIO_PREFERENCES_KEY) || '{}');
+    return { ...DEFAULT_STUDIO_PREFERENCES, ...stored };
+  } catch {
+    return { ...DEFAULT_STUDIO_PREFERENCES };
+  }
+}
+
+function saveStudioPreferences(preferences) {
+  try {
+    localStorage.setItem(STUDIO_PREFERENCES_KEY, JSON.stringify(preferences));
+  } catch {
+    // Preferences remain usable for the current session when storage is unavailable.
+  }
+}
 
 /* ==========================================================================
    2. UNDO / REDO HISTORY STACK ARCHITECTURE
@@ -603,6 +628,7 @@ if (typeof window !== 'undefined') {
   window.updatePreview = updatePreview;
   window.setView = setView;
   window.setStudioMode = setStudioMode;
+  window.downloadDesignPreviewPng = downloadDesignPreviewPng;
   window.calculateDesignPrice = calculateDesignPrice;
   window.calculatePrice = calculatePrice;
   window.getRecommendation = getRecommendation;
@@ -674,10 +700,12 @@ export function setStudioMode(mode) {
   const workspace2D = document.querySelector('#workspace-2d');
   const workspaceFlat = document.querySelector('#workspace-technical-flat');
   const workspaceTechPack = document.querySelector('#workspace-tech-pack');
+  const workspaceSettings = document.querySelector('#workspace-settings');
 
   if (workspace2D) workspace2D.style.display = (mode === 'design') ? 'flex' : 'none';
   if (workspaceFlat) workspaceFlat.style.display = (mode === 'technical-flat') ? 'flex' : 'none';
   if (workspaceTechPack) workspaceTechPack.style.display = (mode === 'tech-pack') ? 'block' : 'none';
+  if (workspaceSettings) workspaceSettings.style.display = (mode === 'settings') ? 'flex' : 'none';
 
   if (mode === 'technical-flat') {
     const mainFlatSvg = document.querySelector('#main-flat-svg');
@@ -900,11 +928,104 @@ export function downloadTechnicalFlatSvg() {
   showToast('Vector CAD Flat downloaded');
 }
 
+/**
+ * Downloads the currently rendered 2.5D preview as a high-resolution PNG.
+ */
+export async function downloadDesignPreviewPng() {
+  const previewSvg = document.querySelector('#costume-preview');
+  if (!previewSvg) return;
+
+  const viewBox = (previewSvg.getAttribute('viewBox') || '0 0 768 1376').split(/\s+/).map(Number);
+  const sourceWidth = viewBox[2] || 768;
+  const sourceHeight = viewBox[3] || 1376;
+  const scale = 2;
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(sourceWidth * scale);
+  canvas.height = Math.round(sourceHeight * scale);
+
+  const context = canvas.getContext('2d');
+  if (!context) return;
+
+  const exportSvg = previewSvg.cloneNode(true);
+  for (const image of exportSvg.querySelectorAll('image')) {
+    const href = image.getAttribute('href') || image.getAttributeNS('http://www.w3.org/1999/xlink', 'href');
+    if (href && !href.startsWith('data:') && !href.startsWith('blob:')) {
+      const absoluteHref = new URL(href, window.location.href).href;
+      const assetResponse = await fetch(absoluteHref);
+      if (!assetResponse.ok) throw new Error(`Could not load preview asset (${assetResponse.status})`);
+      const assetBlob = await assetResponse.blob();
+      const assetDataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(assetBlob);
+      });
+      image.setAttribute('href', assetDataUrl);
+      image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', assetDataUrl);
+    }
+  }
+
+  exportSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  exportSvg.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+  const serializer = new XMLSerializer();
+  const svgMarkup = serializer.serializeToString(exportSvg);
+  const image = new Image();
+  const imageUrl = URL.createObjectURL(new Blob([svgMarkup], { type: 'image/svg+xml;charset=utf-8' }));
+
+  try {
+    await new Promise((resolve, reject) => {
+      image.onload = resolve;
+      image.onerror = reject;
+      image.src = imageUrl;
+    });
+
+    const background = context.createRadialGradient(
+      canvas.width * 0.5,
+      canvas.height * 0.36,
+      canvas.width * 0.05,
+      canvas.width * 0.5,
+      canvas.height * 0.5,
+      canvas.width * 0.8
+    );
+    background.addColorStop(0, '#ffffff');
+    background.addColorStop(0.48, '#fbf9f6');
+    background.addColorStop(1, '#ebe2d5');
+    context.fillStyle = background;
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+    if (!blob) throw new Error('PNG export could not be created');
+    const filename = `${(designState.name || 'fashionforge-design')
+      .trim()
+      .replace(/[^a-z0-9]+/gi, '-')
+      .replace(/^-|-$/g, '')
+      .toLowerCase() || 'fashionforge-design'}-2.5d.png`;
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    showToast('2.5D design image downloaded');
+  } finally {
+    URL.revokeObjectURL(imageUrl);
+  }
+}
+
 /* ==========================================================================
    7. EVENT WIRING & APPLICATION BOOTSTRAP
    ========================================================================== */
 
 document.addEventListener('DOMContentLoaded', () => {
+  const studioPreferences = loadStudioPreferences();
+  if (['front', 'back'].includes(studioPreferences.defaultView)) {
+    designState.view = studioPreferences.defaultView;
+  }
+  if ([75, 100, 125].includes(Number(studioPreferences.defaultZoom))) {
+    designState.zoom = Number(studioPreferences.defaultZoom);
+  }
+  document.body.classList.toggle('studio-reduced-motion', Boolean(studioPreferences.reducedMotion));
 
   // 1. Garment Component Card Handlers (with Compatibility Validation)
   document.querySelectorAll('.component-card[data-component-group]').forEach(card => {
@@ -1057,6 +1178,112 @@ document.addEventListener('DOMContentLoaded', () => {
     el.addEventListener('click', () => setStudioMode(el.dataset.mode));
   });
 
+  // Mobile navigation exposes the existing rail, controls, inspector, and actions as drawers.
+  const mobileDrawerScrim = document.querySelector('#mobile-drawer-scrim');
+  const mobileDrawerButtons = {
+    menu: document.querySelector('#btn-mobile-menu'),
+    controls: document.querySelector('#btn-mobile-controls'),
+    info: document.querySelector('#btn-mobile-info'),
+    actions: document.querySelector('#btn-mobile-actions')
+  };
+  const mobileDrawers = {
+    menu: document.querySelector('#studio-rail'),
+    controls: document.querySelector('#controls-panel'),
+    info: document.querySelector('#info-panel'),
+    actions: document.querySelector('#studio-command-bar')
+  };
+
+  const closeMobileDrawers = () => {
+    Object.entries(mobileDrawers).forEach(([key, drawer]) => {
+      if (drawer) drawer.classList.remove('is-open');
+      mobileDrawerButtons[key]?.setAttribute('aria-expanded', 'false');
+    });
+    mobileDrawerScrim?.classList.remove('is-visible');
+  };
+
+  const toggleMobileDrawer = (key) => {
+    const drawer = mobileDrawers[key];
+    if (!drawer) return;
+    const willOpen = !drawer.classList.contains('is-open');
+    closeMobileDrawers();
+    if (willOpen) {
+      drawer.classList.add('is-open');
+      mobileDrawerButtons[key]?.setAttribute('aria-expanded', 'true');
+      mobileDrawerScrim?.classList.add('is-visible');
+    }
+  };
+
+  Object.keys(mobileDrawerButtons).forEach(key => {
+    mobileDrawerButtons[key]?.addEventListener('click', () => toggleMobileDrawer(key));
+  });
+  mobileDrawerScrim?.addEventListener('click', closeMobileDrawers);
+  ['#btn-close-mobile-controls', '#btn-close-mobile-info', '#btn-close-mobile-actions'].forEach(selector => {
+    document.querySelector(selector)?.addEventListener('click', closeMobileDrawers);
+  });
+  document.querySelectorAll('.studio-rail .rail-item').forEach(item => {
+    item.addEventListener('click', closeMobileDrawers);
+  });
+
+  const settingDefaultWorkspace = document.querySelector('#setting-default-workspace');
+  const settingDefaultView = document.querySelector('#setting-default-view');
+  const settingDefaultZoom = document.querySelector('#setting-default-zoom');
+  const settingReducedMotion = document.querySelector('#setting-reduced-motion');
+  const settingsAccountName = document.querySelector('#settings-account-name');
+  const settingsAccountEmail = document.querySelector('#settings-account-email');
+  const settingsAccountId = document.querySelector('#settings-account-id');
+  const settingsAccountMember = document.querySelector('#settings-account-member');
+  const settingsAccountIdRow = document.querySelector('#settings-account-id-row');
+  const settingsAccountMemberRow = document.querySelector('#settings-account-member-row');
+  const settingsAccountNote = document.querySelector('#settings-account-note');
+  const settingsSignout = document.querySelector('#btn-settings-signout');
+  const currentUser = getCurrentUser();
+
+  if (currentUser && isAuthenticated()) {
+    if (settingsAccountName) settingsAccountName.textContent = currentUser.name || 'FashionForge member';
+    if (settingsAccountEmail) settingsAccountEmail.textContent = currentUser.email || 'Email unavailable';
+    const userId = currentUser.id || currentUser._id || currentUser.userId;
+    const memberSince = currentUser.createdAt || currentUser.created_at || currentUser.joinedAt;
+    if (userId) {
+      if (settingsAccountId) settingsAccountId.textContent = userId;
+    } else {
+      settingsAccountIdRow?.remove();
+    }
+    if (memberSince) {
+      const date = new Date(memberSince);
+      if (settingsAccountMember) settingsAccountMember.textContent = Number.isNaN(date.getTime()) ? String(memberSince) : date.toLocaleDateString();
+    } else {
+      settingsAccountMemberRow?.remove();
+    }
+  } else {
+    settingsAccountIdRow?.remove();
+    settingsAccountMemberRow?.remove();
+    settingsSignout?.remove();
+    if (settingsAccountNote) settingsAccountNote.textContent = 'Sign in to view your authenticated account details.';
+  }
+
+  settingsSignout?.addEventListener('click', () => {
+    logout();
+    window.location.href = 'index.html';
+  });
+
+  if (settingDefaultWorkspace) settingDefaultWorkspace.value = studioPreferences.defaultWorkspace;
+  if (settingDefaultView) settingDefaultView.value = studioPreferences.defaultView;
+  if (settingDefaultZoom) settingDefaultZoom.value = String(studioPreferences.defaultZoom);
+  if (settingReducedMotion) settingReducedMotion.checked = Boolean(studioPreferences.reducedMotion);
+
+  const persistStudioPreferences = () => {
+    studioPreferences.defaultWorkspace = settingDefaultWorkspace?.value || 'design';
+    studioPreferences.defaultView = settingDefaultView?.value || 'front';
+    studioPreferences.defaultZoom = Number(settingDefaultZoom?.value || 100);
+    studioPreferences.reducedMotion = Boolean(settingReducedMotion?.checked);
+    saveStudioPreferences(studioPreferences);
+    document.body.classList.toggle('studio-reduced-motion', studioPreferences.reducedMotion);
+  };
+
+  [settingDefaultWorkspace, settingDefaultView, settingDefaultZoom, settingReducedMotion]
+    .filter(Boolean)
+    .forEach(control => control.addEventListener('change', persistStudioPreferences));
+
   const btnOpenCad = document.querySelector('#btn-open-cad-flat');
   if (btnOpenCad) {
     btnOpenCad.addEventListener('click', () => setStudioMode('technical-flat'));
@@ -1187,10 +1414,13 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnCloseExport) btnCloseExport.addEventListener('click', closeExportModal);
   if (btnCancelExport) btnCancelExport.addEventListener('click', closeExportModal);
 
-  const btnDownloadSvg = document.querySelector('#btn-download-svg');
-  if (btnDownloadSvg) {
-    btnDownloadSvg.addEventListener('click', () => {
-      downloadTechnicalFlatSvg();
+  const btnDownloadPng = document.querySelector('#btn-download-png');
+  if (btnDownloadPng) {
+    btnDownloadPng.addEventListener('click', () => {
+      downloadDesignPreviewPng().catch(err => {
+        console.error('Failed to export 2.5D design image:', err);
+        showToast('Unable to export the 2.5D design image', 'error');
+      });
       closeExportModal();
     });
   }
@@ -1401,7 +1631,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Check URL query parameters (e.g. ?id=FF-D... or ?mode=tech-pack)
   const urlParams = new URLSearchParams(window.location.search);
   const designId = urlParams.get('id') || urlParams.get('load');
-  const initialMode = urlParams.get('mode');
+  const initialMode = urlParams.get('mode') || studioPreferences.defaultWorkspace;
 
   if (designId) {
     getDesignById(designId).then(saved => {

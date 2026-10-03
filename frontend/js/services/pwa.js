@@ -7,7 +7,7 @@ export function registerServiceWorker() {
   if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
     window.addEventListener('load', async () => {
       try {
-        const reg = await navigator.serviceWorker.register('/service-worker.js', { scope: '/' });
+        const reg = await navigator.serviceWorker.register('/service-worker.js?v=1.0.1', { scope: '/' });
         // Handle updates
         reg.addEventListener('updatefound', () => {
           const newWorker = reg.installing;

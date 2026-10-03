@@ -17,8 +17,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
-  <link rel="stylesheet" href="css/style.css">
-  <script type="module" src="js/app.js"></script>
+  <link rel="stylesheet" href="css/style.css?v=20261003-studio-header-v2">
+  <script type="module" src="js/app.js?v=20261004-export-v3"></script>
 </head>
 <body class="studio-app-body">
 
@@ -26,6 +26,32 @@
        1. FIXED TOP STUDIO HEADER (64px)
        ======================================================================== -->
   <header class="studio-top-header" role="banner" aria-label="Studio application header">
+    <div class="mobile-header-tools" aria-label="Mobile studio navigation">
+      <button class="mobile-header-btn" id="btn-mobile-menu" type="button" aria-expanded="false" aria-controls="studio-rail" title="Open studio navigation">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+          <line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/>
+        </svg>
+        <span>Menu</span>
+      </button>
+      <button class="mobile-header-btn" id="btn-mobile-controls" type="button" aria-expanded="false" aria-controls="controls-panel" title="Open design controls">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 21v-7"/><path d="M4 10V3"/><path d="M12 21v-9"/><path d="M12 8V3"/><path d="M20 21v-5"/><path d="M20 12V3"/><path d="M1 14h6"/><path d="M9 8h6"/><path d="M17 16h6"/>
+        </svg>
+        <span>Controls</span>
+      </button>
+      <button class="mobile-header-btn" id="btn-mobile-info" type="button" aria-expanded="false" aria-controls="info-panel" title="Open design information">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"/><line x1="12" y1="10" x2="12" y2="16"/><line x1="12" y1="7" x2="12" y2="7"/>
+        </svg>
+        <span>Info</span>
+      </button>
+      <button class="mobile-header-btn" id="btn-mobile-actions" type="button" aria-expanded="false" aria-controls="studio-command-bar" title="Open studio actions">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>
+        </svg>
+        <span>More</span>
+      </button>
+    </div>
     <div class="studio-header-left">
       <a href="index.html" class="studio-brand-group" title="Return to FashionForge Home">
         <span class="studio-brand-title">FashionForge</span>
@@ -42,23 +68,12 @@
       </div>
     </div>
 
-    <!-- Center Workspace Mode Switcher -->
-    <div class="studio-header-center" role="navigation" aria-label="Workspace mode switcher">
-      <div class="segmented-control" role="tablist">
-        <button class="segmented-pill is-active" id="mode-btn-design" data-mode="design" role="tab" aria-selected="true" type="button">
-          Design Studio
-        </button>
-        <button class="segmented-pill" id="mode-btn-flat" data-mode="technical-flat" role="tab" aria-selected="false" type="button">
-          Technical Flat
-        </button>
-        <button class="segmented-pill" id="mode-btn-techpack" data-mode="tech-pack" role="tab" aria-selected="false" type="button">
-          Tech Pack
-        </button>
-      </div>
-    </div>
-
     <!-- Right Header Action Commands -->
-    <div class="studio-header-right header-right" role="toolbar" aria-label="Studio command bar">
+    <div class="studio-header-right header-right" id="studio-command-bar" role="toolbar" aria-label="Studio command bar">
+      <div class="mobile-command-header">
+        <h2>Studio Actions</h2>
+        <button class="drawer-close-btn" id="btn-close-mobile-actions" type="button" aria-label="Close studio actions">&times;</button>
+      </div>
       <button class="header-action-btn" id="btn-undo" type="button" title="Undo change (Ctrl+Z)" aria-label="Undo" disabled>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M9 14 4 9l5-5"/>
@@ -117,13 +132,15 @@
     </div>
   </header>
 
+  <div class="mobile-drawer-scrim" id="mobile-drawer-scrim" aria-hidden="true"></div>
+
   <!-- ========================================================================
        2. WORKSPACE APP LAYOUT (4-COLUMN DESKTOP GRID)
        ======================================================================== -->
   <div class="studio-app-layout">
 
     <!-- 2.1 Far-Left Vertical Navigation Rail (72px) -->
-    <aside class="studio-rail" aria-label="Studio mode navigation">
+    <aside class="studio-rail" id="studio-rail" aria-label="Studio mode navigation">
       <nav class="rail-navigation">
         <button class="rail-item is-active" id="rail-btn-design" data-mode="design" type="button" aria-current="page" title="2.5D Design Studio">
           <svg class="rail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -170,6 +187,10 @@
 
     <!-- 2.2 Left Design Controls Panel (316px) -->
     <aside class="controls-panel" id="controls-panel" aria-label="Garment design palette">
+      <div class="drawer-panel-header">
+        <h2>Design Controls</h2>
+        <button class="drawer-close-btn" id="btn-close-mobile-controls" type="button" aria-label="Close design controls">&times;</button>
+      </div>
 
       <!-- Section A: Garment Components -->
       <section class="control-section" aria-labelledby="heading-garment-components">
@@ -708,10 +729,93 @@
         </div>
       </div>
 
+      <!-- Viewport 4: Frontend Studio Preferences -->
+      <section class="settings-workspace" id="workspace-settings" aria-label="Studio settings">
+        <header class="settings-workspace-header">
+          <div>
+            <span class="eyebrow">Studio Preferences</span>
+            <h2 class="settings-workspace-title">Settings</h2>
+            <p class="component-sub">Choose how FashionForge opens and presents your design workspace.</p>
+          </div>
+        </header>
+
+        <div class="settings-section account-settings-section">
+          <div class="settings-section-heading">
+            <h3>Account Information</h3>
+            <p>Your authenticated FashionForge account details.</p>
+          </div>
+          <dl class="account-details-list">
+            <div><dt>Name</dt><dd id="settings-account-name">Not signed in</dd></div>
+            <div><dt>Email</dt><dd id="settings-account-email">Sign in to view account details</dd></div>
+            <div id="settings-account-id-row"><dt>User ID</dt><dd id="settings-account-id">-</dd></div>
+            <div id="settings-account-member-row"><dt>Member since</dt><dd id="settings-account-member">-</dd></div>
+          </dl>
+          <p class="settings-account-note" id="settings-account-note">Account details are read-only. Profile editing is not enabled in this studio.</p>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-heading">
+            <h3>Startup Workspace</h3>
+            <p>These choices are stored locally in this browser and apply the next time the studio opens.</p>
+          </div>
+          <label class="settings-field-row" for="setting-default-workspace">
+            <span>
+              <strong>Default workspace</strong>
+              <small>Choose the view you use most often.</small>
+            </span>
+            <select id="setting-default-workspace">
+              <option value="design">Design Studio</option>
+              <option value="technical-flat">Technical Flat</option>
+              <option value="tech-pack">Tech Pack</option>
+            </select>
+          </label>
+          <label class="settings-field-row" for="setting-default-view">
+            <span>
+              <strong>Default preview side</strong>
+              <small>Set the first garment view shown in the studio.</small>
+            </span>
+            <select id="setting-default-view">
+              <option value="front">Front View</option>
+              <option value="back">Back View</option>
+            </select>
+          </label>
+          <label class="settings-field-row" for="setting-default-zoom">
+            <span>
+              <strong>Default preview scale</strong>
+              <small>Set the initial zoom used by the garment canvas.</small>
+            </span>
+            <select id="setting-default-zoom">
+              <option value="75">75%</option>
+              <option value="100">100%</option>
+              <option value="125">125%</option>
+            </select>
+          </label>
+          <label class="settings-toggle-row" for="setting-reduced-motion">
+            <span>
+              <strong>Reduce interface motion</strong>
+              <small>Disable non-essential transitions in the studio shell.</small>
+            </span>
+            <input id="setting-reduced-motion" type="checkbox">
+          </label>
+        </div>
+
+        <div class="settings-section account-settings-section">
+          <div class="settings-section-heading">
+            <h3>Account</h3>
+            <p>End the current authenticated session on this device.</p>
+          </div>
+          <button class="btn-secondary settings-signout-btn" id="btn-settings-signout" type="button">Sign Out</button>
+        </div>
+      </section>
+
     </main>
 
     <!-- 2.4 Right Inspector Panel (Specifications, Pricing, CAD, 348px) -->
     <aside class="info-panel" id="info-panel" aria-label="Garment specifications and inspector">
+      <div class="drawer-panel-header">
+        <h2>Information</h2>
+        <button class="drawer-close-btn" id="btn-close-mobile-info" type="button" aria-label="Close information">&times;</button>
+      </div>
       <header class="info-panel-header" style="padding-bottom: var(--space-2); margin-bottom: 0;">
         <p class="info-eyebrow" style="margin-bottom: 2px;">Design Notes</p>
         <h1 class="info-title" style="font-size: 1.25rem;">Information</h1>
@@ -1060,10 +1164,10 @@
         <h3 class="modal-title" id="modal-export-title">Export Garment Asset</h3>
         <button class="modal-close-btn" id="btn-close-export" type="button" aria-label="Close dialog">&times;</button>
       </div>
-      <p class="component-sub" style="margin-bottom: var(--space-4);">Select your desired technical production export format:</p>
+      <p class="component-sub" style="margin-bottom: var(--space-4);">Export the current FashionForge design visualization or its production specification.</p>
 
       <div class="component-card-grid" style="gap: var(--space-3); margin-bottom: var(--space-6);">
-        <button class="component-card" id="btn-download-svg" type="button">
+        <button class="component-card" id="btn-download-png" type="button">
           <div class="component-thumb-wrap">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
@@ -1072,8 +1176,8 @@
             </svg>
           </div>
           <div class="component-text-wrap">
-            <span class="component-title">Vector Technical Flat (SVG)</span>
-            <span class="component-sub">Resolution-independent CAD linework</span>
+            <span class="component-title">2.5D Design Image (PNG)</span>
+            <span class="component-sub">High-resolution export of the current fashion design preview</span>
           </div>
         </button>
 

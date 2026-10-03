@@ -4,7 +4,7 @@
  * and zero caching for private API endpoints.
  */
 
-const CACHE_NAME = 'fashionforge-v1.0.0';
+const CACHE_NAME = 'fashionforge-v1.0.1';
 const OFFLINE_URL = '/offline.html';
 
 const STATIC_ASSETS = [
