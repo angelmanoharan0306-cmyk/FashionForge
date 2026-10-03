@@ -18,45 +18,46 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
   <link rel="stylesheet" href="css/style.css">
-  <script type="module" src="js/my-designs.js"></script>
+  <script type="module" src="js/my-designs.js?v=20261004-mobile-menu-v1"></script>
 </head>
 <body class="app-page-body mydesigns-page-body">
 
   <!-- ========================================================================
        1. FIXED TOP HEADER
        ======================================================================== -->
-  <header class="studio-top-header" role="banner" aria-label="FashionForge header">
+  <header class="studio-top-header mydesigns-header" role="banner" aria-label="FashionForge header">
     <div class="studio-header-left">
       <a href="index.html" class="studio-brand-group" title="Return to FashionForge Home">
         <span class="studio-brand-title">FashionForge</span>
         <span class="studio-brand-sub">STUDIO</span>
       </a>
-
-      <div class="studio-header-divider" aria-hidden="true"></div>
-
-      <div class="studio-design-meta" aria-label="Portfolio title">
-        <span class="header-design-name" style="font-size: var(--text-sm); font-weight: 600;">My Designs</span>
-      </div>
     </div>
 
-    <!-- Center Workspace Navigation -->
-    <div class="studio-header-center" role="navigation" aria-label="Main application navigation">
-      <div class="segmented-control" role="tablist">
-        <a class="segmented-pill" href="index.html" role="tab">Home</a>
-        <a class="segmented-pill" href="design.html" role="tab">Design Studio</a>
-        <a class="segmented-pill is-active" href="my-designs.html" role="tab" aria-selected="true">My Designs</a>
-      </div>
-    </div>
+    <button class="mydesigns-mobile-menu-btn" id="btn-mydesigns-mobile-menu" type="button" aria-expanded="false" aria-controls="mydesigns-header-actions" title="Open navigation">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+        <line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/>
+      </svg>
+      <span>Menu</span>
+    </button>
 
-    <!-- Right Header Action -->
-    <div class="studio-header-right header-right" role="toolbar" aria-label="Portfolio actions">
-      <a class="btn-primary" href="design.html" style="height: 2.35rem; font-size: 0.8125rem; border-radius: var(--radius-full); padding: 0 var(--space-4); display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
+    <div class="mydesigns-header-actions" id="mydesigns-header-actions" role="navigation" aria-label="My Designs navigation">
+      <div class="mydesigns-mobile-menu-heading">
+        <strong>FashionForge</strong>
+        <button class="mydesigns-mobile-menu-close" id="btn-mydesigns-mobile-menu-close" type="button" aria-label="Close navigation">&times;</button>
+      </div>
+      <a class="btn-primary mydesigns-new-design" href="design.html">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="12" y1="5" x2="12" y2="19"/>
           <line x1="5" y1="12" x2="19" y2="12"/>
         </svg>
         <span>New Design</span>
       </a>
+
+      <div class="mydesigns-primary-nav" role="list">
+        <a class="mydesigns-nav-link" href="index.html" role="listitem">Home</a>
+        <a class="mydesigns-nav-link" href="design.html" role="listitem">Design Studio</a>
+        <a class="mydesigns-nav-link is-active" href="my-designs.html" role="listitem" aria-current="page">My Designs</a>
+      </div>
     </div>
   </header>
 

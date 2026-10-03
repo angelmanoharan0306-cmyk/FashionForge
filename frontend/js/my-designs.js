@@ -410,7 +410,24 @@ function escapeHtml(str) {
 
 document.addEventListener('DOMContentLoaded', () => {
   // 0. Setup User Navigation Auth Widget
-  setupNavigationAuth();
+  setupNavigationAuth('#mydesigns-header-actions');
+
+  const mobileMenuButton = document.querySelector('#btn-mydesigns-mobile-menu');
+  const mobileMenuClose = document.querySelector('#btn-mydesigns-mobile-menu-close');
+  const headerActions = document.querySelector('#mydesigns-header-actions');
+  const closeMobileMenu = () => {
+    headerActions?.classList.remove('is-open');
+    mobileMenuButton?.setAttribute('aria-expanded', 'false');
+  };
+  const toggleMobileMenu = () => {
+    const isOpen = !headerActions?.classList.contains('is-open');
+    headerActions?.classList.toggle('is-open', isOpen);
+    mobileMenuButton?.setAttribute('aria-expanded', String(isOpen));
+  };
+
+  mobileMenuButton?.addEventListener('click', toggleMobileMenu);
+  mobileMenuClose?.addEventListener('click', closeMobileMenu);
+  headerActions?.querySelectorAll('a').forEach(link => link.addEventListener('click', closeMobileMenu));
 
   // 1. Initial Render
   renderDesignsGrid();
