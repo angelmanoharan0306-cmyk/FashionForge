@@ -602,22 +602,32 @@ export function syncUIFromState() {
  * Triggers full 2.5D, vector technical flat, and UI synchronizer
  */
 export function updatePreview() {
-  const previewSvg = document.querySelector('#costume-preview');
-  if (previewSvg) {
-    renderDesign(designState, previewSvg);
+  const mode = designState.activeMode;
+
+  // Design workspace → render only the 2.5D fashion preview
+  if (mode === 'design') {
+    const previewSvg = document.querySelector('#costume-preview');
+    if (previewSvg) {
+      renderDesign(designState, previewSvg);
+    }
   }
 
-  // Dual side-by-side technical sketch in inspector
-  const flatFront = document.querySelector('#tech-flat-front-svg');
-  const flatBack = document.querySelector('#tech-flat-back-svg');
-  if (flatFront && flatBack) {
-    renderTechnicalFlatPair(flatFront, flatBack, designState);
+  // Technical Flat workspace → render only the CAD flat
+  if (mode === 'technical-flat') {
+    const mainFlatSvg = document.querySelector('#main-flat-svg');
+    if (mainFlatSvg) {
+      renderTechnicalFlat(designState, mainFlatSvg);
+    }
   }
 
-  // Full-scale CAD canvas if active
-  const mainFlatSvg = document.querySelector('#main-flat-svg');
-  if (mainFlatSvg && designState.activeMode === 'technical-flat') {
-    renderTechnicalFlat(designState, mainFlatSvg);
+  // Tech Pack workspace → render the front/back technical flats
+  if (mode === 'tech-pack') {
+    const flatFront = document.querySelector('#tech-flat-front-svg');
+    const flatBack = document.querySelector('#tech-flat-back-svg');
+
+    if (flatFront && flatBack) {
+      renderTechnicalFlatPair(flatFront, flatBack, designState);
+    }
   }
 
   syncUIFromState();
