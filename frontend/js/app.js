@@ -1657,10 +1657,11 @@ document.addEventListener('DOMContentLoaded', () => {
       console.warn('Failed to load design by ID from API:', err);
       updatePreview();
     });
-  } else {
+    } else {
     if (initialMode && ['design', 'technical-flat', 'tech-pack'].includes(initialMode)) {
       setStudioMode(initialMode);
+    } else {
+      updatePreview();
     }
-    updatePreview();
   }
 });
