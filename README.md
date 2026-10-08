@@ -2,6 +2,8 @@
 
 **Interactive Digital Fashion Design Studio**
 
+🌐 **Live Demo / Project Website:** [https://fashionforge-8yuv.onrender.com/](https://fashionforge-8yuv.onrender.com/)
+
 FashionForge is a full-stack web application that brings interactive garment design and customization directly to the browser. Instead of browsing fixed product catalogs, users interactively configure garments using a layered SVG-based 2.5D visual canvas on male and female fashion figures (croquis), receive real-time styling recommendations, view dynamic price breakdowns, and complete an end-to-end e-commerce journey from shopping bag to checkout, payment simulation, and order tracking.
 
 The project is built entirely with native web standards on the frontend—HTML5, CSS3, Vanilla JavaScript, and SVG—paired with a Node.js, Express, and MongoDB backend.
@@ -518,8 +520,9 @@ node tests/test_browser_payment.cjs        # Payment modal and UI interaction ch
 
 FashionForge is designed to deploy easily as a unified service where Node.js handles both the API and static file serving.
 
-### Recommended Production Setup
-- **Web Service:** [Render](https://render.com/) (Web Service)
+### Production Setup
+- **Live Project Website:** [https://fashionforge-8yuv.onrender.com/](https://fashionforge-8yuv.onrender.com/)
+- **Hosting Platform:** [Render](https://render.com/) (Web Service)
 - **Cloud Database:** [MongoDB Atlas](https://cloud.mongodb.com/) (Free M0 Shared Cluster)
 
 ### Deployment Steps
