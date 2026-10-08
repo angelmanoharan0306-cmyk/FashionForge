@@ -1,900 +1,591 @@
 # FashionForge
 
-FashionForge is a full-stack interactive fashion design web application that allows users to design custom garments on a layered SVG-based 2.5D canvas, preview front and back views on human figure models, receive rule-based styling recommendations, see real-time pricing, and complete an end-to-end shopping workflow including bag, checkout, and payment through UPI QR or Cash on Delivery. The application is built with vanilla HTML, CSS, and JavaScript on the frontend, and Node.js with Express and MongoDB on the backend.
+**Interactive Digital Fashion Design Studio**
+
+FashionForge is a full-stack web application that brings interactive garment design and customization directly to the browser. Instead of browsing fixed product catalogs, users interactively configure garments using a layered SVG-based 2.5D visual canvas on male and female fashion figures (croquis), receive real-time styling recommendations, view dynamic price breakdowns, and complete an end-to-end e-commerce journey from shopping bag to checkout, payment simulation, and order tracking.
+
+The project is built entirely with native web standards on the frontend—HTML5, CSS3, Vanilla JavaScript, and SVG—paired with a Node.js, Express, and MongoDB backend.
 
 ---
 
-## 1. Project Overview
+## Table of Contents
 
-FashionForge is a web-based fashion design studio that brings the concept of custom garment design to the browser. Instead of browsing fixed product listings, users interactively build their own garments by selecting components (top silhouette, bottom silhouette, sleeves, neckline), choosing fabrics, colours, and patterns, and seeing their choices rendered in real time on a human figure model.
-
-The application covers the complete lifecycle from design to order: users create garments in the Design Studio, save them to their personal collection, add them to a shopping bag, proceed through checkout with delivery details, select a payment method, and receive order confirmation with tracking.
-
-FashionForge is developed as a final-year academic project demonstrating interactive web application development, frontend visualization, REST API design, database persistence, authentication, business-rule logic, pricing calculations, and an e-commerce workflow.
-
----
-
-## 2. Problem Statement
-
-Traditional online fashion retail presents customers with pre-made garments in fixed designs. Customers cannot easily visualise how different combinations of tops, bottoms, sleeves, necklines, fabrics, and colours would look together before purchasing. There is a gap between the customer's creative vision and the available product catalogue.
-
-FashionForge addresses this gap by providing an interactive design tool where users can:
-
-- Combine garment components visually and see the result immediately.
-- Experiment with different fabrics, colours, patterns, and sizes.
-- Receive styling guidance based on their selections.
-- Understand the cost of their custom design in real time.
-- Save, revisit, and order their personalised creations.
+- [Problem Statement & Solution](#problem-statement--solution)
+- [Key Features](#key-features)
+- [User Workflow](#user-workflow)
+- [Technology Stack](#technology-stack)
+- [Design Studio & 2.5D Visualization](#design-studio--25d-visualization)
+- [Recommendation & Pricing Logic](#recommendation--pricing-logic)
+- [Shopping & Order Workflow](#shopping--order-workflow)
+- [Payment Simulation](#payment-simulation)
+- [Project Structure](#project-structure)
+- [Installation & Local Setup](#installation--local-setup)
+- [Database Configuration](#database-configuration)
+- [Authentication & Security](#authentication--security)
+- [Testing](#testing)
+- [Deployment](#deployment)
+- [Current Limitations](#current-limitations)
+- [Future Enhancements](#future-enhancements)
+- [Security Notice](#security-notice)
 
 ---
 
-## 3. Project Objective
+## Problem Statement & Solution
 
-1. Build an interactive browser-based garment design studio with real-time visual feedback.
-2. Implement a layered SVG-based 2.5D rendering engine that visualises garment components on human figure models.
-3. Provide rule-based styling recommendations that guide users toward harmonious design choices.
-4. Calculate dynamic pricing based on selected garment components, fabric, and pattern.
-5. Implement user authentication with secure password handling and JWT-based sessions.
-6. Enable users to save, load, edit, duplicate, and delete their designs.
-7. Build a complete shopping workflow: bag, checkout, payment, order confirmation, and order tracking.
-8. Develop a RESTful backend API with Express and MongoDB for persistent data storage.
-9. Make the application installable as a Progressive Web App (PWA) with offline support.
+### The Problem
+Traditional online fashion retail presents shoppers with pre-manufactured garments in rigid catalog listings. Customers cannot easily visualize how different silhouette combinations (e.g., pairing a wrap bodice with wide-leg trousers, or swapping short sleeves for flare sleeves) would look together in their preferred fabric, color, or pattern before purchasing. This creates uncertainty in online shopping and disconnects customer creativity from the ordering process.
 
----
-
-## 4. Key Features
-
-### Design Studio
-An interactive workspace where users select garment components, colours, fabrics, and patterns. Every change updates the garment preview and price in real time.
-
-### Garment Customisation
-Users choose from multiple options for each garment component:
-- **Top:** Fitted Bodice, Relaxed Fit, Wrap Top, Peplum Bodice
-- **Bottom:** A-Line Skirt, Straight Skirt, Wide Leg Trousers, Slim Trousers
-- **Sleeves:** Short Sleeve, Long Sleeve, Flare / Bell Sleeve
-- **Neckline:** Round Jewel, V-Neck, Square Neck
-- **Fabric:** Organic Cotton, Mulberry Silk, Structured Denim, Natural Linen, Sheer Chiffon
-- **Pattern:** Solid Colour, Subtle Stripe, Check / Plaid, Floral Damask, Geometric Motif, Polka Dots
-- **Colour:** A curated palette of colour swatches
-- **Size:** XS, S, M, L, XL, XXL, 3XL, 4XL
-- **Gender / Figure:** Female and Male croquis (fashion figure) models
-
-### Front and Back Visualisation
-Users can toggle between front view and back view of the garment on the human figure model. Both views render with appropriate construction details.
-
-### 2.5D Layered Garment Rendering
-The garment preview is rendered using layered SVG elements with simulated depth, directional lighting, shadow gradients, fabric texture effects, and pattern overlays. This produces a fashion-illustration-style visualisation with visual depth, without being a true 3D cloth simulation.
-
-### Technical Sketch and Garment Specifications
-The Design Studio includes three workspace modes:
-- **Design Mode** — the main 2.5D garment preview on the human figure model.
-- **Technical Flat Mode** — a clean vector technical sketch (flat drawing) of the garment without the human figure, showing front and back construction.
-- **Tech Pack Mode** — a printable specification sheet showing the garment name, measurements, component details, and a full pricing breakdown.
-
-### Rule-Based Styling Recommendations
-The application evaluates the current design state against a table of deterministic IF/THEN rules and displays a contextual styling recommendation. Rules cover fabric-silhouette harmony, pattern-proportion guidance, gender compatibility, size-fit guidance, and component accent suggestions.
-
-### Dynamic Pricing
-A centralized pricing engine calculates the total estimated price by summing the individual costs of the selected top, bottom, sleeves, neckline, fabric, and pattern. The price updates live as the user makes changes.
-
-### User Accounts and Authentication
-Users register with a name, email, and password. Passwords are hashed using bcrypt before storage. Authentication uses stateless JSON Web Tokens (JWT). A valid JWT is required for saving designs, accessing the bag, placing orders, and viewing order history.
-
-### Save, Edit, Duplicate, and Delete Designs
-Authenticated users can save their current design configuration to MongoDB. From the **My Designs** page, users can view all saved designs, load a design back into the studio for editing, duplicate a design (creating a copy with a new ID), or delete a design.
-
-### My Designs
-A dedicated page that displays all designs saved by the logged-in user, each shown with a rendered thumbnail preview, design name, and action buttons for editing, duplicating, deleting, and adding to bag.
-
-### Bag and Checkout
-Users add saved designs to their shopping bag with a specified quantity. The bag page shows each item with its unit price, quantity, and subtotal. From the bag, users proceed to checkout where they enter delivery details (name, email, phone, address, city, state, postal code).
-
-### UPI QR and Cash on Delivery Payment
-After checkout, the payment page offers two options:
-- **UPI:** Displays a merchant QR code and UPI ID. The user scans with any UPI app and clicks "I've Completed Payment" to confirm.
-- **Cash on Delivery (COD):** The order is placed immediately with payment collected on delivery.
-
-No third-party payment gateway is integrated. Payment confirmation is manual.
-
-### Orders and Tracking
-After payment, users see an order confirmation page with a unique order ID. The **Orders** page lists all past orders. The **Order Details** page shows the full order with items, delivery address, payment status, and a multi-stage tracking timeline (Placed → Processing → Ready to Ship → Shipped → Delivered).
-
-### Progressive Web App (PWA)
-The application includes a web app manifest and service worker, making it installable on supported devices. Static assets are cached for offline access, and an offline fallback page is displayed when the network is unavailable. API requests are never cached.
-
-### Responsive Design
-The interface adapts across desktop, tablet, and mobile screen sizes.
+### The Solution
+FashionForge bridges this gap by providing an interactive digital studio where users can:
+- **Build custom garments** by freely mixing and matching components (tops, bottoms, sleeves, necklines).
+- **Visualize combinations in real time** on male and female figure models across front and back perspectives.
+- **Experiment with materials** including fabrics, colors, and patterned overlays.
+- **Receive guided styling feedback** based on garment harmony and proportions.
+- **View transparent pricing** updated immediately with every selection.
+- **Save and order designs** through a complete e-commerce bag, checkout, and simulated payment flow.
 
 ---
 
-## 5. How FashionForge Works
+## Key Features
 
-The complete user journey through FashionForge follows these steps:
-
-1. **Home Page** — The user lands on the home page and can browse or navigate to the Design Studio.
-2. **Design Studio** — The user opens the Design Studio and begins customising a garment. No login is required to use the studio.
-3. **Customise** — The user selects a top, bottom, sleeves, neckline, colour, fabric, pattern, size, and gender. Each change updates the preview and price instantly.
-4. **Preview** — The user views the garment on front and back views, toggles the figure model visibility, zooms in/out, and reviews the styling recommendation.
-5. **Technical Sketch / Specifications** — The user switches to Technical Flat mode for a clean construction sketch, or Tech Pack mode for a printable specification sheet with measurements and pricing breakdown.
-6. **Save** — When ready, the user clicks Save. If not logged in, the application preserves the design and redirects to the login page. After authentication, the design is saved to the database.
-7. **Bag** — The user adds the saved design to their shopping bag (directly from the studio or from My Designs).
-8. **Checkout** — The user reviews the bag, enters delivery details, and proceeds to create the order.
-9. **Payment** — The user selects UPI or Cash on Delivery. For UPI, the user scans the QR code and confirms; for COD, the order is placed immediately.
-10. **Order Confirmation** — A confirmation page displays the unique order ID and summary.
-11. **Order History and Tracking** — The user can view all past orders and check the status and tracking timeline for each order.
+- **Interactive Design Studio:** Real-time visual configuration workspace with immediate canvas feedback and zero page reloads.
+- **2.5D SVG Garment Visualization:** Layered vector geometry with simulated depth, directional lighting, and fabric textures (front and back views).
+- **Technical Flat & Tech Pack Modes:** Switch between figure illustration, clean vector technical flats (CAD sketches), and a printable tech pack specification sheet with measurement tables.
+- **Rule-Based Recommendations:** Contextual styling advice evaluated dynamically against deterministic fashion rules.
+- **Dynamic Pricing Engine:** Instantaneous Bill of Materials (BOM) cost calculation based on component, fabric, and pattern selections.
+- **User Authentication & Session Preservation:** Secure registration, bcrypt password hashing, JWT stateless sessions, and guest design preservation across login redirects.
+- **Saved Designs Management (My Designs):** Full CRUD capability to save, view, reload into studio, duplicate, and delete personal creations.
+- **Shopping Bag & Checkout:** Add designs with custom quantities, manage bag contents, and enter validated shipping details.
+- **Payment Simulation:** Realistic UPI QR code payment (with dynamic URI deep links) and Cash on Delivery (COD) workflows.
+- **Order Lifecycle & Tracking:** Unique order identification (`FF-ORD-XXXXX-XXXX`) with an interactive multi-stage tracking timeline.
+- **Progressive Web App (PWA):** Installable web application with service worker caching and offline fallback support.
 
 ---
 
-## 6. Design Studio
+## User Workflow
 
-The Design Studio is the core feature of FashionForge. It is a single-page workspace divided into three areas: the garment preview canvas, the component/material selectors, and the inspector panel with specifications.
+FashionForge provides a continuous, cohesive user journey from first landing through garment production tracking:
 
-### Component Selection
-
-Users select garment components through visual cards:
-
-| Component | Options |
-|:---|:---|
-| **Top** | Fitted Bodice, Relaxed Fit, Wrap Top, Peplum Bodice |
-| **Bottom** | A-Line Skirt, Straight Skirt, Wide Leg Trousers, Slim Trousers |
-| **Sleeves** | Set-In Short Sleeve, Long Sleeve, Flare / Bell Sleeve |
-| **Neckline** | Round Jewel, V-Neck, Square Neck |
-
-### Material and Appearance
-
-| Selection | Options |
-|:---|:---|
-| **Colour** | Curated palette of colour swatches |
-| **Fabric** | Organic Cotton, Mulberry Silk, Structured Denim, Natural Linen, Sheer Chiffon |
-| **Pattern** | Solid Colour, Subtle Stripe, Check / Plaid, Floral Damask, Geometric Motif, Polka Dots |
-
-### Size and Figure
-
-| Selection | Options |
-|:---|:---|
-| **Size** | XS, S, M, L, XL, XXL, 3XL, 4XL (with chest, waist, hip, length, shoulder, armhole measurements) |
-| **Gender / Figure** | Female croquis model, Male croquis model |
-
-Switching between female and male models automatically adjusts incompatible components. For example, selecting the male model replaces female-specific tops (Fitted Bodice, Wrap, Peplum) with the Relaxed Fit, and replaces skirts with trousers.
-
-### How Selections Affect the Preview
-
-Every selection change triggers the rendering pipeline, which:
-1. Redraws the SVG garment layers on the human figure model.
-2. Applies the selected fabric texture and pattern overlay.
-3. Applies the selected colour with harmonised lighting and shadow gradients.
-4. Recalculates and displays the price.
-5. Evaluates and displays the styling recommendation.
-
-### Additional Studio Controls
-
-- **Front / Back view toggle** — Switches the garment and figure between front and back views.
-- **Undo / Redo** — Reverts or re-applies design changes (Ctrl+Z / Ctrl+Y supported).
-- **Reset** — Returns the design to the default ensemble.
-- **Zoom** — Adjusts the preview scale (50%–200%).
-- **Figure visibility toggle** — Shows or hides the human figure model.
-- **Construction lines toggle** — Shows or hides construction seams and topstitching.
-- **Fullscreen** — Expands the preview canvas to fullscreen.
-- **Export** — Downloads the technical flat as an SVG file, or prints the tech pack sheet.
-
----
-
-## 7. Garment Visualisation
-
-FashionForge uses a **layered SVG-based 2D rendering pipeline with 2.5D visual styling** to create the garment preview. This approach produces a fashion-design illustration with visual depth, shading, and material effects, without being a real-time 3D cloth simulation.
-
-### How It Works
-
-1. **Human Figure Layer** — A pre-drawn croquis (fashion figure) model image is displayed as the base layer. Size-specific model images (XS through 4XL) are used for both male and female figures, with separate front and back views.
-
-2. **Garment Geometry** — Each garment component (bodice, skirt, trousers, sleeves, neckline) is defined as a set of SVG vector paths generated by JavaScript geometry functions. The paths are calculated based on body landmarks and garment construction rules.
-
-3. **Material System** — Each fabric type (cotton, silk, denim, linen, chiffon) has a material profile that controls roughness, highlight intensity, shadow opacity, and texture characteristics. These profiles influence how the SVG gradients and overlays are generated.
-
-4. **Lighting and Depth** — Directional linear and radial gradients simulate a key light source, creating highlights on elevated surfaces and shadows in recessed areas. This produces the 2.5D depth effect that gives garments a sense of volume.
-
-5. **Pattern Overlays** — Patterns (stripes, checks, floral, geometric, dots) are rendered as SVG pattern fills that follow the garment shape and respond to the selected colour.
-
-6. **Construction Details** — Optional seam lines, topstitching, and hem facings are rendered as thin SVG paths to show garment construction.
-
-7. **Layer Ordering** — Components are rendered in a specific painter's-algorithm order: back depth layer → lower garment → waist connection → upper garment → sleeves → neckline → construction details → foreground occlusion layer → shadows.
-
-### Technical Flat
-
-The Technical Flat mode renders the garment without the human figure model, as a clean orthographic construction sketch. Front and back views are available side by side in the inspector panel, and as a full-scale drawing in the Technical Flat workspace.
-
----
-
-## 8. Recommendation System
-
-FashionForge includes a **rule-based recommendation engine** that provides contextual styling guidance. This is **not** a machine learning or AI-based system. It uses deterministic IF/THEN JavaScript logic to evaluate the current design state against a prioritised table of rules.
-
-### How It Works
-
-1. Each rule has a **condition function** that checks specific aspects of the current design (e.g., fabric type, pattern, silhouette combination, gender, size).
-2. Rules are assigned a **priority number**. Higher-priority rules are evaluated first.
-3. When the user makes a change, the engine identifies the most relevant rule whose condition matches the current state and displays its recommendation.
-4. If no specific rule matches, a default balanced-silhouette recommendation is shown.
-
-### Example Rules (from the actual code)
-
-| Condition | Recommendation |
-|:---|:---|
-| IF fabric = silk | "Relaxed & Wrap Silhouettes Recommended" — Silk features high sheen and liquid drape, best paired with relaxed or wrap silhouettes. |
-| IF pattern = floral | "Simpler Construction Recommended" — The rich floral motif is prominent; simpler garment construction keeps it centre stage. |
-| IF male croquis AND bottom = skirt | "Compatibility Notice" — Skirts are specific to the female silhouette; trousers are recommended. |
-| IF top = basic AND bottom = wide | "Balanced Silhouette" — A fitted bodice with wide-leg trousers achieves ideal volume contrast. |
-
-### Gender Compatibility
-
-When the male croquis model is active, certain female-specific components (Fitted Bodice, Wrap Top, Peplum, A-Line Skirt, Straight Skirt) are automatically replaced with compatible alternatives and a compatibility notice is shown.
-
----
-
-## 9. Pricing System
-
-FashionForge uses a **centralized pricing engine** that calculates the total estimated garment price by summing the costs of each selected component. The pricing function (`calculateDesignPrice`) is the single source of truth for all price calculations throughout the application.
-
-### Price Composition
-
-| Component | Examples of Prices (₹) |
-|:---|:---|
-| Top | Fitted Bodice: 450, Relaxed Fit: 380, Wrap Top: 420, Peplum: 490 |
-| Bottom | A-Line Skirt: 550, Straight Skirt: 520, Wide Leg: 640, Slim Trousers: 600 |
-| Sleeves | Short: 150, Long: 220, Flare: 200 |
-| Neckline | Round: 80, V-Neck: 90, Square: 95 |
-| Fabric | Cotton: 250, Silk: 520, Denim: 380, Linen: 320, Chiffon: 290 |
-| Pattern | Solid: 0, Stripes: 120, Checks: 140, Floral: 180, Geometric: 150, Dots: 110 |
-| Size modifier | Currently 0 for all sizes |
-
-**Total Price = Top + Bottom + Sleeves + Neckline + Fabric + Pattern + Size Modifier**
-
-The price updates instantly as the user changes any component. All prices are defined in the `GARMENT_CATALOG` data structure in [`garment-data.js`](frontend/js/renderer/garment-data.js).
-
----
-
-## 10. Authentication and User Accounts
-
-FashionForge uses a standard email/password authentication system.
-
-### Registration
-Users create an account by providing a name, email address, and password (minimum 6 characters). The password is hashed using **bcryptjs** (with 10 salt rounds) before being stored in MongoDB. Plaintext passwords are never stored.
-
-### Login
-Users log in with their email and password. The server verifies the credentials by comparing the submitted password against the stored hash using `bcryptjs.compare()`. On success, a **JSON Web Token (JWT)** is issued.
-
-### JWT Authentication
-The JWT contains the user's ID, email, and name. It is sent with each API request in the `Authorization: Bearer <token>` header. The server verifies the token on every protected endpoint. Tokens expire after a configurable period (default: 7 days, controlled by `JWT_EXPIRES_IN`).
-
-### Protected Operations
-The following operations require a valid JWT:
-- Saving, loading, editing, duplicating, and deleting designs (`/api/designs`)
-- Viewing and modifying the shopping bag (`/api/cart`)
-- Placing orders, checkout, and making payments (`/api/orders`, `/api/payments`)
-- Viewing order history and individual order details
-
-### Guest Mode
-Users can freely use the Design Studio without logging in. When a guest tries to save a design or add to bag, the current studio configuration is preserved in the browser's `sessionStorage` (under `fashionforge_pending_design`), the user is redirected to `login.html`, and upon successful authentication, the pending design is restored into the studio canvas.
-
----
-
-## 11. Saved Designs
-
-When an authenticated user saves a design, all configuration details (top, bottom, sleeves, neckline, fabric, colour, pattern, size, gender, price, notes) are stored as a document in the MongoDB `designs` collection.
-
-### What Users Can Do
-
-| Action | Description |
-|:---|:---|
-| **Save** | Stores the current studio configuration as a new design with a unique ID |
-| **Edit** | Loads a saved design back into the studio, makes changes, and saves again |
-| **Duplicate** | Creates a copy of a saved design with a new ID and an incremented name |
-| **Delete** | Permanently removes a design from the database |
-| **Add to Bag** | Adds a saved design to the shopping bag for purchase |
-
-Each design is owned by the user who created it. Users can only view, edit, and delete their own designs.
-
----
-
-## 12. Bag, Checkout, and Orders
-
-### Shopping Bag
-- Users add saved designs to their bag with a quantity.
-- If the same design is added again, the quantity is incremented rather than creating a duplicate line.
-- The bag displays each item's name, configuration summary, unit price, quantity, and line total.
-- A subtotal is calculated on the server side.
-- Users can update quantities, remove individual items, or clear the bag.
-
-### Checkout
-- From the bag, users proceed to the checkout page.
-- The checkout form collects: full name, email, phone, shipping address, city, state, and postal code.
-- All fields are validated both on the client and on the server.
-- On submission, the server creates a new order from the current bag contents.
-- The server performs authoritative price calculation (it does not trust client-submitted totals).
-
-### Order Creation
-- The order is stored in MongoDB with a unique order ID (format: `FF-ORD-XXXXX-XXXX`).
-- The order records all items with their configuration snapshots, customer details, and timestamps.
-- Initial status: order status = "placed", payment status = "pending".
-
-### Order Tracking
-Orders progress through a defined lifecycle:
-
-```
-placed → processing → ready → shipped → delivered
+```text
+                  ┌───────────────────────────────┐
+                  │           Home Page           │
+                  └───────────────┬───────────────┘
+                                  │
+                                  ▼
+                  ┌───────────────────────────────┐
+                  │         Design Studio         │
+                  │   Customize: Top, Bottom,     │
+                  │   Sleeves, Neckline, Fabric,  │
+                  │   Color, Pattern, Size, Model │
+                  └───────────────┬───────────────┘
+                                  │
+                                  ▼
+                  ┌───────────────────────────────┐
+                  │       Real-Time Preview       │
+                  │  • 2.5D SVG (Front / Back)    │
+                  │  • Technical Flat CAD View    │
+                  │  • Styling Recommendation     │
+                  │  • Instant Dynamic Price      │
+                  └───────────────┬───────────────┘
+                                  │
+                                  ▼
+                  ┌───────────────────────────────┐
+                  │    Save Design / Add to Bag   │
+                  │  (Guest Session Preserved     │
+                  │   or Authenticated User)      │
+                  └───────────────┬───────────────┘
+                                  │
+                                  ▼
+                  ┌───────────────────────────────┐
+                  │          My Designs           │
+                  │  Load, Edit, Duplicate, Delete│
+                  └───────────────┬───────────────┘
+                                  │
+                                  ▼
+                  ┌───────────────────────────────┐
+                  │         Shopping Bag          │
+                  │  Review Items & Quantities    │
+                  └───────────────┬───────────────┘
+                                  │
+                                  ▼
+                  ┌───────────────────────────────┐
+                  │           Checkout            │
+                  │  Enter Shipping & Details     │
+                  └───────────────┬───────────────┘
+                                  │
+                                  ▼
+                  ┌───────────────────────────────┐
+                  │      Payment Simulation       │
+                  │  • UPI QR Code + Deep Link    │
+                  │  • Cash on Delivery (COD)     │
+                  └───────────────┬───────────────┘
+                                  │
+                                  ▼
+                  ┌───────────────────────────────┐
+                  │      Order Confirmation       │
+                  │    Unique Order ID Issued     │
+                  └───────────────┬───────────────┘
+                                  │
+                                  ▼
+                  ┌───────────────────────────────┐
+                  │   Order Details & Tracking    │
+                  │  Placed → Processing → Ready  │
+                  │   → Shipped → Delivered       │
+                  └───────────────────────────────┘
 ```
 
-Each status transition is recorded in the order's tracking array with a timestamp. The order details page displays this as a visual timeline.
-
-**Note:** Order tracking is a simulated lifecycle for demonstration purposes. There is no integration with real shipping carriers or inventory systems.
-
----
-
-## 13. Payment
-
-FashionForge implements a simplified payment system with two methods:
-
-### UPI QR Payment
-1. The payment page displays the merchant's UPI ID and a static QR code image (`frontend/assets/images/upi-qr.png`, configurable via `UPI_QR_IMAGE`).
-2. A dynamic UPI URI is generated in the standard NPCI format: `upi://pay?pa=<UPI_ID>&pn=FashionForge&am=<AMOUNT>&cu=INR&tn=FashionForge%20Order%20<ORDER_ID>`.
-3. On mobile devices, a direct "Pay using UPI app" intent link is provided using this dynamic URI.
-4. As a client-side fallback, if the static QR code image fails to load, `payment.js` dynamically renders an inline SVG QR code using `qrcode.js`.
-5. The user scans the QR code or opens the mobile intent link with any UPI app (PhonePe, Google Pay, Paytm, BHIM, etc.) and completes the payment externally.
-6. The user clicks "I've Completed Payment" to confirm.
-7. The order is marked as paid (`paymentStatus: 'paid'`, `orderStatus: 'placed'`), tracking is initialized, and the user's bag is cleared.
-
-### Cash on Delivery (COD)
-1. The user selects Cash on Delivery on the payment page.
-2. The order is confirmed immediately with payment status "pending" and order status "placed".
-3. The user's bag is cleared.
-
-### Important Notes
-- There is **no third-party payment gateway** integrated.
-- UPI payment confirmation is based on the customer's manual declaration ("I've Completed Payment"). The application does not connect to bank APIs or payment aggregators to verify transaction status.
-- The displayed QR code is a static image asset (`frontend/assets/images/upi-qr.png`) that can be replaced with the merchant's actual QR code for real use. In contrast, the payment deep link and URI data are dynamically generated per order.
-- If a user cancels payment or encounters an error, their bag remains intact.
+### Guest Mode Experience
+Users can explore the Design Studio and build garments immediately without creating an account. When a guest clicks **Save Design** or **Add to Bag**, the current garment state is saved to the browser's `sessionStorage` (`fashionforge_pending_design`). The user is redirected to sign in or register, and upon authentication, the pending design is automatically restored to the studio canvas.
 
 ---
 
-## 14. Technology Stack
+## Technology Stack
 
-| Layer | Technology | Purpose |
+The application relies strictly on standard web technologies without heavy front-end frameworks or unneeded dependencies:
+
+| Layer | Technology | Role in Project |
 |:---|:---|:---|
-| **Frontend** | HTML5, CSS3, JavaScript (ES6+) | Application pages, styling, and client-side logic |
-| **Garment Rendering** | SVG (Scalable Vector Graphics) | Layered 2.5D garment visualisation with vector paths, gradients, and pattern fills |
-| **Backend Runtime** | Node.js | Server-side JavaScript runtime |
-| **Web Framework** | Express 5 | REST API routing, middleware, and static file serving |
-| **Database** | MongoDB | Document-based storage for users, designs, carts, and orders |
-| **ODM** | Mongoose | Schema-based data modelling and validation for MongoDB |
-| **Authentication** | JSON Web Tokens (jsonwebtoken) | Stateless user session management |
-| **Password Hashing** | bcryptjs | Secure one-way password hashing |
-| **Configuration** | dotenv | Loading environment variables from `.env` file |
-| **PWA** | Service Worker, Web App Manifest | Offline caching, installability |
-| **Testing** | Node.js built-in test runner, Puppeteer | Unit tests, API integration tests, browser end-to-end tests |
+| **Frontend UI** | HTML5 | Semantic page structures across all 9 views |
+| **Styling** | CSS3 (Vanilla) | Custom design system using CSS variables, flexbox, grid, glassmorphism, and responsive breakpoints |
+| **Client Logic** | JavaScript (ES6+) | Vanilla client-side state management, DOM manipulation, and API integration |
+| **Garment Canvas** | SVG (Scalable Vector Graphics) | Vector garment path rendering, depth shading, pattern definitions, and technical flats |
+| **Icons & Fonts** | Font Awesome & Google Fonts | UI iconography and Outfit/Inter typography |
+| **PWA** | Service Worker & Web Manifest | Device installability, static asset caching, and offline fallback |
+| **Backend Runtime**| Node.js (v18+) | Server-side JavaScript execution environment |
+| **Web Framework** | Express.js (v5) | RESTful API routing, static file serving, and middleware |
+| **Database** | MongoDB | Document database for users, designs, carts, and orders |
+| **Object Modeling**| Mongoose (v9) | Schema modeling, validation, and database operations |
+| **Authentication** | JSON Web Tokens (`jsonwebtoken`) | Stateless Bearer token generation and route protection |
+| **Password Security**| `bcryptjs` | One-way salted password hashing (10 salt rounds) |
+| **Environment** | `dotenv` | Centralized environment variable loading |
+| **Deployment** | Render & MongoDB Atlas | Cloud application hosting and managed cloud database |
+| **Version Control**| Git & GitHub | Source code tracking and version control |
+
+> **Note:** The frontend intentionally uses **Vanilla JavaScript and CSS**—no React, Angular, Vue, TypeScript, or Tailwind CSS are used. Likewise, the backend uses **pure Node.js/Express**—no Python or external AI/ML services are required.
 
 ---
 
-## 15. System Architecture
+## Design Studio & 2.5D Visualization
 
-```
-┌─────────────────────────────────┐
-│          User (Browser)         │
-│   HTML / CSS / JavaScript       │
-│   SVG Rendering Engine          │
-│   Service Worker (PWA)          │
-└──────────────┬──────────────────┘
-               │  HTTP / REST
-               ▼
-┌─────────────────────────────────┐
-│     Node.js + Express Server    │
-│  ┌───────────────────────────┐  │
-│  │  Routes + Controllers     │  │
-│  │  Auth Middleware (JWT)     │  │
-│  │  Validation Middleware     │  │
-│  │  Error Handler             │  │
-│  │  UPI Service               │  │
-│  └───────────────────────────┘  │
-│  Static File Serving (frontend) │
-└──────────────┬──────────────────┘
-               │  Mongoose ODM
-               ▼
-┌─────────────────────────────────┐
-│          MongoDB                │
-│  Collections:                   │
-│  • users                        │
-│  • designs                      │
-│  • carts                        │
-│  • orders                       │
-└─────────────────────────────────┘
-```
+The Design Studio (`design.html` + `frontend/js/renderer/`) is the central feature of FashionForge.
 
-The Express server serves both the REST API (under `/api/`) and the frontend static files. This means the frontend and backend run from a single server process.
+### Available Customization Options
 
----
+| Category | Options Available |
+|:---|:---|
+| **Figure Model** | Female croquis model, Male croquis model |
+| **Sizes** | XS, S, M, L, XL, XXL, 3XL, 4XL (with chest, waist, hip, and length measurements) |
+| **Top Silhouettes** | Fitted Bodice, Relaxed Fit, Wrap Top, Peplum Bodice |
+| **Bottom Silhouettes**| A-Line Skirt, Straight Skirt, Wide Leg Trousers, Slim Trousers |
+| **Sleeves** | Short Sleeve, Long Sleeve, Flare / Bell Sleeve |
+| **Necklines / Collars**| Round Jewel, V-Neck, Square Neck |
+| **Fabrics** | Organic Cotton, Mulberry Silk, Structured Denim, Natural Linen, Sheer Chiffon |
+| **Patterns** | Solid Colour, Subtle Stripe, Check / Plaid, Floral Damask, Geometric Motif, Polka Dots |
+| **Colors** | Curated palette swatches with hex color customization |
+| **Views** | Front view and Back view toggle |
 
-## 16. Application Flow
+### What 2.5D Visualization Means
 
-```
-┌──────────┐    ┌──────────────┐    ┌───────────┐    ┌──────┐
-│   Home   │───▶│Design Studio │───▶│   Save    │───▶│ Bag  │
-└──────────┘    └──────────────┘    └───────────┘    └──┬───┘
-                                                        │
-                   ┌────────────────────────────────────┘
-                   ▼
-            ┌────────────┐    ┌─────────┐    ┌──────────────────┐
-            │  Checkout  │───▶│ Payment │───▶│ Order            │
-            │  (Address) │    │(UPI/COD)│    │ Confirmation     │
-            └────────────┘    └─────────┘    └────────┬─────────┘
-                                                      │
-                                                      ▼
-                                            ┌──────────────────┐
-                                            │  Orders /        │
-                                            │  Order Details   │
-                                            │  (Tracking)      │
-                                            └──────────────────┘
-```
+FashionForge renders garments using a **layered SVG-based 2.5D rendering pipeline**:
+1. **Croquis Base Layer:** Pre-drawn fashion illustration figures (male and female, XS through 4XL, front and back).
+2. **Vector Garment Geometry:** Dynamic SVG `<path>` elements generated by geometric functions based on body landmark points.
+3. **Painter's Algorithm Ordering:** Elements are stacked in realistic depth order (back garment depth → lower body → waist seam → upper bodice → sleeves → neckline → topstitching → front highlights/shadows).
+4. **Directional Lighting & Shading:** Simulated linear and radial SVG gradients create light reflection, fabric drape, and recessed folds.
+5. **Pattern Overlays:** Dynamic SVG `<pattern>` definitions that repeat across paths while respecting the garment color.
+
+> **Important Clarification:** The visualization is **layered 2.5D SVG illustration**. It is **NOT**:
+> - Full 3D modeling (no WebGL mesh or 3D engine)
+> - Augmented Reality (AR) or Virtual Reality (VR)
+> - 360-degree free-angle rotation
+> - Webcam-based virtual try-on
+> - Physics-based fabric cloth simulation
+
+### Studio Workspace Modes
+
+- **Design Mode:** The default interactive canvas showing the garment rendered on the fashion figure croquis with real-time lighting.
+- **Technical Flat Mode:** An orthographic vector technical sketch (CAD flat) showing clean front and back construction lines without the figure model.
+- **Tech Pack Mode:** An exportable, printable production specification sheet summarizing garment components, size measurements, and full Bill of Materials (BOM) cost breakdown.
 
 ---
 
-## 17. Project Structure
+## Recommendation & Pricing Logic
 
-```
+### Deterministic Recommendation Engine
+FashionForge features a **rule-based recommendation system** implemented in `frontend/js/recommendation.js`. 
+
+- **How it works:** When any garment attribute changes, the engine evaluates the current design against a prioritized table of deterministic **IF/THEN rules**.
+- **Rule criteria:** The engine inspects silhouette pairing harmony, fabric drape suitability, pattern visual balance, size proportion notes, and gender silhouette compatibility.
+- **Gender compatibility:** When the male croquis model is selected, female-specific tops (Fitted Bodice, Wrap, Peplum) and skirts are automatically substituted with relaxed tops and trousers, accompanied by a polite compatibility notice.
+
+> **Clarification:** This recommendation system is **100% deterministic rule-based JavaScript logic**. It does **NOT** use Machine Learning, Deep Learning, Neural Networks, or Generative AI.
+
+### Centralized Pricing Engine
+Garment prices are calculated deterministically using the centralized `calculateDesignPrice` function defined in `frontend/js/renderer/garment-data.js`.
+
+The total price is calculated by summing the costs of each selected component:
+
+$$\text{Total Price} = \text{Top} + \text{Bottom} + \text{Sleeves} + \text{Neckline} + \text{Fabric} + \text{Pattern} + \text{Size Modifier}$$
+
+#### Representative Price Schedule (in ₹ INR):
+- **Tops:** Fitted Bodice (₹450), Relaxed Fit (₹380), Wrap Top (₹420), Peplum (₹490)
+- **Bottoms:** A-Line Skirt (₹550), Straight Skirt (₹520), Wide Leg (₹640), Slim Trousers (₹600)
+- **Sleeves:** Short Sleeve (₹150), Long Sleeve (₹220), Flare Sleeve (₹200)
+- **Necklines:** Round Jewel (₹80), V-Neck (₹90), Square Neck (₹95)
+- **Fabrics:** Organic Cotton (₹250), Mulberry Silk (₹520), Structured Denim (₹380), Natural Linen (₹320), Sheer Chiffon (₹290)
+- **Patterns:** Solid (₹0), Stripes (₹120), Checks (₹140), Floral (₹180), Geometric (₹150), Dots (₹110)
+- **Size Modifier:** ₹0 across all standard sizes
+
+**Authoritative Server-Side Validation:** When an order is checked out, the Express backend recalculates the total price directly from catalog data and rejects client-tampered prices.
+
+---
+
+## Shopping & Order Workflow
+
+1. **Saving Designs:** Authenticated users save designs to their personal collection in MongoDB with a custom name and notes.
+2. **My Designs Dashboard (`my-designs.html`):** Displays all saved garments with preview thumbnails. Users can reload a design into the studio, duplicate it, delete it, or add it directly to their shopping bag.
+3. **Shopping Bag (`cart.html`):** Displays selected garments, unit prices, configurable quantities, and the calculated subtotal. Redundant additions increment item quantities rather than creating duplicate lines.
+4. **Checkout (`checkout.html`):** Collects customer name, email, phone number, and detailed delivery address (street, city, state, postal code). Validated on both client and server.
+5. **Order Lifecycle (`orders.html` & `order-details.html`):** Every confirmed order is assigned a unique tracking ID (`FF-ORD-XXXXX-XXXX`) and transitions through an audited status lifecycle:
+   ```text
+   placed → processing → ready → shipped → delivered
+   ```
+   Each milestone includes a timestamp recorded in the order's tracking timeline.
+
+---
+
+## Payment Simulation
+
+Payment in FashionForge is strictly a **simulation** designed for educational and demonstration purposes.
+
+### Implemented Methods
+
+1. **UPI QR Code Payment:**
+   - The payment page displays the merchant UPI ID (`fashionforge@upi`) alongside a static QR code image (`frontend/assets/images/upi-qr.png`).
+   - A standard NPCI UPI URI string (`upi://pay?pa=...&pn=FashionForge&am=...`) is generated dynamically for each order.
+   - On mobile devices, clicking the URI opens supported UPI apps (Google Pay, PhonePe, Paytm, BHIM).
+   - If the static image is unavailable, an inline SVG QR code is generated dynamically in the browser via `qrcode.js`.
+   - The customer clicks **"I've Completed Payment"** to confirm.
+   - The server marks the order as `paid`, sets status to `placed`, and clears the shopping bag.
+
+2. **Cash on Delivery (COD):**
+   - The customer selects Cash on Delivery.
+   - The order is confirmed immediately with payment status `pending` and order status `placed`, and the shopping bag is cleared.
+
+### Payment Simulation Facts
+- **No real payment gateway** (such as Razorpay, Stripe, or PayPal) is integrated.
+- **No real financial transaction** takes place.
+- **No debit/credit card numbers** are requested, stored, or processed.
+- **No banking webhooks or settlement APIs** are connected.
+- UPI confirmation is based on the user's manual declaration ("I've Completed Payment").
+- If payment is cancelled or fails, the user's shopping bag is safely preserved.
+
+---
+
+## Project Structure
+
+```text
 FashionForge/
-├── backend/
+├── backend/                         # Express.js REST API & server logic
 │   ├── config/
-│   │   └── db.js                    # MongoDB connection manager
+│   │   └── db.js                    # MongoDB connection manager via Mongoose
 │   ├── controllers/
-│   │   ├── authController.js        # Registration, login, JWT issuing
-│   │   ├── designController.js      # CRUD operations for saved designs
-│   │   ├── cartController.js        # Shopping bag operations
-│   │   ├── orderController.js       # Checkout, order retrieval, status tracking
-│   │   └── paymentController.js     # UPI details, payment confirmation, COD
+│   │   ├── authController.js        # User registration, login, and profile fetching
+│   │   ├── cartController.js        # Shopping bag CRUD and item quantity management
+│   │   ├── designController.js      # Saved design CRUD and ownership verification
+│   │   ├── orderController.js       # Order creation, checkout, and status advancement
+│   │   └── paymentController.js     # UPI URI generation, payment confirmation, and COD
 │   ├── middleware/
-│   │   ├── auth.js                  # JWT verification middleware
-│   │   ├── errorHandler.js          # Global error formatting middleware
-│   │   └── validateDesign.js        # Design payload validation
+│   │   ├── auth.js                  # JWT extraction and route protection middleware
+│   │   ├── errorHandler.js          # Centralized error response formatter
+│   │   └── validateDesign.js        # Request payload validation for design configurations
 │   ├── models/
-│   │   ├── User.js                  # User schema (name, email, passwordHash)
-│   │   ├── Design.js                # Design schema (components, fabric, price)
-│   │   ├── Cart.js                  # Cart schema (items, quantities, totals)
-│   │   └── Order.js                 # Order schema (items, customer, tracking)
+│   │   ├── Cart.js                  # Mongoose schema for shopping bag items
+│   │   ├── Design.js                # Mongoose schema for saved custom garment designs
+│   │   ├── Order.js                 # Mongoose schema for orders, delivery, and tracking
+│   │   └── User.js                  # Mongoose schema for users with hashed passwords
 │   ├── routes/
 │   │   ├── authRoutes.js            # /api/auth endpoints
-│   │   ├── designRoutes.js          # /api/designs endpoints
 │   │   ├── cartRoutes.js            # /api/cart endpoints
+│   │   ├── designRoutes.js          # /api/designs endpoints
 │   │   ├── orderRoutes.js           # /api/orders endpoints
 │   │   └── paymentRoutes.js         # /api/payments endpoints
 │   ├── services/
-│   │   └── upiService.js            # UPI merchant configuration and URI builder
-│   └── server.js                    # Express app entry point, routing, static serving
-├── frontend/
+│   │   └── upiService.js            # UPI URI string formatting and merchant configuration
+│   └── server.js                    # Server entry point, middleware assembly, static file serving
+├── frontend/                        # Client-side web application
 │   ├── assets/
 │   │   ├── icons/                   # PWA icons (192px, 512px, maskable, SVG)
-│   │   ├── images/                  # UPI QR code image
-│   │   ├── models/                  # Male and female croquis figure images (XS–4XL, front/back)
-│   │   └── svg/                     # SVG garment component overlays (tops, bottoms, sleeves, collars)
+│   │   ├── images/                  # UPI QR code image asset
+│   │   ├── models/                  # Male & female croquis figure images (XS–4XL, front/back)
+│   │   └── svg/                     # Component vector assets
 │   ├── css/
-│   │   └── style.css                # Complete design system (tokens, layout, components, responsive)
+│   │   └── style.css                # Global design system (tokens, layout, responsive styles)
 │   ├── js/
-│   │   ├── renderer/
-│   │   │   ├── renderer.js          # Main SVG rendering pipeline
-│   │   │   ├── geometry.js          # Garment geometry path generators
-│   │   │   ├── materials.js         # Fabric material profiles and colour harmonisation
-│   │   │   ├── lighting.js          # Directional lighting and depth gradients
-│   │   │   ├── garment-data.js      # Garment component catalogue and pricing engine
-│   │   │   ├── size-data.js         # Size chart measurements (XS–4XL)
-│   │   │   ├── body-profiles.js     # Body landmark coordinates for rendering
-│   │   │   ├── croquis-calibration.js # Calibration utilities for figure alignment
-│   │   │   └── qrcode.js           # SVG QR code generator (in-browser fallback in payment.js)
-│   │   ├── services/
-│   │   │   ├── auth-service.js      # Login, registration, JWT token management
-│   │   │   ├── auth-nav.js          # Navigation bar authentication state
-│   │   │   ├── design-storage.js    # Design save, load, update, delete, duplicate
-│   │   │   ├── cart-service.js      # Bag API client (add, update, remove, clear)
-│   │   │   └── pwa.js              # PWA service worker registration helper
-│   │   ├── app.js                   # Design Studio controller (state, UI, events)
-│   │   ├── recommendation.js        # Rule-based recommendation engine
-│   │   ├── auth.js                  # Login/register page controller
-│   │   ├── cart.js                  # Bag page controller
-│   │   ├── checkout.js              # Checkout page controller
-│   │   ├── payment.js               # Payment page controller
-│   │   ├── order-confirmation.js    # Order confirmation page controller
-│   │   ├── orders.js                # Order history page controller
-│   │   ├── order-details.js         # Order details page controller
-│   │   └── my-designs.js            # My Designs page controller
-│   ├── index.html                   # Home page
-│   ├── design.html                  # Design Studio page
-│   ├── my-designs.html              # My Designs page
-│   ├── cart.html                    # Shopping Bag page
-│   ├── checkout.html                # Checkout page
-│   ├── payment.html                 # Payment page (UPI QR + COD)
-│   ├── order-confirmation.html      # Order confirmation page
-│   ├── orders.html                  # Order history page
-│   ├── order-details.html           # Order details page
-│   ├── login.html                   # Login and registration page
+│   │   ├── renderer/                # 2.5D SVG visualization engine
+│   │   │   ├── body-profiles.js     # Anatomical landmark points for croquis figures
+│   │   │   ├── croquis-calibration.js# Alignment matrices for SVG layers on figures
+│   │   │   ├── garment-data.js      # Garment catalog definitions and BOM pricing formulas
+│   │   │   ├── geometry.js          # Dynamic SVG vector path generators
+│   │   │   ├── lighting.js          # Lighting gradients and depth shading calculations
+│   │   │   ├── materials.js         # Fabric material profiles, roughness, and color tuning
+│   │   │   ├── qrcode.js            # In-browser SVG QR code fallback generator
+│   │   │   └── size-data.js         # Standard size chart dimension tables (XS–4XL)
+│   │   ├── services/                # API client services
+│   │   │   ├── auth-nav.js          # Navigation bar authentication state synchronization
+│   │   │   ├── auth-service.js      # Token storage and authentication HTTP requests
+│   │   │   ├── cart-service.js      # Bag operations HTTP client
+│   │   │   ├── design-storage.js    # Design persistence HTTP client
+│   │   │   └── pwa.js               # Service worker registration helper
+│   │   ├── app.js                   # Design Studio main controller and event binder
+│   │   ├── auth.js                  # Login and registration form handler
+│   │   ├── cart.js                  # Shopping bag page controller
+│   │   ├── checkout.js              # Checkout form controller and order submission
+│   │   ├── my-designs.js            # Saved designs gallery controller
+│   │   ├── order-confirmation.js    # Order receipt display controller
+│   │   ├── order-details.js         # Order status tracking timeline controller
+│   │   ├── orders.js                # Order history list controller
+│   │   ├── payment.js               # Payment page controller (UPI & COD)
+│   │   └── recommendation.js        # Rule-based styling recommendation engine
+│   ├── cart.html                    # Shopping bag page
+│   ├── checkout.html                # Delivery details and checkout page
+│   ├── design.html                  # Core interactive Design Studio workspace
+│   ├── index.html                   # Landing and home page
+│   ├── login.html                   # User login and registration portal
+│   ├── manifest.webmanifest         # PWA web application manifest
+│   ├── my-designs.html              # User saved designs dashboard
 │   ├── offline.html                 # PWA offline fallback page
-│   ├── manifest.webmanifest         # PWA manifest
-│   └── service-worker.js            # Service worker for caching
-├── tests/                           # Automated unit, integration, and browser test suites
-├── docs/
-│   ├── DEPLOYMENT.md                # Deployment guide (Render + MongoDB Atlas)
-│   ├── VIVA_NOTES.md                # Technical architecture notes
-│   ├── VIVA_QA.md                   # Viva voce Q&A reference
-│   ├── reference/                   # Reference UI design mockups
-│   └── archive/                     # Development planning documents
-├── scripts/
-│   └── generate_default_qr.cjs     # Utility script used to generate placeholder UPI QR image
-├── .env.example                     # Environment variable template
-├── .gitignore                       # Git ignore rules
-├── vercel.json                      # Vercel deployment configuration
-└── package.json                     # Project metadata, dependencies, and scripts
+│   ├── order-confirmation.html      # Post-purchase order confirmation page
+│   ├── order-details.html           # Live order tracking and receipt page
+│   ├── orders.html                  # Past orders listing page
+│   ├── payment.html                 # Simulated payment portal (UPI QR & COD)
+│   └── service-worker.js            # Service worker for offline caching and assets
+├── tests/                           # Automated test suites
+│   ├── test_payment.js              # UPI QR and COD payment verification
+│   ├── test_phase7.js               # Design persistence and client storage tests
+│   ├── test_phase8.js               # Design REST API and database integration tests
+│   ├── test_phase9.js               # Authentication, bcrypt, and user isolation tests
+│   ├── test_phase10.js              # Bag operations, checkout, and price tampering tests
+│   ├── test_phase11.js              # Orders, tracking timeline, and lifecycle tests
+│   ├── test_ui_pwa.js               # PWA manifest, service worker, and layout tests
+│   ├── test_workflow.js             # End-to-end multi-page user journey integration tests
+│   └── test_browser_*.cjs           # Puppeteer Chrome browser validation scripts
+├── docs/                            # Project documentation
+│   ├── DEPLOYMENT.md                # Cloud deployment instructions for Render and Atlas
+│   ├── VIVA_NOTES.md                # Architecture summary for viva examinations
+│   └── VIVA_QA.md                   # Questions and answers reference for evaluation
+├── scripts/                         # Project maintenance utility scripts
+│   └── generate_default_qr.cjs      # Standalone utility to regenerate placeholder UPI QR image
+├── .env.example                     # Environment configuration template
+├── .gitignore                       # Git ignore list
+├── package.json                     # Node.js project metadata, dependencies, and npm scripts
+└── README.md                        # Primary project documentation
 ```
 
 ---
 
-## 18. Backend Architecture
+## Installation & Local Setup
 
-The backend follows a layered architecture pattern:
+Follow these steps to run FashionForge on your local machine:
 
-### Entry Point
-[`server.js`](backend/server.js) — Initialises Express, registers middleware, mounts API routes, serves frontend static files, and starts the HTTP server.
+### 1. Prerequisites
+- **Node.js:** v18.0.0 or later installed ([nodejs.org](https://nodejs.org/))
+- **npm:** v9.0.0 or later (bundled with Node.js)
+- **MongoDB:** A running local MongoDB instance (`mongodb://127.0.0.1:27017`) or a free [MongoDB Atlas](https://cloud.mongodb.com/) cluster connection URI
+- **Git:** Installed on your system
 
-### Routes
-Each route file defines the HTTP endpoints for a specific domain and delegates to the corresponding controller:
-- [`authRoutes.js`](backend/routes/authRoutes.js) — Authentication endpoints
-- [`designRoutes.js`](backend/routes/designRoutes.js) — Design CRUD endpoints (all protected)
-- [`cartRoutes.js`](backend/routes/cartRoutes.js) — Shopping bag endpoints (all protected)
-- [`orderRoutes.js`](backend/routes/orderRoutes.js) — Order and checkout endpoints (all protected)
-- [`paymentRoutes.js`](backend/routes/paymentRoutes.js) — Payment endpoints (most protected)
+### 2. Clone the Repository
+```bash
+git clone https://github.com/angelmanoharan0306-cmyk/FashionForge.git
+cd FashionForge
+```
 
-### Controllers
-Each controller contains the business logic for handling requests:
-- [`authController.js`](backend/controllers/authController.js) — User registration, login, and profile retrieval
-- [`designController.js`](backend/controllers/designController.js) — Create, read, update, delete designs with ownership enforcement
-- [`cartController.js`](backend/controllers/cartController.js) — Add, update, remove, and clear bag items
-- [`orderController.js`](backend/controllers/orderController.js) — Checkout processing, order retrieval, payment simulation, status advancement
-- [`paymentController.js`](backend/controllers/paymentController.js) — UPI details generation, payment confirmation (UPI and COD), status queries, cancellation
+### 3. Install Dependencies
+```bash
+npm install
+```
 
-### Middleware
-- [`auth.js`](backend/middleware/auth.js) — Extracts and verifies the JWT from the `Authorization` header; attaches the authenticated user to the request
-- [`validateDesign.js`](backend/middleware/validateDesign.js) — Validates design creation and update payloads (name, gender, size, components, fabric, colour, price)
-- [`errorHandler.js`](backend/middleware/errorHandler.js) — Catches errors and returns consistent JSON error responses
+### 4. Configure Environment Variables
+Create a `.env` file in the project root by copying the provided `.env.example`:
 
-### Services
-- [`upiService.js`](backend/services/upiService.js) — Provides the merchant UPI ID, merchant name, QR image URL, and builds standard UPI payment URIs
+```bash
+# On Windows PowerShell:
+Copy-Item .env.example .env
 
-### Configuration
-- [`db.js`](backend/config/db.js) — Manages the MongoDB connection using Mongoose
+# On macOS/Linux:
+cp .env.example .env
+```
 
----
+Open `.env` in an editor and set your local configuration:
 
-## 19. Database Design
-
-FashionForge uses MongoDB with four collections, each defined by a Mongoose model:
-
-### User (`users` collection)
-
-| Field | Type | Description |
-|:---|:---|:---|
-| `userId` | String | Unique user identifier (format: `FF-UXXXXX-XXXX`), auto-generated |
-| `name` | String | User's display name |
-| `email` | String | Unique email address (lowercase, validated) |
-| `passwordHash` | String | bcrypt-hashed password (excluded from query results by default) |
-| `createdAt` | Date | Account creation timestamp |
-| `updatedAt` | Date | Last update timestamp |
-
-### Design (`designs` collection)
-
-| Field | Type | Description |
-|:---|:---|:---|
-| `designId` | String | Unique design identifier (format: `FF-DXXXXX-XXXX`) |
-| `userId` | String | Owner's user ID |
-| `name` | String | Design name (user-editable) |
-| `gender` | String | `female` or `male` |
-| `size` | String | Garment size (XS–4XL) |
-| `top` | String | Top component ID (basic, crop, wrap, peplum) |
-| `bottom` | String | Bottom component ID (skirt, straight, wide, trousers) |
-| `sleeves` | String | Sleeve type (short, long, flare) |
-| `collar` | String | Neckline type (round, vneck, square) |
-| `fabric` | String | Fabric type (cotton, silk, denim, linen, chiffon) |
-| `colour` | String | Colour hex code |
-| `pattern` | String | Pattern type (solid, stripes, checks, floral, geometric, dots) |
-| `price` | Number | Calculated total price |
-| `notes` | String | Designer notes |
-| `view` | String | Last viewed perspective (front or back) |
-| `configuration` | Object | Full configuration snapshot |
-
-### Cart (`carts` collection)
-
-| Field | Type | Description |
-|:---|:---|:---|
-| `userId` | String | Owner's user ID (one cart per user) |
-| `items` | Array | List of cart items |
-| `items[].cartItemId` | String | Unique cart item identifier |
-| `items[].designId` | String | Reference to the saved design |
-| `items[].designName` | String | Design name at time of adding |
-| `items[].quantity` | Number | Quantity (minimum 1) |
-| `items[].unitPrice` | Number | Price per unit |
-| `items[].totalPrice` | Number | quantity × unitPrice |
-| `items[].configuration` | Object | Design configuration snapshot |
-
-### Order (`orders` collection)
-
-| Field | Type | Description |
-|:---|:---|:---|
-| `orderId` | String | Unique order identifier (format: `FF-ORD-XXXXX-XXXX`) |
-| `userId` | String | Customer's user ID |
-| `items` | Array | Ordered items with configuration snapshots |
-| `subtotal` | Number | Sum of all item totals |
-| `total` | Number | Order total |
-| `customer` | Object | Delivery details (name, email, phone, address, city, state, postalCode) |
-| `paymentStatus` | String | `pending`, `paid`, or `failed` |
-| `paymentMethod` | String | `upi` or `cod` |
-| `orderStatus` | String | `placed`, `processing`, `ready`, `shipped`, `delivered`, `completed`, or `cancelled` |
-| `tracking` | Array | Status history entries with timestamps |
-| `paidAt` | Date | Payment confirmation timestamp |
-
----
-
-## 20. API Overview
-
-### Health
-
-| Method | Endpoint | Purpose |
-|:---|:---|:---|
-| GET | `/api/health` | Server health check with database connection status |
-
-### Authentication
-
-| Method | Endpoint | Purpose |
-|:---|:---|:---|
-| POST | `/api/auth/register` | Create a new user account |
-| POST | `/api/auth/login` | Authenticate and receive a JWT |
-| GET | `/api/auth/me` | Get the current authenticated user's profile |
-
-### Designs (all require JWT)
-
-| Method | Endpoint | Purpose |
-|:---|:---|:---|
-| GET | `/api/designs` | List all designs for the authenticated user |
-| GET | `/api/designs/:id` | Get a specific design by ID |
-| POST | `/api/designs` | Save a new design |
-| PUT | `/api/designs/:id` | Update an existing design |
-| DELETE | `/api/designs/:id` | Delete a design |
-
-### Bag / Cart (all require JWT)
-
-| Method | Endpoint | Purpose |
-|:---|:---|:---|
-| GET | `/api/cart` | Get the current user's bag |
-| POST | `/api/cart/items` | Add a design to the bag |
-| PUT | `/api/cart/items/:itemId` | Update item quantity |
-| DELETE | `/api/cart/items/:itemId` | Remove an item from the bag |
-| DELETE | `/api/cart` | Clear all items from the bag |
-
-### Orders (all require JWT)
-
-| Method | Endpoint | Purpose |
-|:---|:---|:---|
-| POST | `/api/orders/checkout` | Create an order from the current bag |
-| GET | `/api/orders` | List all orders for the authenticated user |
-| GET | `/api/orders/:orderId` | Get a specific order by ID |
-| POST | `/api/orders/:orderId/pay` | Simulate payment processing |
-| POST | `/api/orders/:orderId/advance-status` | Advance order to the next lifecycle stage |
-| POST | `/api/orders/:orderId/status` | Alias to advance order lifecycle status |
-
-### Payments
-
-| Method | Endpoint | Auth | Purpose |
-|:---|:---|:---|:---|
-| GET | `/api/payments/config` | No | Get public merchant UPI configuration |
-| GET | `/api/payments/:orderId/upi-details` | Yes | Get UPI details and dynamic URI for an order |
-| POST | `/api/payments/:orderId/upi-qr` | Yes | Generate dynamic UPI payment data (alias) |
-| POST | `/api/payments/:orderId/confirm-upi` | Yes | Confirm UPI payment ("I've Completed Payment") |
-| POST | `/api/payments/:orderId/cod` | Yes | Confirm Cash on Delivery |
-| GET | `/api/payments/:orderId/status` | Yes | Check payment status for an order |
-| POST | `/api/payments/:orderId/cancel` | Yes | Cancel payment (bag is preserved) |
-| POST | `/api/payments/:orderId/mock-status` | No | Test helper to simulate order payment status transitions |
-| POST | `/api/payments/test-mode` | No | Test mode health verification endpoint |
-
----
-
-## 21. Local Setup
-
-### Prerequisites
-- **Node.js** version 18 or later — [Download from nodejs.org](https://nodejs.org/)
-- **MongoDB** — Either a local MongoDB instance or a free [MongoDB Atlas](https://cloud.mongodb.com/) cluster
-
-### Steps
-
-1. **Clone or open the repository:**
-   ```bash
-   git clone <repository-url>
-   cd FashionForge
-   ```
-
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-
-3. **Create the environment file:**
-
-   Copy the example file and fill in your values:
-   ```bash
-   cp .env.example .env
-   ```
-
-   Edit `.env` with at minimum:
-   ```env
-   PORT=5000
-   MONGODB_URI=mongodb://127.0.0.1:27017/fashionforge
-   JWT_SECRET=<your-secure-random-string>
-   UPI_ID=<your-upi-id@bank>
-   MERCHANT_NAME=FashionForge
-   ```
-
-4. **(Optional) Replace the UPI QR code:**
-
-   Replace `frontend/assets/images/upi-qr.png` with your actual merchant UPI QR image.
-
-5. **Start the server:**
-   ```bash
-   npm start
-   ```
-   Or use the development alias:
-   ```bash
-   npm run dev
-   ```
-
-6. **Open the application:**
-
-   Navigate to [http://localhost:5000](http://localhost:5000) in your browser.
-
----
-
-## 22. Environment Variables
-
-| Variable | Required | Purpose |
-|:---|:---|:---|
-| `PORT` | No | Server port (default: `5000`) |
-| `NODE_ENV` | No | Environment mode (`production` for deployment) |
-| `MONGODB_URI` | Yes | MongoDB connection string |
-| `JWT_SECRET` | Yes | Secret key used to sign and verify JWTs. Use a long random string. |
-| `JWT_EXPIRES_IN` | No | JWT expiry duration (default: `7d`) |
-| `UPI_ID` | Yes | Merchant UPI ID displayed on the payment page (e.g., `yourname@upi`) |
-| `UPI_QR_IMAGE` | No | Custom static QR image path or URL (default: `/assets/images/upi-qr.png`) |
-| `MERCHANT_NAME` | No | Merchant display name (default: `FashionForge`) |
-| `FRONTEND_URL` | No | Allowed CORS origin for the frontend |
-| `API_BASE_URL` | No | Base URL for API calls (leave empty if frontend and backend share the same origin) |
-
-**Example `.env` (with placeholders):**
 ```env
 PORT=5000
-NODE_ENV=production
-MONGODB_URI=<your-mongodb-connection-string>
-JWT_SECRET=<your-secure-random-string-min-32-characters>
+NODE_ENV=development
+MONGODB_URI=mongodb://127.0.0.1:27017/fashionforge
+JWT_SECRET=fashionforge_development_secret_key_min_32_chars!
 JWT_EXPIRES_IN=7d
-UPI_ID=<your-upi-id@bank>
+UPI_ID=fashionforge@upi
 MERCHANT_NAME=FashionForge
-FRONTEND_URL=<your-deployed-url>
 ```
 
-> **Important:** Never commit real credentials to the repository. The `.env` file is excluded from Git via `.gitignore`.
+*(Note: Replace `MONGODB_URI` with your MongoDB Atlas connection string if you are using cloud database hosting).*
+
+### 5. Start the Server
+Run the application in development mode:
+
+```bash
+npm run dev
+```
+
+Or run using standard start:
+
+```bash
+npm start
+```
+
+### 6. Open the Application
+Open your web browser and navigate to:
+```text
+http://localhost:5000
+```
+
+The Express server serves both the frontend web pages and the `/api/` REST endpoints simultaneously.
 
 ---
 
-## 23. Testing
+## Database Configuration
 
-FashionForge includes automated test suites covering design persistence, MongoDB persistence, authentication security, cart operations, order workflows, payment flows, UI/PWA verification, and end-to-end browser journeys.
+FashionForge uses **MongoDB** managed through **Mongoose** Object Data Modeling (ODM).
+
+- **Connection Management:** Handled in `backend/config/db.js`. It establishes connection on server startup using the `MONGODB_URI` environment variable.
+- **Automatic Collection Creation:** MongoDB and Mongoose automatically create the required database and collections when the first document is inserted. No manual SQL migrations or database provisioning scripts are needed.
+- **The 4 Database Collections:**
+  1. `users`: Stores user identity, display name, validated unique email, and bcrypt-hashed passwords.
+  2. `designs`: Stores customized garment configurations linked to the owning `userId` (top, bottom, sleeves, collar, fabric, colour, pattern, size, gender, price, notes, front/back view).
+  3. `carts`: Stores one active shopping bag document per user with an array of items, quantities, and price snapshots.
+  4. `orders`: Stores completed purchases containing delivery details, item snapshots, subtotal, total, payment status (`pending`, `paid`), payment method (`upi`, `cod`), order status (`placed` through `delivered`), and status history with timestamps.
+
+---
+
+## Authentication & Security
+
+FashionForge implements token-based authentication and defense-in-depth security:
+
+- **Password Hashing:** Passwords must be at least 6 characters. They are hashed using **`bcryptjs`** with 10 salt rounds before storage. Plaintext passwords are never saved or logged.
+- **Stateless Tokens:** Successful login issues a **JSON Web Token (JWT)** signed with `JWT_SECRET`. Tokens expire after 7 days (`JWT_EXPIRES_IN=7d`).
+- **Protected Endpoints:** Sensitive API routes (`/api/designs`, `/api/cart`, `/api/orders`, `/api/payments`) require the `Authorization: Bearer <token>` header, verified by `backend/middleware/auth.js`.
+- **User Resource Isolation:** All database queries for designs, carts, and orders strictly enforce the authenticated user's ID (`req.user.userId`). Users cannot read, modify, or delete resources belonging to other accounts (verified by automated tests returning HTTP 403 Forbidden).
+- **Authoritative Price Recalculation:** The server does not trust client-submitted monetary totals during checkout. The backend independently calculates item costs from catalog rules and rejects altered prices.
+- **Input Validation:** User input and design configurations are sanitized and validated against allowed options via Express middleware (`validateDesign.js`).
+
+---
+
+## Testing
+
+The project includes automated validation covering the major application workflows and modules. The latest verified test run passed **363 out of 363 checks**.
 
 ### Running the Test Suite
-
-Ensure MongoDB is running and the server is accessible, then run:
+Ensure the server is running locally on port 5000 with a connected database, then execute:
 
 ```bash
 npm test
 ```
 
-This executes the following test files sequentially:
-- `tests/test_phase7.js` — Design persistence, saved schema normalization, My Designs CRUD operations, restoration, and data integrity against the storage interface
-- `tests/test_phase8.js` — REST API endpoints (`/api/designs`), MongoDB persistence, input validation, and schema fidelity
-- `tests/test_phase9.js` — User registration, authentication, password security (bcrypt hashing), design ownership enforcement, cross-user access isolation (HTTP 403), and authenticated round-trip integrity
-- `tests/test_phase10.js` — Shopping bag operations (`/api/cart`), checkout flow (`/api/orders/checkout`), authoritative server-side pricing security (rejecting client price tampering), payment simulation, and cross-user cart isolation (Tests A through T)
-- `tests/test_phase11.js` — Order confirmation, order history (`/api/orders`), order details retrieval, lifecycle stage transitions (`advance-status`), tracking timeline, and cross-user order isolation (Tests A through V)
-- `tests/test_workflow.js` — Complete application workflow: page availability for all 9 application pages, user registration, studio design creation and saving, bag management, checkout, payment failure handling (verifying failed status and bag preservation), payment success handling (verifying paid status and bag clearance), order confirmation, order history, and lifecycle advancement to delivered
-- `tests/test_ui_pwa.js` — UI shell and PWA validation: web app manifest structure, service worker caching strategies, offline fallback page availability, natural scrolling behavior, and header/footer layout structure
-- `tests/test_payment.js` — Simplified UPI QR & COD payment test suite: unauthenticated checkout rejection (HTTP 401), merchant UPI config retrieval, dynamic standard UPI URI generation, SVG QR code generation, mobile intent link verification, cross-user payment isolation (HTTP 403), customer manual confirmation, bag clearance on confirmed UPI payment, idempotent confirmation, failed/cancelled payment bag preservation, and Cash on Delivery order processing
+### Test Coverage Breakdown
+`npm test` executes 8 comprehensive test scripts sequentially:
 
-### Browser End-to-End Tests (Puppeteer)
+1. `tests/test_phase7.js`: Design persistence, normalization, and My Designs CRUD operations against local and remote storage.
+2. `tests/test_phase8.js`: Design REST API routes (`/api/designs`), MongoDB persistence, and schema input validation.
+3. `tests/test_phase9.js`: Authentication security, bcrypt hashing, JWT issuance, design ownership enforcement, and cross-user data isolation.
+4. `tests/test_phase10.js`: Shopping bag operations (`/api/cart`), checkout creation, price tampering rejection, and cart isolation.
+5. `tests/test_phase11.js`: Order creation, history retrieval, lifecycle status transitions (`placed` → `delivered`), and tracking timeline accuracy.
+6. `tests/test_workflow.js`: Complete 9-page end-to-end workflow validation, verifying registration, design customization, bag management, checkout, payment simulation, and order delivery.
+7. `tests/test_ui_pwa.js`: UI shell, Web App Manifest schema, service worker cache strategies, and offline page fallback behavior.
+8. `tests/test_payment.js`: Payment simulation checks covering UPI QR generation, dynamic UPI URI formatting, mobile intent deep links, customer manual confirmation, bag clearance on payment, and COD processing.
 
-Additional browser-based tests use Puppeteer with Google Chrome to test real browser interactions:
+### Browser End-to-End Testing (Puppeteer)
+Additional automated end-to-end browser tests run directly in Google Chrome using Puppeteer:
 
 ```bash
-# Run complete user journey in real Chrome
-node tests/test_browser_e2e_journey.cjs
-
-# Run multi-device responsive and PWA layout tests
-node tests/test_browser_responsive_pwa.cjs
-
-# Run comprehensive multi-page load and element audit
-node tests/test_browser_audit.cjs
-
-# Run authenticated multi-page session navigation
-node tests/test_browser_authenticated.cjs
-
-# Run UPI QR and COD payment interaction verification
-node tests/test_browser_payment.cjs
+node tests/test_browser_e2e_journey.cjs    # Full visual user journey in Chrome
+node tests/test_browser_responsive_pwa.cjs # Responsive viewports (mobile, tablet, desktop)
+node tests/test_browser_audit.cjs          # DOM audit and element accessibility checks
+node tests/test_browser_payment.cjs        # Payment modal and UI interaction checks
 ```
 
-These tests automate Chrome browser interactions to verify the full user journey, payment modal behaviors, and responsive behaviour across mobile, tablet, and desktop viewports.
+---
+
+## Deployment
+
+FashionForge is designed to deploy easily as a unified service where Node.js handles both the API and static file serving.
+
+### Recommended Production Setup
+- **Web Service:** [Render](https://render.com/) (Web Service)
+- **Cloud Database:** [MongoDB Atlas](https://cloud.mongodb.com/) (Free M0 Shared Cluster)
+
+### Deployment Steps
+1. **Set up MongoDB Atlas:**
+   - Create a free cluster.
+   - Create a database user under **Database Access**.
+   - Add `0.0.0.0/0` under **Network Access** to allow hosting connections.
+   - Copy the MongoDB connection URI string.
+2. **Deploy on Render:**
+   - Create a **New Web Service** connected to your GitHub repository.
+   - Configure:
+     - **Environment:** `Node`
+     - **Build Command:** `npm install`
+     - **Start Command:** `npm start`
+   - Set environment variables in the Render dashboard:
+     - `PORT`: `10000` (assigned by Render)
+     - `NODE_ENV`: `production`
+     - `MONGODB_URI`: `<your-mongodb-atlas-uri>`
+     - `JWT_SECRET`: `<a-long-secure-random-key>`
+     - `JWT_EXPIRES_IN`: `7d`
+     - `UPI_ID`: `<your-upi-id>`
+     - `MERCHANT_NAME`: `FashionForge`
+     - `FRONTEND_URL`: `https://<your-service-name>.onrender.com`
+3. **Launch:** Click **Deploy**. Your app will be live at `https://<your-service-name>.onrender.com`.
+
+> **Note on Free Tier Hosting:** On Render's free tier, the web service enters sleep mode after 15 minutes of inactivity. The initial request after being idle may take approximately 30–50 seconds to complete a cold start.
 
 ---
 
-## 24. Deployment
+## Current Limitations
 
-FashionForge can be deployed as a single Node.js service that serves both the API and frontend.
+To maintain academic and professional transparency, the following boundaries of the current implementation are explicitly acknowledged:
 
-### Recommended Approach
-
-1. **Database:** Create a free MongoDB Atlas cluster at [cloud.mongodb.com](https://cloud.mongodb.com/) and obtain the connection string.
-
-2. **Hosting:** Deploy the Node.js application on a platform such as [Render](https://render.com/) (free tier available):
-   - Connect your GitHub repository.
-   - Set the build command to `npm install` and the start command to `npm start`.
-   - Configure environment variables in the hosting dashboard (see Section 22).
-
-3. **UPI QR Code:** Replace `frontend/assets/images/upi-qr.png` with your merchant QR code before deploying.
-
-4. **Environment Variables:** Set all required environment variables (`MONGODB_URI`, `JWT_SECRET`, `UPI_ID`) in the hosting platform's dashboard. Do not hardcode credentials.
-
-For a detailed step-by-step guide, see [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
-
-> **Note:** On the Render free tier, the service spins down after a period of inactivity. The first request after idle may take some time to wake the service.
+- **2.5D Illustration, Not 3D:** Garments are rendered as layered SVG paths on 2D croquis figures. There is no 3D polygon mesh, 360-degree rotation, or physics-based cloth simulation.
+- **No AR / Webcam Fitting:** There is no augmented reality try-on, webcam capture, or body measurement scanning.
+- **Rule-Based, Not AI/ML:** The styling recommendation engine is based on deterministic IF/THEN JavaScript heuristics rather than trained machine learning or generative AI models.
+- **Simulated Payment:** Payment is a simulation. The application does not connect to live banking gateways (Razorpay, Stripe) or process actual financial transactions.
+- **Simulated Order Tracking:** The status pipeline (`placed` → `delivered`) is an internal state machine; there is no integration with real logistics or courier APIs (e.g., Shiprocket, FedEx).
+- **Single Currency & Language:** Currency is fixed to Indian Rupees (₹ INR) and the interface is English-only.
+- **Client Rendering Overhead:** Because SVG layers and patterns are rendered in the DOM, performance may vary on low-memory mobile devices.
 
 ---
 
-## 25. Scope and Limitations
+## Future Enhancements
 
-FashionForge is an academic project with a defined scope. The following are explicit limitations of the current implementation:
+The following enhancements represent potential future directions:
 
-| Area | Limitation |
-|:---|:---|
-| **Garment Visualisation** | The 2.5D rendering is a layered SVG illustration with simulated depth. It is not a real-time 3D cloth simulation with physics. |
-| **Augmented Reality** | There is no AR, webcam try-on, or body scanning feature. |
-| **Recommendation Engine** | Recommendations are deterministic rule-based IF/THEN logic. There is no machine learning, AI, or data-driven model. |
-| **Payment Gateway** | No third-party payment gateway is integrated. UPI confirmation is based on the user's manual declaration. |
-| **Inventory and Shipping** | There is no real inventory management, stock tracking, or shipping carrier integration. Order tracking is simulated. |
-| **Admin Dashboard** | There is no admin panel for managing users, orders, or products. |
-| **Multi-currency / Multi-language** | Prices are in INR only. The interface is English only. |
-| **Real Manufacturing** | The system does not connect to any garment manufacturing workflow. |
+- **3D Garment Rendering:** Transitioning to WebGL / Three.js for real-time 3D cloth draping and 360-degree model rotation.
+- **Augmented Reality Try-On:** Adding camera-based virtual fitting using AR face/body tracking libraries.
+- **Machine Learning Recommendations:** Integrating styling models trained on fashion design datasets for personalized aesthetic recommendations.
+- **Live Payment Gateway:** Connecting Razorpay or Stripe for real credit/debit card, net banking, and verified UPI webhooks.
+- **Real Logistics Integration:** Hooking order tracking into courier tracking APIs for live GPS package tracking.
+- **Tailored Measurement Fitting:** Allowing customers to enter individual body measurements (bust, waist, hip, inseam) to generate custom patterns.
+- **Admin Dashboard:** Creating a dedicated portal for store administrators to manage catalog items, review orders, and update shipping statuses.
 
 ---
 
-## 26. Future Enhancements
+## Security Notice
 
-The following are potential future improvements, clearly labeled as **not currently implemented**:
-
-- **Real 3D garment simulation** with physics-based cloth draping using WebGL or Three.js.
-- **Machine learning design recommendations** using models trained on fashion styling datasets.
-- **Third-party payment gateway integration** (Razorpay, Stripe) for verified online payments.
-- **Inventory and shipping integration** with real carrier APIs for live tracking.
-- **Measurement-based body fitting** using user-entered measurements for personalised garment sizing.
-- **Social sharing** allowing users to share their designs publicly.
-- **Admin dashboard** for order management, user analytics, and product catalogue administration.
-- **Multi-currency and internationalisation** support.
+- **Never commit `.env` files** containing sensitive secrets or credentials to public source repositories.
+- Use `.env.example` as a template for team onboarding and continuous integration.
+- Ensure production deployments generate strong, cryptographically secure values for `JWT_SECRET` (at least 32 random characters).
+- Maintain MongoDB Atlas network access controls and rotate database user credentials regularly.
 
 ---
 
-## 27. Academic Project Summary
+## License
 
-FashionForge demonstrates the following technical competencies in a single integrated application:
-
-- **Interactive Web Application Development** — A multi-page, responsive web application with a rich interactive design interface built using vanilla HTML, CSS, and JavaScript.
-- **Frontend Visualisation** — A custom SVG-based 2.5D rendering engine that combines vector geometry, material systems, lighting gradients, and pattern overlays to create real-time garment previews.
-- **REST API Design** — A structured Express.js backend with organised routes, controllers, middleware, and services following a layered architecture pattern.
-- **Database Persistence** — MongoDB with Mongoose schemas for users, designs, carts, and orders, with proper validation, indexing, and data integrity.
-- **Authentication and Security** — Stateless JWT-based authentication, bcrypt password hashing, ownership-based access control, and server-side price validation to prevent client tampering.
-- **Business Rule Logic** — A deterministic rule-based recommendation engine and a centralised pricing system that serves as the single source of truth for all cost calculations.
-- **E-commerce Workflow** — A complete shopping flow from design creation through bag, checkout, payment, order confirmation, and tracking.
-- **Progressive Web App** — Service worker caching, offline fallback, and installability via web app manifest.
+This project is developed for educational and academic demonstration purposes as a final-year B.Sc. Computer Science project under the **ISC License**.
